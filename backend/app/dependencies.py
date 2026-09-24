@@ -56,23 +56,30 @@ def get_user_by_username(username: str) -> Optional[dict]:
     return None
 
 def create_initial_users():
-    """Seeds default accounts if the users table is empty."""
+    """Seeds or updates default accounts so admin / password and investigator / password work out of the box."""
     default_users = [
-        ("admin", "admin123", "admin", "System Administrator"),
-        ("investigator", "investigator123", "investigator", "Lead Intelligence Officer"),
-        ("analyst", "analyst123", "read_only", "Intelligence Analyst")
+        ("admin", "password", "admin", "System Administrator"),
+        ("investigator", "password", "investigator", "Lead Intelligence Officer"),
+        ("analyst", "password", "read_only", "Intelligence Analyst")
     ]
     conn = get_db_connection()
     cursor = conn.cursor()
     for username, raw_pass, role, full_name in default_users:
         cursor.execute("SELECT id FROM users WHERE username = ?", (username,))
-        if not cursor.fetchone():
+        row = cursor.fetchone()
+        now = datetime.now(timezone.utc).isoformat()
+        hashed = get_password_hash(raw_pass)
+        if not row:
             user_id = f"usr_{uuid.uuid4().hex[:10]}"
-            now = datetime.now(timezone.utc).isoformat()
-            hashed = get_password_hash(raw_pass)
             cursor.execute(
                 "INSERT INTO users (id, username, hashed_password, full_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)",
                 (user_id, username, hashed, full_name, role, now)
+            )
+        else:
+            # Update password hash so 'password' works for existing accounts as well
+            cursor.execute(
+                "UPDATE users SET hashed_password = ? WHERE username = ?",
+                (hashed, username)
             )
     conn.commit()
     conn.close()

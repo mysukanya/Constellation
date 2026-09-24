@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
         analyst: { id: 'usr_analyst', username: 'analyst', full_name: 'Senior Intelligence Analyst', role: 'read_only' }
       };
 
-      if (defaultUsers[username] && (password.startsWith(username) || password.length >= 6)) {
+      if (defaultUsers[username] && (password === 'password' || password.startsWith(username) || password.length >= 6)) {
         const fallbackUser = defaultUsers[username];
         setUser(fallbackUser);
         localStorage.setItem('constellation_token', `demo_token_${username}`);

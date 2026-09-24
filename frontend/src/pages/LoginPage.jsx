@@ -5,8 +5,8 @@ import './LoginPage.css';
 export default function LoginPage() {
   const { login, register, demoLogin, error } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
-  const [username, setUsername] = useState('investigator');
-  const [password, setPassword] = useState('investigator123');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('password');
   const [fullName, setFullName] = useState('');
   const [localError, setLocalError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -29,7 +29,7 @@ export default function LoginPage() {
     }
   };
 
-  const handleQuickDemo = (role = 'investigator') => {
+  const handleQuickDemo = (role = 'admin') => {
     setLoading(true);
     try {
       demoLogin(role);
@@ -83,7 +83,7 @@ export default function LoginPage() {
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
-                placeholder="e.g. Lead Intelligence Officer"
+                placeholder="e.g. System Administrator"
                 autoComplete="name"
               />
             </div>
@@ -96,7 +96,7 @@ export default function LoginPage() {
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter username"
+              placeholder="admin"
               required
               minLength={3}
               autoComplete="username"
@@ -110,7 +110,7 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter password"
+              placeholder="password"
               required
               minLength={6}
               autoComplete={isRegister ? 'new-password' : 'current-password'}
@@ -129,13 +129,13 @@ export default function LoginPage() {
             <button
               type="button"
               className="login-quick-btn"
-              onClick={() => handleQuickDemo('investigator')}
+              onClick={() => handleQuickDemo('admin')}
               style={{
                 marginTop: '10px',
                 width: '100%',
                 padding: '10px 14px',
-                background: 'rgba(96, 165, 250, 0.1)',
-                border: '1px solid rgba(96, 165, 250, 0.3)',
+                background: 'rgba(96, 165, 250, 0.12)',
+                border: '1px solid rgba(96, 165, 250, 0.35)',
                 borderRadius: '8px',
                 color: '#93c5fd',
                 fontSize: '13px',
@@ -148,7 +148,7 @@ export default function LoginPage() {
                 gap: '8px'
               }}
             >
-              <span>⚡ Quick Launch — Lead Investigator</span>
+              <span>⚡ Quick Launch — Admin Access</span>
             </button>
           )}
 
@@ -162,25 +162,27 @@ export default function LoginPage() {
 
           {!isRegister && (
             <div className="login-defaults">
-              <p>Quick personas:</p>
+              <p style={{ margin: '0 0 6px 0', fontSize: '11px', color: 'rgba(255,255,255,0.5)' }}>
+                Default Credentials: <strong style={{ color: '#fff' }}>admin</strong> / <strong style={{ color: '#fff' }}>password</strong>
+              </p>
               <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', marginTop: '6px' }}>
                 <button
                   type="button"
-                  onClick={() => { setUsername('investigator'); setPassword('investigator123'); }}
+                  onClick={() => { setUsername('admin'); setPassword('password'); }}
+                  style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', color: '#60a5fa', borderRadius: '4px', padding: '3px 8px', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }}
+                >
+                  Admin
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setUsername('investigator'); setPassword('password'); }}
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', padding: '3px 8px', fontSize: '11px', cursor: 'pointer' }}
                 >
                   Investigator
                 </button>
                 <button
                   type="button"
-                  onClick={() => { setUsername('admin'); setPassword('admin123'); }}
-                  style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', padding: '3px 8px', fontSize: '11px', cursor: 'pointer' }}
-                >
-                  Admin
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setUsername('analyst'); setPassword('analyst123'); }}
+                  onClick={() => { setUsername('analyst'); setPassword('password'); }}
                   style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', color: '#e2e8f0', borderRadius: '4px', padding: '3px 8px', fontSize: '11px', cursor: 'pointer' }}
                 >
                   Analyst

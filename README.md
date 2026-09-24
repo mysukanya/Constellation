@@ -2,12 +2,13 @@
 
 > Multi-agent, multi-layer investigative intelligence platform for law enforcement and intelligence analysts.
 
-[![Live on Netlify](https://img.shields.io/badge/Netlify-LIVE%20PREVIEW-00C7B7?style=flat-square&logo=netlify)](https://constellation-intel.netlify.app)
+[![Live on Netlify](https://img.shields.io/badge/Netlify-LIVE%20PREVIEW-00C7B7?style=flat-square&logo=netlify)](https://constellation-platform.netlify.app)
 [![FastAPI](https://img.shields.io/badge/Backend-FastAPI-009688?style=flat-square&logo=fastapi)](http://127.0.0.1:8000/docs)
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11%2B-blue?style=flat-square&logo=python)](https://python.org)
 [![React 19](https://img.shields.io/badge/Frontend-React%2019%20+%20Vite-61DAFB?style=flat-square&logo=react)](https://vitejs.dev)
 
-- **Live Cloud Frontend**: **[https://constellation-intel.netlify.app](https://constellation-intel.netlify.app)**
+- **Live Cloud Frontend**: **[https://constellation-platform.netlify.app](https://constellation-platform.netlify.app)**
+- **GitHub Repository**: **[https://github.com/mysukanya/Constellation](https://github.com/mysukanya/Constellation)**
 - **Architecture Documentation**: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - **API Reference**: [docs/API_REFERENCE.md](docs/API_REFERENCE.md)
 - **Developer Guide**: [docs/DEVELOPER_GUIDE.md](docs/DEVELOPER_GUIDE.md)
@@ -138,8 +139,8 @@ All configuration is managed via the `.env` file. Key settings:
 
 ## 📝 Default Credentials
 
-| Username | Password | Role |
-|----------|----------|------|
-| `admin` | `admin123` | Admin |
-| `investigator` | `investigator123` | Investigator |
-| `analyst` | `analyst123` | Read-Only |
+| Username | Password | Role | Permissions |
+|----------|----------|------|-------------|
+| `admin` | `password` | Admin | Full Administrative & System Access |
+| `investigator` | `password` | Investigator | Active Investigation, Board, Roping & Byomkesh |
+| `analyst` | `password` | Read-Only | Read-Only Subgraphs, Timelines & Evidence |
