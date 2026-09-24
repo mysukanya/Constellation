@@ -6,11 +6,11 @@
 .minimal-splash-screen {
   position: fixed;
   inset: 0;
-  background: #000000;
+  background: #000000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 99999;
   cursor: pointer;
   user-select: none;
 }
@@ -18,18 +18,19 @@
 .minimal-splash-content {
   display: flex;
   align-items: baseline;
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 26px;
   font-weight: 400;
   letter-spacing: 0.16em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
 }
 
 .minimal-typed-word {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .minimal-blinking-cursor {
-  color: #ffffff;
+  color: #ffffff !important;
   font-weight: 300;
   margin-left: 3px;
   animation: cursorBlink 0.85s step-start infinite;
@@ -44,26 +45,27 @@
 .minimal-welcome-screen {
   position: fixed;
   inset: 0;
-  background: #000000;
+  background: #000000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 99999;
   user-select: none;
 }
 
 .minimal-welcome-content {
   display: flex;
   align-items: baseline;
-  color: #ffffff;
+  color: #ffffff !important;
   font-size: 28px;
   font-weight: 500;
   letter-spacing: 0.08em;
   text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
 }
 
 .minimal-welcome-title {
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .minimal-welcome-screen.is-fading-in {

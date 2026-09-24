@@ -12,8 +12,9 @@ export default function LoginPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get('screen') === 'welcome') return 'welcome';
       if (params.get('screen') === 'login') return 'login';
+      if (sessionStorage.getItem('constellation_splash_played') === 'true') return 'login';
     }
-    return 'login';
+    return 'splash';
   });
 
   const [typedSplash, setTypedSplash] = useState('');
@@ -37,6 +38,7 @@ export default function LoginPage() {
       if (index >= targetWord.length) {
         clearInterval(interval);
         setTimeout(() => {
+          sessionStorage.setItem('constellation_splash_played', 'true');
           setPhase('login');
         }, 700);
       }
@@ -59,44 +61,38 @@ export default function LoginPage() {
       setWelcomeTypedText(target.slice(0, idx));
       if (idx >= target.length) {
         clearInterval(typeInterval);
-        // Pause to appreciate, then fade out and unlock workspace
+        // Pause to appreciate, then fade out and unlock dashboard
         setTimeout(() => {
           setWelcomeStage('exit');
-          setTimeout(async () => {
-            if (pendingMode === 'demo') {
-              demoLogin('admin');
-            } else {
-              try {
-                await login(username, password);
-              } catch {
-                demoLogin('admin');
-              }
-            }
-          }, 600);
-        }, 850);
+          setTimeout(() => {
+            // Completely faked on client side for Netlify - instant guaranteed entry
+            demoLogin('admin');
+          }, 450);
+        }, 800);
       }
-    }, 95); // slow, even, deliberate pace
+    }, 85); // slow, even, deliberate pace
 
     return () => clearInterval(typeInterval);
-  }, [phase, pendingMode, username, password, login, demoLogin]);
+  }, [phase, demoLogin]);
 
-  const handleStartAuth = async (mode) => {
+  const handleStartAuth = (mode) => {
     setPendingMode(mode);
-    if (mode === 'demo') {
-      demoLogin('admin');
-      return;
-    }
-    try {
-      await login(username, password);
-    } catch {
-      demoLogin('admin');
-    }
+    setPhase('welcome');
   };
 
   // ── PHASE 1: SPLASH SCREEN (slow even typed words on black) ──────
   if (phase === 'splash') {
     return (
-      <div className="minimal-splash-screen" onClick={() => setPhase('login')}>
+      <div
+        className="minimal-splash-screen"
+        onClick={() => {
+          sessionStorage.setItem('constellation_splash_played', 'true');
+          setPhase('login');
+        }}
+        role="button"
+        tabIndex={0}
+        title="Click to skip"
+      >
         <div className="minimal-splash-content font-mono">
           <span className="minimal-typed-word">{typedSplash}</span>
           <span className="minimal-blinking-cursor">|</span>
@@ -108,7 +104,17 @@ export default function LoginPage() {
   // ── PHASE 3: WELCOME INTERSTITIAL (slow even typing on black) ──
   if (phase === 'welcome') {
     return (
-      <div className={`minimal-welcome-screen ${welcomeStage === 'exit' ? 'is-fading-out' : 'is-fading-in'}`}>
+      <div
+        className={`minimal-welcome-screen ${welcomeStage === 'exit' ? 'is-fading-out' : 'is-fading-in'}`}
+        onClick={() => {
+          setWelcomeStage('exit');
+          setTimeout(() => demoLogin('admin'), 200);
+        }}
+        role="button"
+        tabIndex={0}
+        title="Click to proceed"
+        style={{ cursor: 'pointer' }}
+      >
         <div className="minimal-welcome-content font-mono">
           <span className="minimal-welcome-title">{welcomeTypedText}</span>
           <span className="minimal-blinking-cursor">|</span>

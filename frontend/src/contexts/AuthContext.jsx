@@ -14,17 +14,9 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
     try {
       const savedUser = localStorage.getItem('constellation_user');
-      if (savedUser) return JSON.parse(savedUser);
-      // If user explicitly chose to log out, stay on login page
-      if (localStorage.getItem('constellation_logged_out') === 'true') {
-        return null;
-      }
-      // Auto-initialize with default Chief Intelligence Director so Dashboard is immediately visible!
-      localStorage.setItem('constellation_user', JSON.stringify(DEFAULT_ADMIN));
-      localStorage.setItem('constellation_token', 'demo_token_admin');
-      return DEFAULT_ADMIN;
+      return savedUser ? JSON.parse(savedUser) : null;
     } catch {
-      return DEFAULT_ADMIN;
+      return null;
     }
   });
   const [loading, setLoading] = useState(false);
@@ -32,32 +24,21 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!user;
 
-  // On mount, verify session or check ?demo=1 param
+  // On mount, if ?demo=1 or ?auth=admin is explicitly provided, bypass directly
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get('demo') === '1' || params.get('auth') === 'admin' || !user) {
-      if (localStorage.getItem('constellation_logged_out') !== 'true' || params.get('demo') === '1') {
-        demoLogin('admin');
-      }
-      setLoading(false);
+    if (params.get('demo') === '1' || params.get('auth') === 'admin') {
+      demoLogin('admin');
+      return;
+    }
+
+    const token = localStorage.getItem('constellation_token');
+    if (!token || token.startsWith('demo_token')) {
       return;
     }
 
     const verifySession = async () => {
-      const token = localStorage.getItem('constellation_token');
-      if (!token) {
-        setLoading(false);
-        return;
-      }
-
-      // If it's a demo token, do not make an external network request
-      if (token.startsWith('demo_token')) {
-        setLoading(false);
-        return;
-      }
-
       try {
-        // 1.5s timeout race so localhost never hangs on a black loading screen
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Session verify timeout')), 1500)
         );
@@ -67,14 +48,11 @@ export function AuthProvider({ children }) {
           localStorage.setItem('constellation_user', JSON.stringify(userData));
         }
       } catch {
-        // Fallback gracefully — if user is cached, keep them, otherwise clear
         const cached = localStorage.getItem('constellation_user');
         if (!cached) {
           api.clearToken();
           setUser(null);
         }
-      } finally {
-        setLoading(false);
       }
     };
     verifySession();
