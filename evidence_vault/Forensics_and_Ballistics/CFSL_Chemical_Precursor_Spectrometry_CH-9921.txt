@@ -1,0 +1,35 @@
+CENTRAL FORENSIC SCIENCE LABORATORY (CFSL)
+DIRECTORATE OF FORENSIC SCIENCE SERVICES, MINISTRY OF HOME AFFAIRS
+LABORATORY EXAMINATION REPORT REF: CFSL/CHEM/2026/9921
+DATE OF REPORT: 24 September 2026
+
+FORWARDING AUTHORITY:
+Directorate of Revenue Intelligence (DRI), Western Zonal Unit, Gandhidham
+Crime Ref: DRI Case 102 (Operation Silver Dune) & NCB Case 117 (Operation Black Tide)
+
+DESCRIPTION OF ARTICLES RECEIVED:
+Sealed Packet 'A-1': 10 representative forensic core drill samples taken from seized bricks aboard MV Sagar Ratna.
+Sealed Packet 'B-2': 5 precursor chemical samples seized from Surat Pharmaceutical Warehouse in Case 117.
+
+INSTRUMENTAL ANALYSIS:
+Methods: Gas Chromatography-Mass Spectrometry (GC-MS), High-Performance Liquid Chromatography (HPLC), and Fourier Transform Infrared Spectroscopy (FTIR).
+
+EXAMINATION FINDINGS:
+1. Packet 'A-1' (Seized Narcotic Bricks):
+   - Active Component: Diacetylmorphine Base.
+   - Purity Level: 84.6% ± 1.2% (High-Purity Golden Crescent Refined Heroin).
+   - Cutting Agents: Acetaminophen, Caffeine, and Papaverine trace alkaloids.
+   - Distinctive Precursor Signature: Acetic Anhydride residue with isotopic ratio matching Iranian border processing laboratories.
+
+2. Packet 'B-2' (Surat SEZ Chemical Seizure):
+   - Active Component: Monitored Precursor Solvent & Purification Reagents.
+   - Chemical signature and isotopic profile are identical to the binding resin detected in Packet 'A-1' container seals.
+   - Batch Manufacturing Identifier: #BATCH-UAE-77.
+
+FORENSIC CONCLUSION:
+The chemical fingerprint definitively connects the maritime contraband seized on MV Sagar Ratna (Case 102) with the illicit precursor supply chain operating through the Surat Special Economic Zone warehouse under investigation in Case 117 (Operation Black Tide).
+
+EXAMINING FORENSIC SCIENTIST:
+Dr. S. K. Ramanathan, Ph.D.
+Chief Forensic Analyst, Chemical Sciences Division, CFSL
+Cryptographic Ledger Hash: 0xbb201948ac91204859182cb019485910

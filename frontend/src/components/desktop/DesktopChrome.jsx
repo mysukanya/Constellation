@@ -122,6 +122,24 @@ export default function DesktopChrome({ children }) {
             Workspace
           </button>
           <button
+            className={`openai-nav-link ${activeNavSection === 'ingestion' ? 'active' : ''}`}
+            onClick={() => setActiveNavSection('ingestion')}
+          >
+            Evidence
+          </button>
+          <button
+            className={`openai-nav-link ${activeNavSection === 'byomkesh' ? 'active' : ''}`}
+            onClick={() => setActiveNavSection('byomkesh')}
+          >
+            Byomkesh AI
+          </button>
+          <button
+            className={`openai-nav-link ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
+            onClick={() => setActiveNavSection('cases')}
+          >
+            Cases
+          </button>
+          <button
             className={`openai-nav-link ${activeNavSection === 'sweeps' ? 'active' : ''}`}
             onClick={() => setActiveNavSection('sweeps')}
           >
@@ -139,20 +157,19 @@ export default function DesktopChrome({ children }) {
           >
             Provenance
           </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('cases')}
-          >
-            Cases
-          </button>
         </nav>
 
-        {/* Right: Demo Badge, Admin User Button, Notification Bell, Theme Switcher */}
+        {/* Right: Demo Badge, Ledger Seal, Admin User Button, Notification Bell, Theme Switcher */}
         <div className="openai-topbar-right">
+          <div className="topbar-sealed-tag font-mono" title="Cryptographic Ledger Integrity: 0x8f3b...SEALED">
+            <CheckCircle2 size={11} className="text-emerald" />
+            <span>0x8f3b...SEALED</span>
+          </div>
+
           {localStorage.getItem('constellation_token')?.startsWith('demo_token') && (
             <div className="openai-demo-badge font-mono" title="Running with offline demonstration data">
               <span className="openai-demo-dot" />
-              <span>DEMO MODE</span>
+              <span>DEMO</span>
             </div>
           )}
 
@@ -353,36 +370,6 @@ export default function DesktopChrome({ children }) {
         </main>
       </div>
 
-      {/* ── BOTTOM DESKTOP STATUS BAR (Clean Flush Line) ── */}
-      <footer className="desktop-statusbar">
-        <div className="statusbar-left">
-          <div className="status-item">
-            <GitBranch size={12} className="status-icon" />
-            <span className="status-label font-mono">case/{activeCase.id}</span>
-          </div>
-          <div className="status-separator" />
-          <div className="status-item">
-            <CheckCircle2 size={12} className="status-icon text-green" />
-            <span className="status-label">Ledger: 0x8f3b...SEALED</span>
-          </div>
-          <div className="status-separator" />
-          <div className="status-item">
-            <span className="legal-basis-badge">{activeCase.legalBasis}</span>
-          </div>
-        </div>
-
-        <div className="statusbar-right">
-          <div className="status-item">
-            <Activity size={12} className="status-icon text-blue" />
-            <span className="status-label">Byomkesh Engine: READY</span>
-          </div>
-          <div className="status-separator" />
-          <div className="status-item">
-            <Clock size={12} className="status-icon" />
-            <span className="status-label font-mono">{utcTime}</span>
-          </div>
-        </div>
-      </footer>
 
       {/* ── COMMAND PALETTE MODAL (Cmd+K) ──────────────────────── */}
       {showSearchModal && (

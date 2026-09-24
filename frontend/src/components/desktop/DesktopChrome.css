@@ -95,6 +95,27 @@
   gap: 8px;
 }
 
+.topbar-sealed-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  letter-spacing: 0.04em;
+}
+
+[data-theme="dark"] .topbar-sealed-tag,
+.theme-dark .topbar-sealed-tag {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
 .openai-demo-badge {
   display: flex;
   align-items: center;

@@ -1,0 +1,46 @@
+[DIRECTORATE OF REVENUE INTELLIGENCE - SPECIAL OPERATIONS WING]
+SEIZURE CASE FILE REF: DRI/WZ/NDPS/2026/102
+EVIDENCE ARTIFACT ID: EVD-102-BOL
+DOCUMENT CLASSIFICATION: CONFIDENTIAL // LAW ENFORCEMENT SENSITIVE
+
+================================================================================
+OCEAN BILL OF LADING — NON-NEGOTIABLE COPY
+================================================================================
+B/L NUMBER: BOL-9921-A
+VESSEL NAME: MV Sagar Ratna (IMO: 9218821, Flag: Panama)
+PORT OF LOADING: Port of Jebel Ali (Terminal 2), United Arab Emirates
+PORT OF DISCHARGE: Port of Kandla (Berth 4), Gujarat, India
+VOYAGE NUMBER: SR-0926-W
+
+SHIPPER:
+Al-Barakah Logistics FZE
+JAFZA Zone 4, P.O. Box 8912, Dubai, UAE
+Authorized Signatory: T. Merchant (Director of Logistics)
+
+CONSIGNEE:
+Vikramaditya Shipping & Cleared Commodities LLP
+14th Floor, Mittal Chambers, Nariman Point, Mumbai 400021
+GSTIN: 27AABCV9921M1Z4
+
+NOTIFY PARTY:
+Rajesh Sharma & Associates (Licensed Customs Broker #CB-992)
+Gandhidham, Kutch, Gujarat 370201
+
+CARGO DESCRIPTION AS DECLARED:
+Containers: 24 x 40ft High Cube Dry Containers
+Declared Cargo: Industrial Gypsum Board & Construction Gypsum Powder
+Gross Weight: 480,200 KG
+Seal Numbers: UAE-99210 through UAE-99233
+
+PHYSICAL EXAMINATION NOTES (DRI INTERVENTION):
+Interception Date: 2026-09-21 at 03:45 IST
+Officers from DRI Regional Unit Gandhidham executed search warrant under Customs Act Sec 105.
+Containers UAE-99214 and UAE-99219 contained false interior double-bulkheads.
+Behind false steel bulkhead: 420 packets wrapped in carbon-foil waterproof membrane.
+Field drug testing kit confirmed positive for Diacetylmorphine (High-Grade Afghan Heroin).
+Net Seized Contraband: 420.5 KG.
+
+CHAIN OF CUSTODY SEAL:
+Primary Seizing Officer: Senior Intelligence Officer A. Sharma (DRI Gandhidham)
+Sample Hash: 0x88f29c1b48d1e847c51d668fa912c91a
+Sealed at Central Customs Bonded Warehouse, Kandla Port.

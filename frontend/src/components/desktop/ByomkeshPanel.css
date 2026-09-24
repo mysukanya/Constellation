@@ -144,17 +144,17 @@
 }
 
 .user-message-bubble {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-subtle);
+  background: var(--bg-hover, #f3f4f6);
+  border: 1px solid var(--border-subtle, #e5e7eb);
   border-radius: 6px;
-  padding: 8px 10px;
+  padding: 8px 12px;
   margin-left: 20px;
 }
 
 .user-sender-label {
   font-size: 9px;
   font-weight: 700;
-  color: var(--accent-blue);
+  color: #2563eb;
   letter-spacing: 0.06em;
   display: block;
   margin-bottom: 3px;
@@ -162,8 +162,20 @@
 
 .user-message-bubble p {
   font-size: 12px;
-  color: var(--text-primary);
+  color: var(--text-primary, #111827) !important;
   line-height: 1.4;
+  margin: 0;
+}
+
+[data-theme="dark"] .user-message-bubble,
+.theme-dark .user-message-bubble {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .user-message-bubble p,
+.theme-dark .user-message-bubble p {
+  color: #f9fafb !important;
 }
 
 .byomkesh-response-bubble {

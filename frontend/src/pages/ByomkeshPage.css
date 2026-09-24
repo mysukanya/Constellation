@@ -284,7 +284,7 @@
   justify-content: flex-end;
 }
 
-.user-message-bubble {
+.byomkesh-clean-root .user-message-bubble {
   max-width: 75%;
   background: #000000;
   color: #ffffff;

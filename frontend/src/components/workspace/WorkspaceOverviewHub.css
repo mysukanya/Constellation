@@ -280,7 +280,7 @@
 
 .ws-open-btn {
   flex: 1;
-  padding: 7px 14px;
+  padding: 8px 14px;
   font-size: 12px;
   font-weight: 600;
   display: flex;
@@ -288,6 +288,29 @@
   justify-content: center;
   gap: 6px;
   border-radius: 6px;
+  background: #000000 !important;
+  color: #ffffff !important;
+  border: 1px solid #000000 !important;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.ws-open-btn:hover {
+  background: #222222 !important;
+  border-color: #222222 !important;
+}
+
+[data-theme="dark"] .ws-open-btn,
+.theme-dark .ws-open-btn {
+  background: #ffffff !important;
+  color: #000000 !important;
+  border: 1px solid #ffffff !important;
+}
+
+[data-theme="dark"] .ws-open-btn:hover,
+.theme-dark .ws-open-btn:hover {
+  background: #e5e5e5 !important;
+  border-color: #e5e5e5 !important;
 }
 
 .ws-delete-btn {

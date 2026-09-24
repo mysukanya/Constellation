@@ -1,0 +1,28 @@
+STATE FORENSIC SCIENCE LABORATORY, GUJARAT STATE
+BALLISTICS & FIREARMS DIVISION // EXAMINATION REPORT
+REPORT NO: FSL/BALL/2026/0882
+DATE: 22 September 2026
+
+INVESTIGATING AGENCY:
+Crime Branch, Gandhidham Police Station (Crime Register No. 108/2026 & 135/2026)
+
+EXHIBITS SUBMITTED:
+Exhibit-1: Two 9x19mm Parabellum fired cartridge cases recovered from Kandla Dock 4 execution crime scene.
+Exhibit-2: One 9mm Glock semi-automatic pistol (Serial No. obscured, recovered from Vikram "Blade" Jadhav).
+Exhibit-3: One spent bullet recovered from wooden cargo crate at Dock 4.
+
+COMPARISON MICROSCOPY FINDINGS:
+1. Firing Pin Impressions:
+   Exhibit-1 cartridge cases exhibit hemispherical firing pin indentation with parallel microscopic drag marks characteristic of Glock striker systems.
+2. Breech Face Markings:
+   Distinctive cross-hatched mechanical toolmarks transferred to the primer face match the breech face of Exhibit-2 Glock pistol with 100% concordance.
+3. Barrel Rifling Striation:
+   Exhibit-3 bullet possesses hexagonal polygonal rifling with right-hand twist (1 turn in 250mm). Microscopic striae match test-fired rounds from Exhibit-2.
+
+EVIDENTIARY CORRELATION:
+The firearm recovered from syndicate shooter Vikram Jadhav in Case 108 was the weapon used at Kandla Dock 4.
+Furthermore, the ballistics hash matches weapon profile used in VoIP extortion threats targeting port contractors in Case 135 (Operation Black Pearl).
+
+VERIFIED HASH:
+0xaa19c344001234567890abcdef1234567890abcdef1234567890abcdef123456
+Examiner: Senior Ballistics Expert M. D. Solanki

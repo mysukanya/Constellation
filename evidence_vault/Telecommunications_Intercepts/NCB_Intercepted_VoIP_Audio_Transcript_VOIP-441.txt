@@ -1,0 +1,25 @@
+[NARCOTICS CONTROL BUREAU / DRI JOINT INTERCEPT WING]
+ORDER UNDER SECTION 69 OF INFORMATION TECHNOLOGY ACT, 2000
+INTERCEPT SESSION REF: INT/VOIP/2026/09/441
+INTERCEPT TIME: 2026-09-21 21:28:40 UTC (02:58:40 IST)
+ROUTING: Netherlands VPN Node -> Encrypted SIP Trunk -> Coastal Marine Handset
+
+PARTICIPANTS:
+Target Alpha: Tariq "The Anchor" Merchant (Originating VoIP Terminal, Dubai IP)
+Target Bravo: Captain Al-Sayed (Master, MV Sagar Ratna, Maritime Satellite Terminal)
+
+TRANSCRIPT TRANSLATION (Original: Urdu/Arabic Maritime Slang):
+
+[00:00:02] Target Alpha: Sagar Ratna, do you copy? What is your GPS status?
+[00:00:08] Target Bravo: Yes Bhai, loud and clear. AIS has been shut off as instructed. We are 18 nautical miles off Okha light. Speed reduced to 1 knot.
+[00:00:18] Target Alpha: Excellent. The local dhow from Porbandar is approaching your starboard quarter. Signal them with two white flash sweeps.
+[00:00:27] Target Bravo: Understood. Are they taking all 420 packages or only the sample crates?
+[00:00:33] Target Alpha: All of it stays in the false bulkheads until you berth at Kandla Gate 3. Only the courier handover is happening at sea. The broker Rajesh Sharma has already cleared the port gates with customs.
+[00:00:46] Target Bravo: The weather is picking up. We will execute the flash and restart the AIS transponder by 00:30 UTC as we approach the pilot channel.
+[00:00:54] Target Alpha: The mirror ledger wire is already released. Once you touch berth, the settlement accounts will receive the balance. Do not deviate.
+[00:01:02] Target Bravo: Received. Terminating link now.
+
+FORENSIC ACOUSTIC VERIFICATION:
+Voice biometrics on Target Alpha match Pakistani National Tariq Ismail Merchant (Confidence: 97.2%).
+Acoustic ambient sound matches diesel engine room harmonic frequency of MV Sagar Ratna.
+Sealed with Cryptographic Hash: 0xaa19c344910293847102938471029384
