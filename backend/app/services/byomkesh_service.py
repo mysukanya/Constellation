@@ -41,12 +41,25 @@ class ByomkeshAgent:
     """
 
     def __init__(self):
-        self.llm_client = None
-        if settings.NVIDIA_API_KEY:
+        self.gemini_client = None
+        self.nvidia_client = None
+        
+        if getattr(settings, "GEMINI_API_KEY", None):
             try:
-                self.llm_client = OpenAI(
+                self.gemini_client = OpenAI(
+                    base_url=settings.GEMINI_BASE_URL,
+                    api_key=settings.GEMINI_API_KEY,
+                    timeout=10.0
+                )
+            except Exception as e:
+                logger.warning(f"Could not initialize Gemini client: {e}")
+
+        if getattr(settings, "NVIDIA_API_KEY", None):
+            try:
+                self.nvidia_client = OpenAI(
                     base_url=settings.NVIDIA_BASE_URL,
-                    api_key=settings.NVIDIA_API_KEY
+                    api_key=settings.NVIDIA_API_KEY,
+                    timeout=12.0
                 )
             except Exception as e:
                 logger.warning(f"Could not initialize NVIDIA NIM client: {e}")
@@ -266,27 +279,52 @@ class ByomkeshAgent:
 
         # Synthesize answer
         answer_text = ""
-        if self.llm_client and settings.NVIDIA_API_KEY:
-            try:
-                system_prompt = (
-                    "You are Byomkesh, an investigative intelligence assistant. "
-                    "You answer questions ONLY using provided graph facts and evidence. "
-                    "Rule: Every factual statement MUST reference a citation tag like [cit_1], [cit_2]. "
-                    "Never invent facts or hallucinate connections."
-                )
-                facts_context = json.dumps({"citations": citations, "question": question, "contradictions": contradictions})
-                resp = self.llm_client.chat.completions.create(
-                    model=settings.NVIDIA_MODEL,
-                    messages=[
-                        {"role": "system", "content": system_prompt},
-                        {"role": "user", "content": f"Context: {facts_context}\n\nQuestion: {question}"}
-                    ],
-                    temperature=0.1,
-                    max_tokens=600
-                )
-                answer_text = resp.choices[0].message.content
-            except Exception as e:
-                logger.error(f"NVIDIA NIM query failed: {e}")
+        if not citations:
+            answer_text = f"No verified entities or relationships matching '{question}' were found in the current case graph."
+        else:
+            system_prompt = (
+                "You are Byomkesh, an investigative intelligence assistant. "
+                "You answer questions ONLY using provided graph facts and evidence. "
+                "Rule: Every factual statement MUST reference a citation tag like [cit_1], [cit_2]. "
+                "Never invent facts or hallucinate connections."
+            )
+            facts_context = json.dumps({"citations": citations, "question": question, "contradictions": contradictions})
+
+            # Try Gemini first (fast response)
+            if self.gemini_client and getattr(settings, "GEMINI_API_KEY", None):
+                try:
+                    resp = self.gemini_client.chat.completions.create(
+                        model=settings.GEMINI_MODEL,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": f"Context: {facts_context}\n\nQuestion: {question}"}
+                        ],
+                        temperature=0.2,
+                        max_tokens=600,
+                        timeout=10.0
+                    )
+                    if resp.choices and resp.choices[0].message.content:
+                        answer_text = resp.choices[0].message.content.strip()
+                except Exception as e:
+                    logger.warning(f"Gemini synthesis bypassed or timed out: {e}")
+
+            # Try NVIDIA NIM if Gemini was not available or produced no output
+            if not answer_text and self.nvidia_client and getattr(settings, "NVIDIA_API_KEY", None):
+                try:
+                    resp = self.nvidia_client.chat.completions.create(
+                        model=settings.NVIDIA_MODEL,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": f"Context: {facts_context}\n\nQuestion: {question}"}
+                        ],
+                        temperature=0.2,
+                        max_tokens=600,
+                        timeout=12.0
+                    )
+                    if resp.choices and resp.choices[0].message.content:
+                        answer_text = resp.choices[0].message.content.strip()
+                except Exception as e:
+                    logger.warning(f"NVIDIA NIM query bypassed or timed out: {e}")
 
         if not answer_text:
             if not citations:

@@ -35,8 +35,28 @@ class Settings(BaseSettings):
 
     # LLM (NVIDIA NIM)
     NVIDIA_API_KEY: str = ""
+    NVIDIA_API_KEY_2: str = ""
     NVIDIA_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
-    NVIDIA_MODEL: str = "meta/llama-3.3-70b-instruct"
+    NVIDIA_MODEL: str = "nvidia/nemotron-3.5-lightning-30b-a3b"
+
+    # Google Gemini LLM (OpenAI-compatible)
+    GEMINI_API_KEY: str = ""
+    GEMINI_BASE_URL: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+
+    # Supabase Configuration
+    SUPABASE_URL: str = ""
+    SUPABASE_ANON_KEY: str = ""
+    SUPABASE_PROJECT_ID: str = ""
+    DATABASE_URL: str = ""
+
+    # Cloud Hosting & Deployment
+    NETLIFY_AUTH_TOKEN: str = ""
+    NETLIFY_SITE_USER: str = ""
+    NETLIFY_SITE_ID: str = ""
+    VERCEL_TOKEN: str = ""
+    GITHUB_TOKEN: str = ""
+    GITHUB_USERNAME: str = ""
     
     # Ingestion / NER
     SPACY_MODEL: str = "en_core_web_sm"

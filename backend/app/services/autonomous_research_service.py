@@ -24,12 +24,24 @@ class AutonomousResearchService:
     """
 
     def __init__(self):
-        self.llm_client = None
-        if settings.NVIDIA_API_KEY:
+        self.gemini_client = None
+        self.nvidia_client = None
+        if getattr(settings, "GEMINI_API_KEY", None):
             try:
-                self.llm_client = OpenAI(
+                self.gemini_client = OpenAI(
+                    base_url=settings.GEMINI_BASE_URL,
+                    api_key=settings.GEMINI_API_KEY,
+                    timeout=10.0
+                )
+            except Exception:
+                pass
+
+        if getattr(settings, "NVIDIA_API_KEY", None):
+            try:
+                self.nvidia_client = OpenAI(
                     base_url=settings.NVIDIA_BASE_URL,
-                    api_key=settings.NVIDIA_API_KEY
+                    api_key=settings.NVIDIA_API_KEY,
+                    timeout=12.0
                 )
             except Exception:
                 pass
