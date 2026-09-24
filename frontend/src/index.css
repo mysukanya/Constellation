@@ -321,110 +321,101 @@ code, kbd, .font-mono {
   box-shadow: none !important;
 }
 
-/* ── Light Mode Desktop Chrome Overrides ───────────────────────── */
+/* ── Light Mode Desktop Chrome Overrides (OpenAI Aesthetic) ───────── */
 [data-theme="light"] .desktop-window-container,
 .theme-light .desktop-window-container {
   background-color: #f8fafc !important;
+  color: #0f172a !important;
 }
 
-[data-theme="light"] .floating-titlebar-panel3d,
-.theme-light .floating-titlebar-panel3d {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
-}
-
-[data-theme="light"] .openai-minimal-titlebar,
-.theme-light .openai-minimal-titlebar {
+[data-theme="light"] .openai-topbar,
+.theme-light .openai-topbar {
   background: #ffffff !important;
   border-bottom: 1px solid #e2e8f0 !important;
 }
 
-[data-theme="light"] .brand-text-openai,
-.theme-light .brand-text-openai {
+[data-theme="light"] .openai-brand-text,
+.theme-light .openai-brand-text {
   color: #0f172a !important;
 }
 
-[data-theme="light"] .brand-sub-openai,
-.theme-light .brand-sub-openai {
+[data-theme="light"] .openai-nav-link,
+.theme-light .openai-nav-link {
   color: #64748b !important;
 }
 
-[data-theme="light"] .nav-tab-btn,
-.theme-light .nav-tab-btn {
-  color: #475569 !important;
-}
-
-[data-theme="light"] .nav-tab-btn:hover,
-.theme-light .nav-tab-btn:hover {
+[data-theme="light"] .openai-nav-link:hover,
+.theme-light .openai-nav-link:hover {
   color: #0f172a !important;
   background: #f1f5f9 !important;
 }
 
-[data-theme="light"] .nav-tab-btn.active,
-.theme-light .nav-tab-btn.active {
+[data-theme="light"] .openai-nav-link.active,
+.theme-light .openai-nav-link.active {
   color: #0f172a !important;
   background: #e2e8f0 !important;
   font-weight: 600 !important;
 }
 
-[data-theme="light"] .titlebar-active-case-capsule,
-.theme-light .titlebar-active-case-capsule {
+[data-theme="light"] .openai-case-pill,
+.theme-light .openai-case-pill {
   background: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
   color: #334155 !important;
 }
 
-[data-theme="light"] .titlebar-search-box,
-.theme-light .titlebar-search-box {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
+[data-theme="light"] .openai-case-pill:hover,
+.theme-light .openai-case-pill:hover {
+  background: #e2e8f0 !important;
+  color: #0f172a !important;
 }
 
-[data-theme="light"] .search-text-placeholder,
-.theme-light .search-text-placeholder {
+[data-theme="light"] .openai-search-box,
+.theme-light .openai-search-box {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  color: #475569 !important;
+}
+
+[data-theme="light"] .openai-search-placeholder,
+.theme-light .openai-search-placeholder {
   color: #64748b !important;
 }
 
-[data-theme="light"] .search-kbd,
-.theme-light .search-kbd {
+[data-theme="light"] .openai-search-kbd,
+.theme-light .openai-search-kbd {
   background: #ffffff !important;
   border: 1px solid #cbd5e1 !important;
   color: #475569 !important;
 }
 
-[data-theme="light"] .sweep-countdown-indicator,
-.theme-light .sweep-countdown-indicator {
+[data-theme="light"] .openai-sweep-status,
+.theme-light .openai-sweep-status {
   background: #f1f5f9 !important;
   border-color: #cbd5e1 !important;
-  color: #334155 !important;
-}
-
-[data-theme="light"] .titlebar-icon-action,
-.theme-light .titlebar-icon-action {
   color: #475569 !important;
-  background: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
 }
 
-[data-theme="light"] .titlebar-icon-action:hover,
-.theme-light .titlebar-icon-action:hover {
+[data-theme="light"] .openai-icon-btn,
+.theme-light .openai-icon-btn {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .openai-icon-btn:hover,
+.theme-light .openai-icon-btn:hover {
   color: #0f172a !important;
   background: #f1f5f9 !important;
 }
 
-[data-theme="light"] .floating-rail-panel3d,
-.theme-light .floating-rail-panel3d {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+[data-theme="light"] .desktop-main-split,
+.theme-light .desktop-main-split {
+  background: #f8fafc !important;
 }
 
 [data-theme="light"] .left-icon-rail-dock,
 .theme-light .left-icon-rail-dock {
   background: #ffffff !important;
-  border: none !important;
+  border-right: 1px solid #e2e8f0 !important;
 }
 
 [data-theme="light"] .rail-btn,
@@ -436,7 +427,6 @@ code, kbd, .font-mono {
 .theme-light .rail-btn:hover {
   background: #f1f5f9 !important;
   color: #0f172a !important;
-  transform: none !important;
 }
 
 [data-theme="light"] .rail-btn.active,
@@ -444,14 +434,18 @@ code, kbd, .font-mono {
   background: #ecfdf5 !important;
   color: #059669 !important;
   border-color: #a7f3d0 !important;
-  box-shadow: none !important;
 }
 
-[data-theme="light"] .floating-workspace-canvas,
-.theme-light .floating-workspace-canvas {
+[data-theme="light"] .desktop-workspace-canvas,
+.theme-light .desktop-workspace-canvas {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .desktop-statusbar,
+.theme-light .desktop-statusbar {
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border-top: 1px solid #e2e8f0 !important;
+  color: #64748b !important;
 }
 
 /* ── Light Mode Glass Card & Modals ────────────────────────────── */

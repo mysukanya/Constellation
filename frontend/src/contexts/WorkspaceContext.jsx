@@ -347,9 +347,9 @@ export function WorkspaceProvider({ children }) {
   const [activeCaseId, setActiveCaseId] = useState('case-102');
   const [activeNavSection, setActiveNavSection] = useState('home');
 
-  // Theme Management (Pure Black OpenAI-style Aesthetics / Minimal Light)
+  // Theme Management (Minimal Clean Light / Pure Black Dark)
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('constellation_theme') || 'dark';
+    return localStorage.getItem('constellation_theme') || 'light';
   });
 
   const toggleTheme = () => {

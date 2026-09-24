@@ -1,220 +1,200 @@
-.login-page {
+/* ═══════════════════════════════════════════════════════
+   CONSTELLATION — PURE MINIMAL BLACK & WHITE AUTH
+   ═══════════════════════════════════════════════════════ */
+
+/* ── 1. Splash Screen: Plain Constellation Typing Effect ── */
+.minimal-splash-screen {
   position: fixed;
   inset: 0;
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0a0a0f;
-  font-family: 'Inter', system-ui, sans-serif;
-  overflow: hidden;
+  z-index: 9999;
+  cursor: pointer;
+  user-select: none;
 }
 
-.login-bg-grid {
-  position: absolute;
+.minimal-splash-content {
+  display: flex;
+  align-items: baseline;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+}
+
+.minimal-typed-word {
+  color: #ffffff;
+}
+
+.minimal-blinking-cursor {
+  color: #ffffff;
+  font-weight: 300;
+  margin-left: 2px;
+  animation: cursorBlink 0.9s step-start infinite;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ── 2. Welcome Interstitial: Black & White Fade In/Out ── */
+.minimal-welcome-screen {
+  position: fixed;
   inset: 0;
-  background-image: 
-    radial-gradient(ellipse 80% 60% at 50% 40%, rgba(96,165,250,0.08) 0%, transparent 70%),
-    linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-  background-size: 100% 100%, 40px 40px, 40px 40px;
-  animation: gridPulse 8s ease-in-out infinite;
-}
-
-@keyframes gridPulse {
-  0%, 100% { opacity: 0.4; }
-  50% { opacity: 0.7; }
-}
-
-.login-container {
-  position: relative;
-  z-index: 1;
-  width: 100%;
-  max-width: 400px;
-  padding: 0 20px;
-}
-
-.login-header {
-  text-align: center;
-  margin-bottom: 32px;
-}
-
-.login-logo {
+  background: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  margin-bottom: 8px;
+  z-index: 9999;
+  user-select: none;
 }
 
-.login-logo h1 {
-  font-size: 28px;
-  font-weight: 600;
-  background: linear-gradient(135deg, #60a5fa, #a78bfa);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: -0.5px;
-}
-
-.login-subtitle {
-  color: rgba(255,255,255,0.4);
-  font-size: 13px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-}
-
-.login-form {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 16px;
-  padding: 32px 28px;
-  backdrop-filter: blur(20px);
-}
-
-.login-form h2 {
-  color: #e2e8f0;
-  font-size: 20px;
-  font-weight: 500;
-  margin: 0 0 24px;
+.minimal-welcome-title {
+  color: #ffffff;
+  font-size: 24px;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', sans-serif;
   text-align: center;
 }
 
-.login-error {
-  background: rgba(239,68,68,0.1);
-  border: 1px solid rgba(239,68,68,0.3);
-  color: #fca5a5;
-  padding: 10px 14px;
-  border-radius: 8px;
-  font-size: 13px;
-  margin-bottom: 16px;
-  text-align: center;
+.minimal-welcome-screen.is-fading-in {
+  animation: welcomeFadeIn 0.45s ease forwards;
 }
 
-.login-field {
-  margin-bottom: 18px;
+.minimal-welcome-screen.is-fading-out {
+  animation: welcomeFadeOut 0.6s ease forwards;
 }
 
-.login-field label {
-  display: block;
-  color: rgba(255,255,255,0.5);
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 6px;
+@keyframes welcomeFadeIn {
+  from { opacity: 0; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }
 
-.login-field input {
-  width: 100%;
-  padding: 12px 14px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 10px;
-  color: #e2e8f0;
-  font-size: 14px;
-  font-family: inherit;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
+@keyframes welcomeFadeOut {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.02); }
+}
+
+/* ── 3. Minimal Login: Pure Black Background + Small White Panel ── */
+.minimal-login-screen {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
   box-sizing: border-box;
 }
 
-.login-field input:focus {
-  border-color: rgba(96,165,250,0.5);
-  box-shadow: 0 0 0 3px rgba(96,165,250,0.1);
-}
-
-.login-field input::placeholder {
-  color: rgba(255,255,255,0.2);
-}
-
-.login-submit {
+.minimal-login-card {
+  background: #ffffff;
+  color: #18181b;
+  border-radius: 8px;
   width: 100%;
-  padding: 12px;
-  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-  border: none;
-  border-radius: 10px;
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  transition: opacity 0.2s, transform 0.1s;
-  margin-top: 4px;
+  max-width: 320px;
+  padding: 24px 22px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+  box-sizing: border-box;
+  animation: cardFadeIn 0.35s ease;
+}
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.minimal-card-header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  min-height: 44px;
+  justify-content: space-between;
+  margin-bottom: 20px;
 }
 
-.login-submit:hover:not(:disabled) {
-  opacity: 0.9;
-  transform: translateY(-1px);
+.minimal-card-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #09090b;
+  letter-spacing: -0.01em;
 }
 
-.login-submit:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.login-submit:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.login-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.login-toggle {
-  text-align: center;
-  margin-top: 16px;
-  color: rgba(255,255,255,0.4);
-  font-size: 13px;
-}
-
-.login-toggle button {
-  background: none;
-  border: none;
-  color: #60a5fa;
-  cursor: pointer;
-  font-size: 13px;
-  font-family: inherit;
-  text-decoration: underline;
-  padding: 0;
-}
-
-.login-toggle button:hover {
-  color: #93bbfc;
-}
-
-.login-defaults {
-  margin-top: 20px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  text-align: center;
-}
-
-.login-defaults p {
-  color: rgba(255,255,255,0.3);
-  font-size: 11px;
-  margin: 0 0 6px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.login-defaults code {
-  color: rgba(255,255,255,0.5);
-  font-size: 12px;
-  background: rgba(255,255,255,0.04);
-  padding: 4px 10px;
+.minimal-demo-btn {
+  background: #f4f4f5;
+  border: 1px solid #e4e4e7;
+  color: #18181b;
+  padding: 4px 12px;
   border-radius: 6px;
-  font-family: 'SF Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.minimal-demo-btn:hover {
+  background: #e4e4e7;
+  color: #000000;
+}
+
+.minimal-login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.minimal-input-field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 14px;
+}
+
+.minimal-field-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #71717a;
+}
+
+.minimal-text-input {
+  background: #ffffff;
+  border: 1px solid #d4d4d8;
+  border-radius: 6px;
+  padding: 8px 11px;
+  font-size: 13.5px;
+  color: #09090b;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  width: 100%;
+  box-sizing: border-box;
+  font-family: inherit;
+}
+
+.minimal-text-input:focus {
+  border-color: #000000;
+  box-shadow: 0 0 0 1px #000000;
+}
+
+.minimal-submit-btn {
+  background: #000000;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 9px;
+  font-size: 13.5px;
+  font-weight: 500;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 4px;
+  transition: opacity 0.15s ease;
+  font-family: inherit;
+}
+
+.minimal-submit-btn:hover {
+  opacity: 0.88;
+}
+
+.minimal-submit-btn:active {
+  transform: scale(0.99);
 }

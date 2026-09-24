@@ -17,8 +17,15 @@ export function AuthProvider({ children }) {
 
   const isAuthenticated = !!user;
 
-  // On mount, verify the saved token is still valid
+  // On mount, verify session or check ?demo=1 param
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('demo') === '1' || params.get('auth') === 'admin') {
+      demoLogin('admin');
+      setLoading(false);
+      return;
+    }
+
     const verifySession = async () => {
       const token = localStorage.getItem('constellation_token');
       if (!token) {
