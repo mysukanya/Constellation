@@ -345,11 +345,11 @@ export const DEFAULT_WORKSPACES = [
 
 export function WorkspaceProvider({ children }) {
   const [activeCaseId, setActiveCaseId] = useState('case-102');
-  const [activeNavSection, setActiveNavSection] = useState('workspace');
+  const [activeNavSection, setActiveNavSection] = useState('home');
 
-  // Theme Management (Light Minimal / Dark Cinematic) - Defaults to Light as requested
+  // Theme Management (Pure Black OpenAI-style Aesthetics / Minimal Light)
   const [theme, setTheme] = useState(() => {
-    return localStorage.getItem('constellation_theme') || 'light';
+    return localStorage.getItem('constellation_theme') || 'dark';
   });
 
   const toggleTheme = () => {

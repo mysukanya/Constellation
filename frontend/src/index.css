@@ -7,27 +7,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  /* Foundations — Deep Charcoal & Obsidian */
-  --bg-desktop: #08090d;
-  --bg-window: #0c0e14;
-  --bg-sidebar: #0f1118;
-  --bg-surface: #131620;
-  --bg-elevated: #181c28;
-  --bg-hover: #1e2230;
-  --bg-active: #24293a;
-  --bg-input: #10131c;
+  /* Foundations — Pure OLED Black (#000000) */
+  --bg-desktop: #000000;
+  --bg-window: #000000;
+  --bg-sidebar: #050505;
+  --bg-surface: #0a0a0a;
+  --bg-elevated: #111111;
+  --bg-hover: #171717;
+  --bg-active: #222222;
+  --bg-input: #0a0a0a;
 
   /* Hair-thin borders */
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --border-default: rgba(255, 255, 255, 0.10);
-  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-hover: rgba(255, 255, 255, 0.20);
   --border-active: #3b82f6;
 
-  /* Typography — Crisp Apple Tone */
-  --text-primary: #f2f4f8;
-  --text-secondary: #9aa1b3;
-  --text-muted: #60687d;
-  --text-inverse: #0c0e14;
+  /* Typography — Crisp Apple / OpenAI Tone */
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --text-inverse: #000000;
 
   /* Netflix Rich Red (Reserved for Critical / High Alerts) */
   --accent-red: #e50914;

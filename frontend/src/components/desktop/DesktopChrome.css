@@ -3,170 +3,281 @@
   flex-direction: column;
   width: 100vw;
   height: 100vh;
-  background-color: var(--bg-desktop);
+  background-color: #000000;
   overflow: hidden;
+  color: #f4f4f5;
 }
 
-/* ── Titlebar Chrome ─────────────────────────────────────────── */
-.desktop-titlebar {
-  height: var(--titlebar-height);
+/* ── OpenAI Style Minimal Flush Top Bar ────────────────────────── */
+.openai-topbar {
+  height: 54px;
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 14px;
-  background: var(--bg-window);
-  border-bottom: 1px solid var(--border-subtle);
+  padding: 0 24px;
+  background: #000000;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   flex-shrink: 0;
-  z-index: 100;
+  z-index: 1000;
+  position: relative;
 }
 
-/* ── Floating OpenAI Style Minimal Titlebar ───────────────────── */
-.floating-titlebar-wrapper {
-  padding: 10px 14px 0 14px;
-  flex-shrink: 0;
-  z-index: 100;
-}
-
-.floating-titlebar-panel3d {
-  border-radius: 12px !important;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
-}
-
-.openai-minimal-titlebar {
-  height: 48px !important;
-  background: #090c14 !important;
-  border: none !important;
-  padding: 0 16px !important;
-}
-
-.brand-lockup-openai {
+.topbar-left-zone {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+.openai-brand-lockup {
+  display: flex;
+  align-items: center;
   cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 6px;
+  user-select: none;
   transition: opacity 0.15s ease;
 }
 
-.brand-lockup-openai:hover {
-  opacity: 0.9;
+.openai-brand-lockup:hover {
+  opacity: 0.8;
 }
 
-.brand-dot-emerald {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.8);
-}
-
-.brand-text-openai {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  font-size: 13px;
+.openai-brand-text {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, 'Inter', sans-serif;
+  font-size: 13.5px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.12em;
   color: #ffffff;
 }
 
-.brand-sub-openai {
-  font-size: 9px;
-  color: #64748b;
-  letter-spacing: 0.08em;
-  margin-left: 2px;
+/* ── OpenAI Topbar Horizontal Navigation Links ─────────────────── */
+.openai-nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
-.titlebar-active-case-capsule {
+.openai-nav-link {
+  background: transparent;
+  border: none;
+  color: #8e8e93;
+  font-size: 13.5px;
+  font-weight: 450;
+  padding: 6px 13px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: color 0.15s ease, background-color 0.15s ease;
+  font-family: inherit;
+  letter-spacing: -0.01em;
+}
+
+.openai-nav-link:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.openai-nav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.10);
+  font-weight: 500;
+}
+
+/* ── OpenAI Topbar Right Side Controls ─────────────────────────── */
+.openai-topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.openai-demo-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 10.5px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.openai-demo-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.openai-case-pill {
   display: flex;
   align-items: center;
   gap: 6px;
   padding: 4px 10px;
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 11px;
   color: #a1a1aa;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.titlebar-active-case-capsule:hover {
-  border-color: rgba(16, 185, 129, 0.4);
+.openai-case-pill:hover {
+  background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
-  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
-/* ── Main Split Container with Floating Left Tool Rail Dock ─── */
+.openai-search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-size: 12px;
+  color: #71717a;
+}
+
+.openai-search-box:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.16);
+  color: #a1a1aa;
+}
+
+.openai-search-ico {
+  color: #71717a;
+}
+
+.openai-search-placeholder {
+  font-size: 12px;
+  color: #71717a;
+}
+
+.openai-search-kbd {
+  padding: 1px 5px;
+  font-size: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  color: #a1a1aa;
+}
+
+.openai-sweep-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: #71717a;
+  padding: 4px 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.openai-sweep-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #10b981;
+  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+}
+
+.openai-icon-btn {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  color: #8e8e93;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.openai-icon-btn:hover,
+.openai-icon-btn.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.openai-badge-dot {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  min-width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: #e50914;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 3px;
+}
+
+/* ── Main Split Viewport with Left Icon Dock ──────────────────── */
 .desktop-main-split {
   display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
-  gap: 12px;
-  padding: 10px 14px 10px 14px;
-}
-
-.floating-rail-wrapper {
-  height: 100%;
-  flex-shrink: 0;
-  z-index: 50;
-}
-
-.floating-rail-panel3d {
-  height: 100%;
-  border-radius: 14px !important;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+  background: #000000;
 }
 
 .left-icon-rail-dock {
-  width: 54px;
+  width: 50px;
   height: 100%;
-  background: #080b12;
-  border: none;
+  background: #000000;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: center;
-  padding: 16px 0;
+  padding: 12px 0;
   flex-shrink: 0;
+  z-index: 20;
 }
 
-.rail-group-top {
+.rail-group-top,
+.rail-group-bottom {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
 }
 
 .rail-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 34px;
+  height: 34px;
+  border-radius: 6px;
   background: transparent;
   border: 1px solid transparent;
-  color: #88909e;
+  color: #71717a;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.18s ease;
+  transition: all 0.15s ease;
 }
 
 .rail-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
-  transform: scale(1.05);
 }
 
 .rail-btn.active {
-  background: rgba(16, 185, 129, 0.18) !important;
-  color: #10b981 !important;
-  border: 1px solid rgba(16, 185, 129, 0.45) !important;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.35) !important;
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.16);
 }
 
 .rail-btn-byomkesh {
@@ -174,62 +285,53 @@
 }
 
 .rail-btn-byomkesh:hover {
-  background: rgba(139, 92, 246, 0.18) !important;
+  background: rgba(167, 139, 250, 0.12) !important;
   color: #ffffff !important;
-  box-shadow: 0 0 14px rgba(139, 92, 246, 0.4) !important;
 }
 
 .rail-btn-byomkesh.active {
-  background: rgba(139, 92, 246, 0.25) !important;
-  color: #c4b5fd !important;
-  border: 1px solid #8b5cf6 !important;
-  box-shadow: 0 0 16px rgba(139, 92, 246, 0.45) !important;
+  background: rgba(167, 139, 250, 0.2) !important;
+  color: #ffffff !important;
+  border-color: rgba(167, 139, 250, 0.4) !important;
 }
 
 .rail-btn-profile {
   position: relative;
-  color: #38bdf8;
+  color: #71717a;
 }
 
-.rail-btn-profile:hover {
-  background: rgba(56, 189, 248, 0.15);
-  color: #ffffff;
-}
-
-.rail-profile-dot {
-  position: absolute;
-  top: 7px;
-  right: 7px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 6px #10b981;
-}
-
-.rail-group-bottom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-}
-
-.rail-btn-settings {
-  color: #64748b;
-}
-
-.rail-btn-settings:hover {
-  color: #e2e8f0;
-}
-
-.floating-workspace-canvas {
+.desktop-workspace-canvas {
   flex: 1;
-  min-height: 0;
-  border-radius: 14px;
+  min-width: 0;
+  height: 100%;
   overflow: hidden;
-  background: var(--bg-desktop);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.06);
+  position: relative;
+  background: #000000;
 }
+
+.desktop-statusbar {
+  height: 26px;
+  width: 100%;
+  background: #000000;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 11px;
+  color: #71717a;
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.notif-panel-clean {
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.8);
+}
+
 
 .titlebar-left {
   display: flex;
