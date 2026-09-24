@@ -356,6 +356,11 @@ export function WorkspaceProvider({ children }) {
 
   // Theme Management (Minimal Clean Light / Pure Black Dark)
   const [theme, setTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const urlTheme = params.get('theme');
+      if (urlTheme) return urlTheme;
+    }
     return localStorage.getItem('constellation_theme') || 'light';
   });
 

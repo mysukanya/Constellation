@@ -1230,3 +1230,55 @@
   opacity: 0.9;
 }
 
+/* ── Light Mode Rail Dock Refinements ────────────────────────── */
+[data-theme="light"] .left-icon-rail-dock,
+.theme-light .left-icon-rail-dock {
+  background: rgba(255, 255, 255, 0.96);
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+
+[data-theme="light"] .rail-btn,
+.theme-light .rail-btn {
+  color: #6b7280;
+}
+
+[data-theme="light"] .rail-btn:hover,
+.theme-light .rail-btn:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+[data-theme="light"] .rail-btn.active,
+.theme-light .rail-btn.active {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
+}
+
+/* ── Dark Mode Rail Dock Refinements ─────────────────────────── */
+[data-theme="dark"] .left-icon-rail-dock,
+.theme-dark .left-icon-rail-dock {
+  background: rgba(10, 10, 10, 0.95);
+  border: 1px solid #262626;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .rail-btn,
+.theme-dark .rail-btn {
+  color: #888888;
+}
+
+[data-theme="dark"] .rail-btn:hover,
+.theme-dark .rail-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+[data-theme="dark"] .rail-btn.active,
+.theme-dark .rail-btn.active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+

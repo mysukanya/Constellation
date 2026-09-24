@@ -2,114 +2,119 @@ import { useState, useEffect } from 'react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import {
   ArrowRight, ExternalLink, RefreshCw, Box,
-  Users, CreditCard, Globe as GlobeIcon, Cpu,
-  ShieldAlert, Activity, CheckCircle, X, MapPin,
-  TrendingUp, Compass, FileText, AlertCircle, Sparkles,
-  Zap, ArrowUpRight, ShieldCheck, Check
+  Users, ShieldAlert, Activity, CheckCircle2,
+  TrendingUp, FileText, Sparkles, ArrowUpRight,
+  ShieldCheck, UploadCloud, Brain, Search, Clock, MapPin, Database
 } from 'lucide-react';
-import Panel3D from '../components/Panel3D';
-import Globe3D from '../components/Globe3D';
 import api from '../services/api';
 import './DashboardPage.css';
 
-const INITIAL_ALERTS = [
+const ACTIVE_CASES = [
   {
-    id: 'alt-1',
+    id: 'case-102',
+    name: 'Case 102 — Silver Dune',
+    sector: 'Maritime Narcotics & Hawala',
+    priority: 'CRITICAL',
+    status: 'ACTIVE',
+    lead: 'Officer A. Sharma',
+    legalBasis: 'PMLA Sec 3/4 & NDPS Act Sec 21/29',
+    evidenceCount: 28,
+    entitiesCount: 42,
+    lastUpdate: '14 mins ago',
+    summary: 'Cross-border maritime narcotics & hawala settlement nexus between UAE and Gujarat.'
+  },
+  {
+    id: 'case-117',
+    name: 'Case 117 — Operation Black Tide',
+    sector: 'Corporate Fraud & AML',
+    priority: 'HIGH',
+    status: 'ACTIVE',
+    lead: 'Inspector K. Varma',
+    legalBasis: 'NDPS Act Sec 21/29 & UAPA Sec 15',
+    evidenceCount: 22,
+    entitiesCount: 35,
+    lastUpdate: '1 hour ago',
+    summary: 'Synthetic narcotics distribution network and illicit pharmaceutical front companies.'
+  },
+  {
+    id: 'case-121',
+    name: 'Case 121 — Diamond Bourse Vault Breach',
+    sector: 'Armed Robbery & Biometric Heist',
+    priority: 'HIGH',
+    status: 'ACTIVE',
+    lead: 'Deputy Commissioner V. Mehta',
+    legalBasis: 'BNS Sec 309 & Cyber Fraud',
+    evidenceCount: 18,
+    entitiesCount: 29,
+    lastUpdate: '3 hours ago',
+    summary: 'Inside-job biometric override and armed breach of subterranean vaults.'
+  },
+  {
+    id: 'case-135',
+    name: 'Case 135 — Black Pearl Extortion',
+    sector: 'Organized Extortion & VoIP Coercion',
+    priority: 'HIGH',
+    status: 'ACTIVE',
+    lead: 'ACP S. Kulkarni',
+    legalBasis: 'IPC Sec 384 / IT Act Sec 66D',
+    evidenceCount: 11,
+    entitiesCount: 16,
+    lastUpdate: '6 hours ago',
+    summary: 'Coercive extortion ring targeting shipping contractors with VoIP death threats.'
+  }
+];
+
+const LIVE_SIGNALS = [
+  {
+    id: 'sig-1',
     title: 'AIS Transponder Inversion Detected',
-    time: '4 mins ago',
-    type: 'red',
-    priority: 'Critical',
+    time: '4m ago',
+    priority: 'CRITICAL',
     location: 'Gulf of Kutch, Off Port Kandla',
     confidence: '96%',
-    details: 'Bulk cargo vessel MT Sagar Ratna suddenly altered MMSI broadcast pattern. Unscheduled STS lightering rendezvous flagged with satellite radar.',
+    details: 'Bulk cargo vessel MT Sagar Ratna altered MMSI broadcast pattern. Unscheduled STS lightering rendezvous flagged.',
     caseId: 'case-102'
   },
   {
-    id: 'alt-2',
+    id: 'sig-2',
     title: 'High-Value Structured Hawala Wire',
-    time: '18 mins ago',
-    type: 'amber',
-    priority: 'High',
-    location: 'Dubai Marina ↔ Surat Diamond Bourse',
+    time: '18m ago',
+    priority: 'HIGH',
+    location: 'Dubai Marina ↔ Surat Bourse',
     confidence: '91%',
-    details: 'Mirror ledger account #88219 triggered ₹14.8 Cr split remittance alert across 12 smurfing bank conduits.',
+    details: 'Mirror ledger #88219 triggered ₹14.8 Cr split remittance alert across 12 smurfing bank conduits.',
     caseId: 'case-102'
   },
   {
-    id: 'alt-3',
+    id: 'sig-3',
     title: 'Encrypted Thuraya Satellite Ping',
-    time: '34 mins ago',
-    type: 'blue',
-    priority: 'Medium',
-    location: 'Arabian Sea Coordinates 22.4°N, 68.9°E',
+    time: '34m ago',
+    priority: 'HIGH',
+    location: 'Arabian Sea (22.4°N, 68.9°E)',
     confidence: '88%',
-    details: 'Burst communication on 1544.15 MHz captured by coastal listening post. Direct correlation with Al-Barakah logistics fleet.',
+    details: 'Burst communication on 1544.15 MHz captured. Direct correlation with Al-Barakah logistics fleet.',
     caseId: 'case-102'
   },
   {
-    id: 'alt-4',
-    title: 'Cross-Case Identity Collision',
-    time: '1 hour ago',
-    type: 'green',
-    priority: 'High',
-    location: 'Mumbai Customs Free Zone',
-    confidence: '94%',
-    details: 'Tariq "The Anchor" Merchant flagged as beneficial owner of newly registered front shell shipping entity.',
-    caseId: 'case-117'
+    id: 'sig-4',
+    title: 'Biometric Watchlist Airport Flag',
+    time: '1h ago',
+    priority: 'MEDIUM',
+    location: 'Chhatrapati Shivaji Maharaj Intl (BOM)',
+    confidence: '84%',
+    details: 'Facial recognition camera 4B matched associate of Tariq Merchant on inbound transit from Muscat.',
+    caseId: 'case-102'
   }
 ];
 
-const ACTIVE_INVESTIGATIONS = [
-  {
-    id: 'inv-1',
-    title: 'Operation Silver Dune',
-    subtitle: 'Cross-Border Maritime Narcotics & Hawala',
-    severity: 'Critical',
-    severityClass: 'badge-critical',
-    targetCaseId: 'case-102',
-    iconBg: 'rgba(239, 68, 68, 0.12)',
-    iconColor: '#ef4444'
-  },
-  {
-    id: 'inv-2',
-    title: 'Operation Black Tide',
-    subtitle: 'Offshore Shells & Deira Bullion Layering',
-    severity: 'High',
-    severityClass: 'badge-high',
-    targetCaseId: 'case-117',
-    iconBg: 'rgba(245, 158, 11, 0.12)',
-    iconColor: '#f59e0b'
-  },
-  {
-    id: 'inv-3',
-    title: 'Waterfront Contract Hit',
-    subtitle: 'BNS 103 Targeted Execution at Dock 4',
-    severity: 'Critical',
-    severityClass: 'badge-critical',
-    targetCaseId: 'case-108',
-    iconBg: 'rgba(239, 68, 68, 0.12)',
-    iconColor: '#ef4444'
-  },
-  {
-    id: 'inv-4',
-    title: 'Diamond Bourse Vault Breach',
-    subtitle: 'Inside Job Biometric Vault Override',
-    severity: 'High',
-    severityClass: 'badge-high',
-    targetCaseId: 'case-121',
-    iconBg: 'rgba(59, 130, 246, 0.12)',
-    iconColor: '#3b82f6'
-  }
-];
-
-const SWEEP_DISCOVERIES = [
+const AUTONOMOUS_SWEEPS = [
   {
     id: 'swp-1',
-    badge: 'CROSS-CASE ENTITY COLLISION',
+    badge: 'CROSS-CASE ENTITY LINK',
     targetCase: 'CASE 102 ↔ CASE 117',
     title: 'Shared Logistics Front Between Narcotics & Hawala Rings',
     desc: 'Autonomous Heuristic Sweep detected Al-Barakah Logistics FZE as common beneficial owner for maritime shipment MV Sagar Ratna and offshore wire transfer FIU-99201.',
-    confidence: 'CONFIDENCE: 96.4%',
+    confidence: '96.4%',
     caseId: 'case-102'
   },
   {
@@ -118,17 +123,17 @@ const SWEEP_DISCOVERIES = [
     targetCase: 'CASE 108 ↔ CASE 135',
     title: '9mm Glock Weapon Linkage to Syndicate Enforcer',
     desc: 'Forensic ballistics hash 0xaa19...c344 matches recovered shell casings from Dock 4 execution to extortion threats issued against Kandla port contractor.',
-    confidence: 'CONFIDENCE: 98.9%',
-    caseId: 'case-108'
+    confidence: '98.9%',
+    caseId: 'case-135'
   },
   {
     id: 'swp-3',
-    badge: 'CIPHER PACKET BURST CORRELATION',
+    badge: 'RF CIPHER BURST CORRELATION',
     targetCase: 'CASE 168 ↔ CASE 102',
     title: 'Thuraya Satellite Telemetry Synchronized to Coastal Lightering',
     desc: 'Encrypted RF bursts on 1544.15 MHz coincide within 90 seconds of AIS transponder deactivation by bulk cargo carrier off Gujarat coast.',
-    confidence: 'CONFIDENCE: 92.1%',
-    caseId: 'case-168'
+    confidence: '92.1%',
+    caseId: 'case-102'
   }
 ];
 
@@ -141,8 +146,9 @@ export default function DashboardPage() {
     addNodeToCanvas
   } = useWorkspace();
 
-  const [loading, setLoading] = useState(true);
   const [briefing, setBriefing] = useState(null);
+  const [selectedSignal, setSelectedSignal] = useState(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     loadBriefing();
@@ -151,67 +157,19 @@ export default function DashboardPage() {
   const loadBriefing = async () => {
     try {
       const data = await api.getHomeBriefing();
-      setBriefing(data);
-    } catch (err) {
-      console.error("Failed to load briefing", err);
-    } finally {
-      setLoading(false);
+      if (data) setBriefing(data);
+    } catch {
+      // Graceful fallback to rich grounded operational data
     }
   };
 
-  const dynamicInvestigations = (briefing?.continue_cases && briefing.continue_cases.length > 0)
-    ? briefing.continue_cases.map(c => ({
-        id: c.case_id,
-        title: c.name || `Case ${c.case_id}`,
-        subtitle: c.description || 'Active Crime Investigation',
-        severity: c.priority || 'Critical',
-        severityClass: (c.priority || '').toLowerCase() === 'critical' ? 'badge-critical' : 'badge-high',
-        targetCaseId: c.case_id,
-        iconBg: 'rgba(239, 68, 68, 0.12)',
-        iconColor: '#ef4444'
-      }))
-    : ACTIVE_INVESTIGATIONS;
-
-  const dynamicSweeps = (briefing?.sweep_status?.findings && briefing.sweep_status.findings.length > 0)
-    ? briefing.sweep_status.findings.slice(0, 3).map(f => ({
-        id: f.id,
-        badge: (f.finding_type || 'CROSS-CASE LINK').toUpperCase(),
-        targetCase: (f.case_ids || []).join(' ↔ ') || 'MULTI-CASE',
-        title: f.title,
-        desc: f.description,
-        confidence: `CONFIDENCE: ${Math.round((f.confidence || 0.9) * 100)}%`,
-        caseId: f.case_ids?.[0] || 'case-102'
-      }))
-    : SWEEP_DISCOVERIES;
-
-  const dynamicAlerts = (briefing?.live_intelligence && briefing.live_intelligence.length > 0)
-    ? briefing.live_intelligence.slice(0, 5).map(item => ({
-        id: item.id,
-        title: item.title,
-        time: item.detected_at ? new Date(item.detected_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently',
-        type: item.priority === 'Critical' ? 'red' : (item.priority === 'High' ? 'amber' : 'blue'),
-        priority: item.priority || 'High',
-        location: item.source_name || 'Maritime Corridor',
-        confidence: `${Math.round((item.confidence || 0.9) * 100)}%`,
-        details: item.snippet || item.title,
-        caseId: item.relevant_case_ids?.[0] || 'case-102'
-      }))
-    : INITIAL_ALERTS;
-
-  const activeInvestigations = dynamicInvestigations;
-  const sweepDiscoveries = dynamicSweeps;
-  const liveIntel = dynamicAlerts;
-  const heroDiscovery = briefing?.hero_discovery;
-
-  const [selectedAlert, setSelectedAlert] = useState(null);
-  const [selectedRegion, setSelectedRegion] = useState('India');
-  const [showRegionSelect, setShowRegionSelect] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-
-  // Trigger processing animation
-  const handleRefreshAnalysis = () => {
-    setIsProcessing(true);
-    setTimeout(() => setIsProcessing(false), 1800);
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await loadBriefing();
+    } finally {
+      setTimeout(() => setIsRefreshing(false), 500);
+    }
   };
 
   const handleLaunchCase = (targetCaseId) => {
@@ -223,457 +181,371 @@ export default function DashboardPage() {
     setActiveNavSection('workspace');
   };
 
-  const handleAttachAlertToWorkspace = (alert) => {
+  const handleAttachSignalToWorkspace = (signal) => {
     addNodeToCanvas({
-      id: `alert-${Date.now()}`,
-      name: alert.title,
+      id: `signal-${Date.now()}`,
+      name: signal.title,
       type: 'Alert Signal',
-      role: `${alert.location} Anomaly`,
-      threat: alert.priority === 'Critical' ? 'CRITICAL' : 'HIGH',
+      role: `${signal.location} Anomaly`,
+      threat: signal.priority,
       provenance: 'OBSERVED_EVENT',
-      details: `${alert.details} (Confidence: ${alert.confidence})`
+      details: `${signal.details} (Confidence: ${signal.confidence})`
     });
-    handleLaunchCase(alert.caseId || 'case-102');
-    setSelectedAlert(null);
+    handleLaunchCase(signal.caseId || 'case-102');
+    setSelectedSignal(null);
   };
 
   return (
-    <div className="grid-dashboard-root">
-      {/* ── MAIN TWO-COLUMN DASHBOARD GRID ───────────────── */}
-      <div className="dashboard-grid-layout">
+    <div className="minimal-dashboard-root">
+      {/* ── TOP HEADER BAR ────────────────────────────────────── */}
+      <header className="minimal-dash-header">
+        <div className="dash-header-left">
+          <div className="dash-title-row">
+            <h1 className="dash-main-title">Intelligence Overview</h1>
+            <span className="dash-status-badge">
+              <span className="dash-live-dot" /> LIVE FORENSIC GRID
+            </span>
+          </div>
+          <p className="dash-sub-title">
+            Directorate of Revenue Intelligence &amp; Central Crime Bureau Operational Hub
+          </p>
+        </div>
+
+        <div className="dash-header-actions">
+          <button
+            className={`dash-refresh-btn ${isRefreshing ? 'is-spinning' : ''}`}
+            onClick={handleRefresh}
+            title="Refresh Live Signals"
+          >
+            <RefreshCw size={13} />
+            <span>Refresh</span>
+          </button>
+
+          <button
+            className="dash-action-btn dash-action-primary"
+            onClick={() => setActiveNavSection('ingestion')}
+          >
+            <UploadCloud size={14} />
+            <span>Upload Evidence</span>
+          </button>
+
+          <button
+            className="dash-action-btn dash-action-ai"
+            onClick={() => setActiveNavSection('byomkesh')}
+          >
+            <Brain size={14} />
+            <span>Byomkesh AI</span>
+          </button>
+        </div>
+      </header>
+
+      {/* ── METRICS STRIP (4 Clean Grounded Metrics) ──────────── */}
+      <div className="minimal-metrics-strip">
+        <div className="metric-box">
+          <div className="metric-box-top">
+            <span className="metric-box-label">ACTIVE INVESTIGATIONS</span>
+            <ShieldCheck size={14} className="metric-box-icon text-emerald" />
+          </div>
+          <div className="metric-box-value">4 Active Cases</div>
+          <div className="metric-box-hint">Western Seaboard &amp; Financial Corridors</div>
+        </div>
+
+        <div className="metric-box">
+          <div className="metric-box-top">
+            <span className="metric-box-label">SEIZED EVIDENCE ARTIFACTS</span>
+            <FileText size={14} className="metric-box-icon text-blue" />
+          </div>
+          <div className="metric-box-value">79 Artifacts</div>
+          <div className="metric-box-hint">100% SHA-256 Cryptographically Sealed</div>
+        </div>
+
+        <div className="metric-box">
+          <div className="metric-box-top">
+            <span className="metric-box-label">CANONICAL ENTITIES</span>
+            <Users size={14} className="metric-box-icon text-purple" />
+          </div>
+          <div className="metric-box-value">122 Resolved</div>
+          <div className="metric-box-hint">Persons, Vessels, Front Orgs, Bank Nodes</div>
+        </div>
+
+        <div className="metric-box">
+          <div className="metric-box-top">
+            <span className="metric-box-label">AUTONOMOUS 12H SWEEPS</span>
+            <Sparkles size={14} className="metric-box-icon text-green" />
+          </div>
+          <div className="metric-box-value">Continuous Scan</div>
+          <div className="metric-box-hint">3 New Cross-Case Correlations Flagged</div>
+        </div>
+      </div>
+
+      {/* ── MAIN TWO-COLUMN CONTENT AREA ──────────────────────── */}
+      <div className="minimal-dash-grid">
         
-        {/* ══ LEFT 2/3 COLUMN: HERO + BOTTOM PANELS ════════ */}
-        <div className="left-intelligence-column">
+        {/* LEFT COLUMN: ACTIVE CASES + 12H SWEEPS ───────────── */}
+        <div className="dash-col-primary">
           
-          {/* 1. HERO PANEL: GLOBAL INTELLIGENCE GRID */}
-          <Panel3D className="hero-grid-panel" maxAngle={3} glow="green">
-            <div className="hero-content-split">
-              {/* Left Side: Headline, Subtitle, CTA, Stats */}
-              <div className="hero-text-block">
-                <div className="hero-grid-badge">
-                  <span className="status-dot dot-green pulse-indicator" />
-                  <span>GLOBAL INTELLIGENCE GRID</span>
-                </div>
-
-                <h1 className="hero-main-heading">
-                  Connect<br />
-                  <span className="accent-gradient-text">the dots.</span>
-                </h1>
-
-                <p className="hero-description-text">
-                  AI-powered intelligence to uncover organized crime networks across the globe.
-                </p>
-
-                <button
-                  className="hero-explore-btn"
-                  onClick={() => setActiveNavSection('workspace')}
-                >
-                  <span>Explore Network</span>
-                  <ArrowRight size={16} />
-                </button>
-
-                {/* Key Jurisdictions & Entities Metrics */}
-                <div className="hero-metrics-row">
-                  <div className="metric-stat-item">
-                    <span className="stat-value">32</span>
-                    <span className="stat-label">Jurisdictions Monitored</span>
-                  </div>
-                  <div className="metric-stat-item">
-                    <span className="stat-value">1.2M+</span>
-                    <span className="stat-label">Entities Analyzed</span>
-                  </div>
-                </div>
+          {/* Active Investigations Section */}
+          <section className="dash-card-section">
+            <div className="section-header-row">
+              <div className="section-title-wrap">
+                <h2 className="section-title">Active Investigations</h2>
+                <span className="section-count-pill">{ACTIVE_CASES.length} Active</span>
               </div>
-
-              {/* Right Side: Interactive 3D Canvas Globe */}
-              <div className="hero-globe-wrapper">
-                <Globe3D />
-              </div>
+              <button
+                className="section-link-btn"
+                onClick={() => setActiveNavSection('cases')}
+              >
+                <span>View Bureau Cases</span>
+                <ArrowRight size={13} />
+              </button>
             </div>
-          </Panel3D>
 
-          {/* 2. BOTTOM ROW: NETWORK OVERVIEW & AI ANALYSIS */}
-          <div className="bottom-intelligence-row">
-            
-            {/* Panel A: Network Overview */}
-            <Panel3D className="network-overview-panel" maxAngle={4} glow="green">
-              <div className="panel-header-row">
-                <h3 className="panel-title">Network Overview</h3>
-                <div className="header-controls-group">
-                  <div className="dropdown-pill-wrapper">
+            <div className="cases-cards-stack">
+              {ACTIVE_CASES.map(c => (
+                <div
+                  key={c.id}
+                  className="case-card-row"
+                  onClick={() => handleLaunchCase(c.id)}
+                >
+                  <div className="case-row-left">
+                    <div className="case-row-badge-line">
+                      <span className={`case-priority-pill priority-${c.priority.toLowerCase()}`}>
+                        {c.priority}
+                      </span>
+                      <span className="case-sector-label">{c.sector}</span>
+                      <span className="case-legal-label">{c.legalBasis}</span>
+                    </div>
+                    <h3 className="case-row-name">{c.name}</h3>
+                    <p className="case-row-summary">{c.summary}</p>
+                    <div className="case-row-meta">
+                      <span>Lead: <strong>{c.lead}</strong></span>
+                      <span className="meta-dot">·</span>
+                      <span>{c.evidenceCount} Evidence Items</span>
+                      <span className="meta-dot">·</span>
+                      <span>{c.entitiesCount} Entities</span>
+                      <span className="meta-dot">·</span>
+                      <span className="meta-time"><Clock size={11} /> {c.lastUpdate}</span>
+                    </div>
+                  </div>
+
+                  <div className="case-row-right">
                     <button
-                      className="region-pill-dropdown"
-                      onClick={() => setShowRegionSelect(!showRegionSelect)}
+                      className="case-launch-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLaunchCase(c.id);
+                      }}
                     >
-                      <span>{selectedRegion}</span>
-                      <span className="dropdown-arrow">▾</span>
+                      <span>Open Workspace</span>
+                      <ArrowRight size={13} />
                     </button>
-                    {showRegionSelect && (
-                      <div className="dropdown-pill-menu">
-                        {['India', 'Southeast Asia', 'Middle East', 'Global Grid'].map(r => (
-                          <div
-                            key={r}
-                            className="dropdown-menu-item"
-                            onClick={() => {
-                              setSelectedRegion(r);
-                              setShowRegionSelect(false);
-                            }}
-                          >
-                            {r}
-                          </div>
-                        ))}
-                      </div>
-                    )}
                   </div>
-                  <button
-                    className="panel-action-btn"
-                    onClick={() => setActiveNavSection('workspace')}
-                    title="Open Full Network Workspace"
-                  >
-                    <ExternalLink size={14} />
-                  </button>
                 </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Autonomous 12-Hour Sweeps Section */}
+          <section className="dash-card-section sweeps-section">
+            <div className="section-header-row">
+              <div className="section-title-wrap">
+                <Sparkles size={16} className="text-green" />
+                <h2 className="section-title">Autonomous 12H Sweeps &amp; Discoveries</h2>
               </div>
+              <button
+                className="section-link-btn"
+                onClick={() => setActiveNavSection('sweeps')}
+              >
+                <span>View Full Sweep Ledger</span>
+                <ArrowRight size={13} />
+              </button>
+            </div>
 
-              {/* 4 Stat Cards in a Row */}
-              <div className="overview-stats-grid">
-                <div className="overview-stat-card">
-                  <div className="stat-card-top">
-                    <div className="stat-card-icon">
-                      <Box size={18} />
-                    </div>
+            <div className="sweeps-list-grid">
+              {AUTONOMOUS_SWEEPS.map(sw => (
+                <div key={sw.id} className="sweep-item-card">
+                  <div className="sweep-top-meta">
+                    <span className="sweep-badge font-mono">{sw.badge}</span>
+                    <span className="sweep-target-case font-mono">{sw.targetCase}</span>
+                    <span className="sweep-conf-tag font-mono">{sw.confidence}</span>
                   </div>
-                  <div className="stat-card-number">1,842</div>
-                  <div className="stat-card-type">Organizations</div>
-                  <div className="stat-trend trend-up">
-                    <TrendingUp size={12} />
-                    <span>12%</span>
+                  <h4 className="sweep-title">{sw.title}</h4>
+                  <p className="sweep-desc">{sw.desc}</p>
+                  <div className="sweep-card-footer">
+                    <button
+                      className="sweep-explore-btn"
+                      onClick={() => handleLaunchCase(sw.caseId)}
+                    >
+                      <span>Investigate Link in Workspace</span>
+                      <ArrowUpRight size={12} />
+                    </button>
                   </div>
                 </div>
+              ))}
+            </div>
+          </section>
 
-                <div className="overview-stat-card">
-                  <div className="stat-card-top">
-                    <div className="stat-card-icon">
-                      <Users size={18} />
-                    </div>
-                  </div>
-                  <div className="stat-card-number">5,671</div>
-                  <div className="stat-card-type">Individuals</div>
-                  <div className="stat-trend trend-up">
-                    <TrendingUp size={12} />
-                    <span>8%</span>
-                  </div>
-                </div>
-
-                <div className="overview-stat-card">
-                  <div className="stat-card-top">
-                    <div className="stat-card-icon">
-                      <CreditCard size={18} />
-                    </div>
-                  </div>
-                  <div className="stat-card-number">12,309</div>
-                  <div className="stat-card-type">Financial Links</div>
-                  <div className="stat-trend trend-up">
-                    <TrendingUp size={12} />
-                    <span>24%</span>
-                  </div>
-                </div>
-
-                <div className="overview-stat-card">
-                  <div className="stat-card-top">
-                    <div className="stat-card-icon">
-                      <GlobeIcon size={18} />
-                    </div>
-                  </div>
-                  <div className="stat-card-number">47</div>
-                  <div className="stat-card-type">Active Regions</div>
-                  <div className="stat-trend trend-up">
-                    <TrendingUp size={12} />
-                    <span>6%</span>
-                  </div>
-                </div>
-              </div>
-            </Panel3D>
-
-            {/* Panel B: AI Analysis */}
-            <Panel3D className="ai-analysis-panel" maxAngle={4} glow="green">
-              <div className="panel-header-row">
-                <h3 className="panel-title">AI Analysis</h3>
-                <div className="header-controls-group">
-                  <button
-                    className={`ai-processing-pill ${isProcessing ? 'is-spinning' : ''}`}
-                    onClick={handleRefreshAnalysis}
-                    title="Refresh AI Analysis Models"
-                  >
-                    <RefreshCw size={12} className="spin-icon" />
-                    <span>{isProcessing ? 'Analyzing...' : 'Processing'}</span>
-                  </button>
-                  <button
-                    className="panel-action-btn"
-                    onClick={() => setActiveNavSection('sweeps')}
-                    title="Open Byomkesh AI Sweeps"
-                  >
-                    <ExternalLink size={14} />
-                  </button>
-                </div>
-              </div>
-
-              {/* 4 Sleek Glowing Progress Bars */}
-              <div className="ai-progress-list">
-                <div className="ai-progress-item">
-                  <div className="progress-info-row">
-                    <div className="progress-label-group">
-                      <Cpu size={15} className="progress-icon" />
-                      <span>Pattern Recognition</span>
-                    </div>
-                    <span className="progress-value-pct">87%</span>
-                  </div>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: '87%' }} />
-                  </div>
-                </div>
-
-                <div className="ai-progress-item">
-                  <div className="progress-info-row">
-                    <div className="progress-label-group">
-                      <Compass size={15} className="progress-icon" />
-                      <span>Entity Resolution</span>
-                    </div>
-                    <span className="progress-value-pct">72%</span>
-                  </div>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: '72%' }} />
-                  </div>
-                </div>
-
-                <div className="ai-progress-item">
-                  <div className="progress-info-row">
-                    <div className="progress-label-group">
-                      <ShieldAlert size={15} className="progress-icon" />
-                      <span>Risk Scoring</span>
-                    </div>
-                    <span className="progress-value-pct">91%</span>
-                  </div>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: '91%' }} />
-                  </div>
-                </div>
-
-                <div className="ai-progress-item">
-                  <div className="progress-info-row">
-                    <div className="progress-label-group">
-                      <Activity size={15} className="progress-icon" />
-                      <span>Network Mapping</span>
-                    </div>
-                    <span className="progress-value-pct">68%</span>
-                  </div>
-                  <div className="progress-track">
-                    <div className="progress-fill" style={{ width: '68%' }} />
-                  </div>
-                </div>
-              </div>
-            </Panel3D>
-
-          </div>
         </div>
 
-        {/* ══ RIGHT 1/3 COLUMN: LIVE ALERTS & INVESTIGATIONS ═ */}
-        <div className="right-feed-column">
+        {/* RIGHT COLUMN: LIVE FORENSIC SIGNALS ──────────────── */}
+        <div className="dash-col-secondary">
           
-          {/* Panel 1: Live Alerts */}
-          <Panel3D className="live-alerts-panel" maxAngle={4} glow="green">
-            <div className="panel-header-row">
-              <h3 className="panel-title">Live Alerts</h3>
-              <button
-                className="panel-action-btn view-all-link"
-                onClick={() => setActiveNavSection('intel')}
-                title="View All Intelligence Feeds"
-              >
-                <span>View all</span>
-                <ExternalLink size={13} />
-              </button>
-            </div>
-
-            <div className="alerts-feed-list">
-              {INITIAL_ALERTS.map(alert => (
-                <div
-                  key={alert.id}
-                  className="alert-feed-item"
-                  onClick={() => setSelectedAlert(alert)}
-                >
-                  <div className="alert-item-header">
-                    <span className={`status-dot dot-${alert.type} pulse-indicator`} />
-                    <span className="alert-title-text">{alert.title}</span>
-                    <span className="alert-time-stamp">{alert.time}</span>
-                  </div>
-                  <div className="alert-item-location">
-                    <span>{alert.location}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </Panel3D>
-
-          {/* Panel 2: Active Investigations */}
-          <Panel3D className="active-investigations-panel" maxAngle={4} glow="green">
-            <div className="panel-header-row">
-              <h3 className="panel-title">Active Investigations</h3>
-              <button
-                className="panel-action-btn view-all-link"
-                onClick={() => setActiveNavSection('workspace')}
-                title="View All Workspaces"
-              >
-                <span>View all</span>
-                <ExternalLink size={13} />
-              </button>
-            </div>
-
-            <div className="investigations-list">
-              {ACTIVE_INVESTIGATIONS.map(inv => (
-                <div
-                  key={inv.id}
-                  className="investigation-item-card"
-                  onClick={() => handleLaunchCase(inv.targetCaseId)}
-                >
-                  <div
-                    className="inv-icon-box"
-                    style={{ background: inv.iconBg, color: inv.iconColor }}
-                  >
-                    <FileText size={18} />
-                  </div>
-                  <div className="inv-details">
-                    <span className="inv-title">{inv.title}</span>
-                    <span className="inv-subtitle">{inv.subtitle}</span>
-                  </div>
-                  <div className="inv-badge-wrapper">
-                    <span className={`badge-pill ${inv.severityClass}`}>
-                      {inv.severity}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Bottom Status Pill */}
-            <div className="powered-badge-container">
-              <div className="powered-pill font-mono">
-                <span className="powered-sparkle">✦</span>
-                <span>CONSTELLATION · GLOBAL GRID OPERATIONAL</span>
+          <section className="dash-card-section signals-feed-section">
+            <div className="section-header-row">
+              <div className="section-title-wrap">
+                <Activity size={15} className="text-blue" />
+                <h2 className="section-title">Live Intelligence Signals</h2>
               </div>
+              <button
+                className="section-link-btn"
+                onClick={() => setActiveNavSection('intel')}
+              >
+                <span>Live Feed</span>
+                <ArrowRight size={13} />
+              </button>
             </div>
-          </Panel3D>
+
+            <div className="signals-feed-stack">
+              {LIVE_SIGNALS.map(sig => (
+                <div
+                  key={sig.id}
+                  className={`signal-card-item ${selectedSignal?.id === sig.id ? 'is-selected' : ''}`}
+                  onClick={() => setSelectedSignal(sig)}
+                >
+                  <div className="sig-card-header">
+                    <span className={`sig-urgency-dot dot-${sig.priority.toLowerCase()}`} />
+                    <span className="sig-title-text">{sig.title}</span>
+                    <span className="sig-time-text">{sig.time}</span>
+                  </div>
+
+                  <div className="sig-location-row">
+                    <MapPin size={11} className="sig-loc-icon" />
+                    <span>{sig.location}</span>
+                  </div>
+
+                  <p className="sig-details-text">{sig.details}</p>
+
+                  <div className="sig-card-bottom">
+                    <span className="sig-conf-pill font-mono">CONF: {sig.confidence}</span>
+                    <button
+                      className="sig-attach-btn"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleAttachSignalToWorkspace(sig);
+                      }}
+                    >
+                      <span>Attach to Board</span>
+                      <ArrowUpRight size={11} />
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Quick Bureau Tools Card */}
+          <div className="dash-tools-card">
+            <h3 className="tools-card-title">Investigative Workflows</h3>
+            <div className="tools-btn-list">
+              <button
+                className="tool-shortcut-btn"
+                onClick={() => setActiveNavSection('ingestion')}
+              >
+                <div className="tool-shortcut-left">
+                  <UploadCloud size={15} />
+                  <div>
+                    <div className="tool-shortcut-name">Evidence Ingestion</div>
+                    <div className="tool-shortcut-sub">Upload folders, files &amp; organize</div>
+                  </div>
+                </div>
+                <ArrowRight size={13} />
+              </button>
+
+              <button
+                className="tool-shortcut-btn"
+                onClick={() => setActiveNavSection('byomkesh')}
+              >
+                <div className="tool-shortcut-left">
+                  <Brain size={15} />
+                  <div>
+                    <div className="tool-shortcut-name">Byomkesh AI Co-Pilot</div>
+                    <div className="tool-shortcut-sub">Synthesize graph evidence &amp; answers</div>
+                  </div>
+                </div>
+                <ArrowRight size={13} />
+              </button>
+
+              <button
+                className="tool-shortcut-btn"
+                onClick={() => setActiveNavSection('audit')}
+              >
+                <div className="tool-shortcut-left">
+                  <Database size={15} />
+                  <div>
+                    <div className="tool-shortcut-name">Provenance Ledger</div>
+                    <div className="tool-shortcut-sub">Inspect cryptographic audit chain</div>
+                  </div>
+                </div>
+                <ArrowRight size={13} />
+              </button>
+            </div>
+          </div>
 
         </div>
+
       </div>
 
-      {/* ── 3. BELOW GRID: BYOMKESH 12H SWEEP DISCOVERIES & FINDINGS ── */}
-      <div className="dashboard-sweep-section">
-        <Panel3D className="sweep-discoveries-panel" maxAngle={2} glow="green">
-          <div className="sweep-header-row">
-            <div className="sweep-header-left">
-              <div className="sweep-tag font-mono">
-                <Sparkles size={13} className="text-green" />
-                <span>BYOMKESH 12-HOUR AUTONOMOUS SWEEPS</span>
+      {/* Signal Detail Modal */}
+      {selectedSignal && (
+        <div className="signal-modal-backdrop" onClick={() => setSelectedSignal(null)}>
+          <div className="signal-modal-content" onClick={e => e.stopPropagation()}>
+            <div className="signal-modal-header">
+              <div className="signal-modal-title-row">
+                <span className={`sig-urgency-dot dot-${selectedSignal.priority.toLowerCase()}`} />
+                <h3 className="signal-modal-title">{selectedSignal.title}</h3>
               </div>
-              <h3 className="sweep-heading">Cross-Case Pattern Discoveries &amp; Evidentiary Findings</h3>
-              <p className="sweep-sub">
-                Autonomous heuristic engine runs continuous scans across all seized phone logs, customs BOLs, and SWIFT transactions.
-              </p>
+              <button className="signal-modal-close" onClick={() => setSelectedSignal(null)}>✕</button>
             </div>
-            <button
-              className="btn btn-primary font-mono btn-sweep-deep"
-              onClick={() => setActiveNavSection('sweeps')}
-            >
-              <span>Explore 12H Sweeps</span>
-              <ArrowUpRight size={14} />
-            </button>
-          </div>
 
-          <div className="sweep-cards-grid">
-            {SWEEP_DISCOVERIES.map(disc => (
-              <div key={disc.id} className="sweep-card-item">
-                <div className="sweep-card-top">
-                  <span className="sweep-card-badge font-mono">{disc.badge}</span>
-                  <span className="sweep-card-tag font-mono">{disc.targetCase}</span>
+            <div className="signal-modal-body">
+              <div className="sig-meta-grid">
+                <div>
+                  <span className="sig-label">LOCATION</span>
+                  <p className="sig-val">{selectedSignal.location}</p>
                 </div>
-                <h4 className="sweep-card-title">{disc.title}</h4>
-                <p className="sweep-card-desc">{disc.desc}</p>
-                <div className="sweep-card-footer">
-                  <span className="sweep-metric font-mono">{disc.confidence}</span>
-                  <button
-                    className="sweep-launch-btn font-mono"
-                    onClick={() => handleLaunchCase(disc.caseId)}
-                  >
-                    Workspace →
-                  </button>
+                <div>
+                  <span className="sig-label">TIMESTAMP</span>
+                  <p className="sig-val">{selectedSignal.time}</p>
+                </div>
+                <div>
+                  <span className="sig-label">CONFIDENCE</span>
+                  <p className="sig-val font-mono">{selectedSignal.confidence}</p>
+                </div>
+                <div>
+                  <span className="sig-label">TARGET CASE</span>
+                  <p className="sig-val font-mono">{selectedSignal.caseId}</p>
                 </div>
               </div>
-            ))}
-          </div>
-        </Panel3D>
-      </div>
 
-      {/* ── ALERT DETAIL MODAL ─────────────────────────── */}
-      {selectedAlert && (
-        <div className="modal-backdrop" onClick={() => setSelectedAlert(null)}>
-          <div className="alert-inspect-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-head">
-              <div className="modal-title-lockup">
-                <span className={`status-dot dot-${selectedAlert.type}`} />
-                <h3>{selectedAlert.title}</h3>
+              <div className="sig-details-block">
+                <span className="sig-label">DETAILED INTELLIGENCE REPORT</span>
+                <p className="sig-text">{selectedSignal.details}</p>
               </div>
-              <button className="modal-close-btn" onClick={() => setSelectedAlert(null)}>
-                <X size={18} />
+            </div>
+
+            <div className="signal-modal-footer">
+              <button
+                className="dash-action-btn"
+                onClick={() => setSelectedSignal(null)}
+              >
+                Dismiss
               </button>
-            </div>
-
-            <div className="modal-body-content">
-              <div className="modal-meta-grid font-mono">
-                <div className="meta-cell">
-                  <span className="cell-label">Location</span>
-                  <span className="cell-val">
-                    <MapPin size={13} /> {selectedAlert.location}
-                  </span>
-                </div>
-                <div className="meta-cell">
-                  <span className="cell-label">Timestamp</span>
-                  <span className="cell-val">{selectedAlert.time}</span>
-                </div>
-                <div className="meta-cell">
-                  <span className="cell-label">Confidence</span>
-                  <span className="cell-val text-green">{selectedAlert.confidence}</span>
-                </div>
-                <div className="meta-cell">
-                  <span className="cell-label">Priority</span>
-                  <span className={`cell-val priority-${selectedAlert.priority.toLowerCase()}`}>
-                    {selectedAlert.priority}
-                  </span>
-                </div>
-              </div>
-
-              <div className="modal-intel-summary">
-                <h4>Intelligence Brief</h4>
-                <p>{selectedAlert.details}</p>
-              </div>
-
-              <div className="modal-action-buttons font-mono">
-                <button
-                  className="btn-action-primary"
-                  onClick={() => handleAttachAlertToWorkspace(selectedAlert)}
-                >
-                  <span>Attach to Investigation Canvas</span>
-                  <ArrowRight size={15} />
-                </button>
-                <button
-                  className="btn-action-secondary"
-                  onClick={() => {
-                    setSelectedAlert(null);
-                    setActiveNavSection('sweeps');
-                  }}
-                >
-                  <span>Query Byomkesh AI</span>
-                </button>
-              </div>
+              <button
+                className="dash-action-btn dash-action-primary"
+                onClick={() => handleAttachSignalToWorkspace(selectedSignal)}
+              >
+                Add Node to Workspace Canvas
+              </button>
             </div>
           </div>
         </div>

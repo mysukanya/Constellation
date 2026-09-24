@@ -9,7 +9,7 @@ import {
   Radio, Check, Trash2, ArrowUpRight, Database,
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
   UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
-  Briefcase, FileUp, UserSearch, Sun, Moon, Users
+  Briefcase, FileUp, UserSearch, Sun, Moon, Users, Layers, ShieldCheck
 } from 'lucide-react';
 import './DesktopChrome.css';
 
@@ -252,54 +252,9 @@ export default function DesktopChrome({ children }) {
       {/* ── DESKTOP MAIN VIEWPORT WITH FLUSH LEFT TOOL RAIL ─── */}
       <div className="desktop-main-split">
         <aside className="left-icon-rail-dock">
-          {/* Workspace Tools Group */}
+          {/* Main Navigation Group - Mutually exclusive, no duplicates */}
           <div className="rail-group-top">
-            {/* 1. File Explorer (Windows 11 Explorer with Cases Done & Folders) */}
-            <button
-              className={`rail-btn ${totalExplorerOpen ? 'active' : ''}`}
-              onClick={() => setTotalExplorerOpen(true)}
-              title="Total File Explorer (Case Files & Closed Convictions)"
-            >
-              <Folder size={17} />
-            </button>
-
-            {/* 2. Data Uploader (Add Suspects, Phone Logs, Evidentiary Documents) */}
-            <button
-              className={`rail-btn ${dataUploaderOpen ? 'active' : ''}`}
-              onClick={() => {
-                setActiveNavSection('workspace');
-                setDataUploaderOpen(prev => !prev);
-              }}
-              title="Data Uploader & Evidence Ingestion"
-            >
-              <UploadCloud size={17} />
-            </button>
-
-            {/* 3. Byomkesh AI Co-Pilot Toggle */}
-            <button
-              className={`rail-btn rail-btn-byomkesh ${byomkeshOpen ? 'active' : ''}`}
-              onClick={() => {
-                setActiveNavSection('workspace');
-                setByomkeshOpen(prev => !prev);
-              }}
-              title="Byomkesh AI Co-Pilot [⌘B]"
-            >
-              <Brain size={17} />
-            </button>
-
-            {/* 4. Cross-Case Importer & Linker */}
-            <button
-              className={`rail-btn ${crossCaseOpen ? 'active' : ''}`}
-              onClick={() => {
-                setActiveNavSection('workspace');
-                setCrossCaseOpen(prev => !prev);
-              }}
-              title="Cross-Case Connections & Entity Correlation Tool"
-            >
-              <GitCompare size={17} />
-            </button>
-
-            {/* 5. Global Intelligence Map / 3D Globe */}
+            {/* 1. Global Intelligence Grid Dashboard */}
             <button
               className={`rail-btn ${activeNavSection === 'home' ? 'active' : ''}`}
               onClick={() => setActiveNavSection('home')}
@@ -308,42 +263,77 @@ export default function DesktopChrome({ children }) {
               <Globe size={17} />
             </button>
 
-            {/* 6. Evidence Ingestion */}
+            {/* 2. Investigation Workspace & Canvas Hub */}
+            <button
+              className={`rail-btn ${activeNavSection === 'workspace' ? 'active' : ''}`}
+              onClick={() => setActiveNavSection('workspace')}
+              title="Investigation Workspace Canvas & Hub"
+            >
+              <Layers size={17} />
+            </button>
+
+            {/* 3. Evidence Ingestion & Drag-and-Drop Organization */}
             <button
               className={`rail-btn ${activeNavSection === 'ingestion' ? 'active' : ''}`}
               onClick={() => setActiveNavSection('ingestion')}
-              title="Evidence Ingestion (Upload PDFs, CSVs, Media)"
+              title="Evidence Ingestion (Folder Upload & Organization)"
             >
               <FileUp size={17} />
             </button>
 
-            {/* 7. Byomkesh Dedicated Query Page */}
+            {/* 4. Byomkesh AI Forensic Co-Pilot */}
             <button
               className={`rail-btn ${activeNavSection === 'byomkesh' ? 'active' : ''}`}
               onClick={() => setActiveNavSection('byomkesh')}
-              title="Byomkesh AI Investigative Query Interface"
+              title="Byomkesh AI Forensic Co-Pilot"
+            >
+              <Brain size={17} />
+            </button>
+
+            {/* 5. Bureau Cases Directory */}
+            <button
+              className={`rail-btn ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
+              onClick={() => setActiveNavSection('cases')}
+              title="Bureau Cases & Investigations"
+            >
+              <Briefcase size={17} />
+            </button>
+
+            {/* 6. Autonomous 12-Hour Sweeps */}
+            <button
+              className={`rail-btn ${activeNavSection === 'sweeps' ? 'active' : ''}`}
+              onClick={() => setActiveNavSection('sweeps')}
+              title="Autonomous 12H Sweeps & Cross-Case Corroboration"
             >
               <Sparkles size={17} />
             </button>
 
-            {/* 8. Admin User Management */}
+            {/* 7. Provenance & Sealed Ledger */}
             <button
-              className={`rail-btn rail-btn-admin ${showAdminModal ? 'active' : ''}`}
-              onClick={() => setShowAdminModal(true)}
-              title="Admin User Management (Add & Manage Bureau Users in DB)"
+              className={`rail-btn ${activeNavSection === 'audit' ? 'active' : ''}`}
+              onClick={() => setActiveNavSection('audit')}
+              title="Cryptographic Evidence Provenance Ledger"
             >
-              <UserCheck size={17} />
+              <ShieldCheck size={17} />
             </button>
           </div>
 
-          {/* Bottom Group: Settings & Profile Icon */}
+          {/* Bottom Group: Bureau File Explorer & Security Clearance Dossier */}
           <div className="rail-group-bottom">
+            <button
+              className={`rail-btn ${totalExplorerOpen ? 'active' : ''}`}
+              onClick={() => setTotalExplorerOpen(true)}
+              title="Total File Explorer (Case Files & Evidence Archive)"
+            >
+              <Folder size={17} />
+            </button>
+
             <button
               className="rail-btn rail-btn-settings"
               onClick={() => setShowSearchModal(true)}
               title="Global Search & Command Palette (⌘K)"
             >
-              <Settings size={17} />
+              <Search size={17} />
             </button>
 
             <button
