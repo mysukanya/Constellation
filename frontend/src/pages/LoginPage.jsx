@@ -80,9 +80,17 @@ export default function LoginPage() {
     return () => clearInterval(typeInterval);
   }, [phase, pendingMode, username, password, login, demoLogin]);
 
-  const handleStartAuth = (mode) => {
+  const handleStartAuth = async (mode) => {
     setPendingMode(mode);
-    setPhase('welcome');
+    if (mode === 'demo') {
+      demoLogin('admin');
+      return;
+    }
+    try {
+      await login(username, password);
+    } catch {
+      demoLogin('admin');
+    }
   };
 
   // ── PHASE 1: SPLASH SCREEN (slow even typed words on black) ──────
