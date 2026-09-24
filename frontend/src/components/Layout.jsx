@@ -14,11 +14,11 @@ import IngestionPage from '../pages/IngestionPage';
 import ByomkeshPage from '../pages/ByomkeshPage';
 
 export default function Layout() {
-  const { isAuthenticated, loading } = useAuth();
+  const { isAuthenticated, loading, user } = useAuth();
   const { activeNavSection } = useWorkspace();
 
-  // Show clean minimal loading spinner while verifying session
-  if (loading) {
+  // Show clean minimal loading spinner ONLY if truly loading without cached user
+  if (loading && !user) {
     return (
       <div style={{
         position: 'fixed', inset: 0,

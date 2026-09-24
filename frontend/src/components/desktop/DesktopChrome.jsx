@@ -145,15 +145,9 @@ export default function DesktopChrome({ children }) {
           >
             Cases
           </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'er' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('er')}
-          >
-            Entity Res.
-          </button>
         </nav>
 
-        {/* Right: Active Case Pill, Quick Search, Sweep Countdown, Notification Bell, Theme */}
+        {/* Right: Demo Badge, Admin User Button, Notification Bell, Theme Switcher */}
         <div className="openai-topbar-right">
           {localStorage.getItem('constellation_token')?.startsWith('demo_token') && (
             <div className="openai-demo-badge font-mono" title="Running with offline demonstration data">
@@ -161,25 +155,6 @@ export default function DesktopChrome({ children }) {
               <span>DEMO MODE</span>
             </div>
           )}
-          <div
-            className="openai-case-pill font-mono"
-            onClick={() => setActiveNavSection('workspace')}
-            title="Active Investigation Context"
-          >
-            <GitBranch size={11} className="text-zinc-400" />
-            <span>case/{activeCase.id}</span>
-          </div>
-
-          <div className="openai-search-box" onClick={() => setShowSearchModal(true)}>
-            <Search size={13} className="openai-search-ico" />
-            <span className="openai-search-placeholder">Search...</span>
-            <kbd className="openai-search-kbd">⌘K</kbd>
-          </div>
-
-          <div className="openai-sweep-status" title="Next Autonomous 12-Hour Sweep in 10 Hours">
-            <span className="openai-sweep-dot" />
-            <span>Sweep: 10h</span>
-          </div>
 
           {/* Admin User Management Button */}
           <button
@@ -351,16 +326,7 @@ export default function DesktopChrome({ children }) {
               <Sparkles size={17} />
             </button>
 
-            {/* 8. Entity Resolution Queue */}
-            <button
-              className={`rail-btn ${activeNavSection === 'er' ? 'active' : ''}`}
-              onClick={() => setActiveNavSection('er')}
-              title="Entity Resolution Match Review Queue"
-            >
-              <UserSearch size={17} />
-            </button>
-
-            {/* 9. Admin User Management */}
+            {/* 8. Admin User Management */}
             <button
               className={`rail-btn rail-btn-admin ${showAdminModal ? 'active' : ''}`}
               onClick={() => setShowAdminModal(true)}

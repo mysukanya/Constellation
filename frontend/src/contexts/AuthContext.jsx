@@ -12,7 +12,15 @@ export function AuthProvider({ children }) {
       return null;
     }
   });
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => {
+    // Only start in loading state if there's an actual non-demo token to verify
+    try {
+      const token = localStorage.getItem('constellation_token');
+      return !!token && !token.startsWith('demo_token');
+    } catch {
+      return false;
+    }
+  });
   const [error, setError] = useState(null);
 
   const isAuthenticated = !!user;
@@ -32,14 +40,30 @@ export function AuthProvider({ children }) {
         setLoading(false);
         return;
       }
+
+      // If it's a demo token, do not make an external network request
+      if (token.startsWith('demo_token')) {
+        setLoading(false);
+        return;
+      }
+
       try {
-        const userData = await api.getMe();
-        setUser(userData);
-        localStorage.setItem('constellation_user', JSON.stringify(userData));
+        // 1.5s timeout race so localhost never hangs on a black loading screen
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session verify timeout')), 1500)
+        );
+        const userData = await Promise.race([api.getMe(), timeoutPromise]);
+        if (userData) {
+          setUser(userData);
+          localStorage.setItem('constellation_user', JSON.stringify(userData));
+        }
       } catch {
-        // Token invalid/expired — clear
-        api.clearToken();
-        setUser(null);
+        // Fallback gracefully — if user is cached, keep them, otherwise clear
+        const cached = localStorage.getItem('constellation_user');
+        if (!cached) {
+          api.clearToken();
+          setUser(null);
+        }
       } finally {
         setLoading(false);
       }
