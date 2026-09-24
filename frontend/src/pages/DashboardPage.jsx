@@ -11,6 +11,127 @@ import Panel3D from '../components/Panel3D';
 import Globe3D from '../components/Globe3D';
 import api from '../services/api';
 import './DashboardPage.css';
+
+const INITIAL_ALERTS = [
+  {
+    id: 'alt-1',
+    title: 'AIS Transponder Inversion Detected',
+    time: '4 mins ago',
+    type: 'red',
+    priority: 'Critical',
+    location: 'Gulf of Kutch, Off Port Kandla',
+    confidence: '96%',
+    details: 'Bulk cargo vessel MT Sagar Ratna suddenly altered MMSI broadcast pattern. Unscheduled STS lightering rendezvous flagged with satellite radar.',
+    caseId: 'case-102'
+  },
+  {
+    id: 'alt-2',
+    title: 'High-Value Structured Hawala Wire',
+    time: '18 mins ago',
+    type: 'amber',
+    priority: 'High',
+    location: 'Dubai Marina ↔ Surat Diamond Bourse',
+    confidence: '91%',
+    details: 'Mirror ledger account #88219 triggered ₹14.8 Cr split remittance alert across 12 smurfing bank conduits.',
+    caseId: 'case-102'
+  },
+  {
+    id: 'alt-3',
+    title: 'Encrypted Thuraya Satellite Ping',
+    time: '34 mins ago',
+    type: 'blue',
+    priority: 'Medium',
+    location: 'Arabian Sea Coordinates 22.4°N, 68.9°E',
+    confidence: '88%',
+    details: 'Burst communication on 1544.15 MHz captured by coastal listening post. Direct correlation with Al-Barakah logistics fleet.',
+    caseId: 'case-102'
+  },
+  {
+    id: 'alt-4',
+    title: 'Cross-Case Identity Collision',
+    time: '1 hour ago',
+    type: 'green',
+    priority: 'High',
+    location: 'Mumbai Customs Free Zone',
+    confidence: '94%',
+    details: 'Tariq "The Anchor" Merchant flagged as beneficial owner of newly registered front shell shipping entity.',
+    caseId: 'case-117'
+  }
+];
+
+const ACTIVE_INVESTIGATIONS = [
+  {
+    id: 'inv-1',
+    title: 'Operation Silver Dune',
+    subtitle: 'Cross-Border Maritime Narcotics & Hawala',
+    severity: 'Critical',
+    severityClass: 'badge-critical',
+    targetCaseId: 'case-102',
+    iconBg: 'rgba(239, 68, 68, 0.12)',
+    iconColor: '#ef4444'
+  },
+  {
+    id: 'inv-2',
+    title: 'Operation Black Tide',
+    subtitle: 'Offshore Shells & Deira Bullion Layering',
+    severity: 'High',
+    severityClass: 'badge-high',
+    targetCaseId: 'case-117',
+    iconBg: 'rgba(245, 158, 11, 0.12)',
+    iconColor: '#f59e0b'
+  },
+  {
+    id: 'inv-3',
+    title: 'Waterfront Contract Hit',
+    subtitle: 'BNS 103 Targeted Execution at Dock 4',
+    severity: 'Critical',
+    severityClass: 'badge-critical',
+    targetCaseId: 'case-108',
+    iconBg: 'rgba(239, 68, 68, 0.12)',
+    iconColor: '#ef4444'
+  },
+  {
+    id: 'inv-4',
+    title: 'Diamond Bourse Vault Breach',
+    subtitle: 'Inside Job Biometric Vault Override',
+    severity: 'High',
+    severityClass: 'badge-high',
+    targetCaseId: 'case-121',
+    iconBg: 'rgba(59, 130, 246, 0.12)',
+    iconColor: '#3b82f6'
+  }
+];
+
+const SWEEP_DISCOVERIES = [
+  {
+    id: 'swp-1',
+    badge: 'CROSS-CASE ENTITY COLLISION',
+    targetCase: 'CASE 102 ↔ CASE 117',
+    title: 'Shared Logistics Front Between Narcotics & Hawala Rings',
+    desc: 'Autonomous Heuristic Sweep detected Al-Barakah Logistics FZE as common beneficial owner for maritime shipment MV Sagar Ratna and offshore wire transfer FIU-99201.',
+    confidence: 'CONFIDENCE: 96.4%',
+    caseId: 'case-102'
+  },
+  {
+    id: 'swp-2',
+    badge: 'BALLISTICS STRIATION MATCH',
+    targetCase: 'CASE 108 ↔ CASE 135',
+    title: '9mm Glock Weapon Linkage to Syndicate Enforcer',
+    desc: 'Forensic ballistics hash 0xaa19...c344 matches recovered shell casings from Dock 4 execution to extortion threats issued against Kandla port contractor.',
+    confidence: 'CONFIDENCE: 98.9%',
+    caseId: 'case-108'
+  },
+  {
+    id: 'swp-3',
+    badge: 'CIPHER PACKET BURST CORRELATION',
+    targetCase: 'CASE 168 ↔ CASE 102',
+    title: 'Thuraya Satellite Telemetry Synchronized to Coastal Lightering',
+    desc: 'Encrypted RF bursts on 1544.15 MHz coincide within 90 seconds of AIS transponder deactivation by bulk cargo carrier off Gujarat coast.',
+    confidence: 'CONFIDENCE: 92.1%',
+    caseId: 'case-168'
+  }
+];
+
 export default function DashboardPage() {
   const {
     setActiveNavSection,
@@ -38,9 +159,48 @@ export default function DashboardPage() {
     }
   };
 
-  const activeInvestigations = briefing?.continue_cases || [];
-  const sweepDiscoveries = briefing?.sweep_status?.findings || [];
-  const liveIntel = briefing?.live_intelligence || [];
+  const dynamicInvestigations = (briefing?.continue_cases && briefing.continue_cases.length > 0)
+    ? briefing.continue_cases.map(c => ({
+        id: c.case_id,
+        title: c.name || `Case ${c.case_id}`,
+        subtitle: c.description || 'Active Crime Investigation',
+        severity: c.priority || 'Critical',
+        severityClass: (c.priority || '').toLowerCase() === 'critical' ? 'badge-critical' : 'badge-high',
+        targetCaseId: c.case_id,
+        iconBg: 'rgba(239, 68, 68, 0.12)',
+        iconColor: '#ef4444'
+      }))
+    : ACTIVE_INVESTIGATIONS;
+
+  const dynamicSweeps = (briefing?.sweep_status?.findings && briefing.sweep_status.findings.length > 0)
+    ? briefing.sweep_status.findings.slice(0, 3).map(f => ({
+        id: f.id,
+        badge: (f.finding_type || 'CROSS-CASE LINK').toUpperCase(),
+        targetCase: (f.case_ids || []).join(' ↔ ') || 'MULTI-CASE',
+        title: f.title,
+        desc: f.description,
+        confidence: `CONFIDENCE: ${Math.round((f.confidence || 0.9) * 100)}%`,
+        caseId: f.case_ids?.[0] || 'case-102'
+      }))
+    : SWEEP_DISCOVERIES;
+
+  const dynamicAlerts = (briefing?.live_intelligence && briefing.live_intelligence.length > 0)
+    ? briefing.live_intelligence.slice(0, 5).map(item => ({
+        id: item.id,
+        title: item.title,
+        time: item.detected_at ? new Date(item.detected_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recently',
+        type: item.priority === 'Critical' ? 'red' : (item.priority === 'High' ? 'amber' : 'blue'),
+        priority: item.priority || 'High',
+        location: item.source_name || 'Maritime Corridor',
+        confidence: `${Math.round((item.confidence || 0.9) * 100)}%`,
+        details: item.snippet || item.title,
+        caseId: item.relevant_case_ids?.[0] || 'case-102'
+      }))
+    : INITIAL_ALERTS;
+
+  const activeInvestigations = dynamicInvestigations;
+  const sweepDiscoveries = dynamicSweeps;
+  const liveIntel = dynamicAlerts;
   const heroDiscovery = briefing?.hero_discovery;
 
   const [selectedAlert, setSelectedAlert] = useState(null);
