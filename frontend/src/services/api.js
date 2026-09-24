@@ -210,6 +210,11 @@ class ApiService {
     return this.request('POST', '/sweep/trigger');
   }
 
+  // ---- Home ----
+  getHomeBriefing() {
+    return this.request('GET', '/home/briefing');
+  }
+
   // ---- Workspaces ----
   listWorkspaces(caseId = null) {
     let url = '/workspaces';

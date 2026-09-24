@@ -43,12 +43,44 @@ async def lifespan(app: FastAPI):
     await seed_canonical_intelligence()
     logger.info("Canonical intelligence seeded")
 
+    # 5. Start the Autonomous Sweep Scheduler (APScheduler)
+    from apscheduler.schedulers.asyncio import AsyncIOScheduler
+    from app.services.sweep_service import sweep_service
+
+    scheduler = AsyncIOScheduler()
+    sweep_hours = settings.SWEEP_INTERVAL_HOURS
+
+    async def scheduled_sweep():
+        logger.info("Autonomous sweep triggered by scheduler")
+        try:
+            summary = await sweep_service.execute_sweep(triggered_by="apscheduler_cron")
+            logger.info(
+                f"Sweep {summary.sweep_id} completed: "
+                f"{summary.findings_count} findings across {summary.cases_scanned_count} cases "
+                f"({summary.duration_ms}ms)"
+            )
+        except Exception as e:
+            logger.error(f"Scheduled sweep failed: {e}", exc_info=True)
+
+    scheduler.add_job(
+        scheduled_sweep,
+        trigger="interval",
+        hours=sweep_hours,
+        id="autonomous_sweep",
+        name=f"Autonomous Intelligence Sweep (every {sweep_hours}h)",
+        replace_existing=True,
+    )
+    scheduler.start()
+    logger.info(f"Autonomous sweep scheduler started (interval: {sweep_hours}h)")
+
     logger.info(f"Backend ready at http://0.0.0.0:8000")
     logger.info(f"API docs at http://localhost:8000/docs")
     
     yield
     
     # Graceful shutdown
+    scheduler.shutdown(wait=False)
+    logger.info("Sweep scheduler shut down")
     await graph_client.close()
     logger.info("Backend shutdown complete")
 

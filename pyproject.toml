@@ -1,0 +1,10 @@
+[project]
+name = "constellation-backend"
+version = "1.0.0"
+description = "Constellation Intelligence Platform Backend"
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["backend"]
+asyncio_mode = "auto"
+testpaths = ["backend/tests"]

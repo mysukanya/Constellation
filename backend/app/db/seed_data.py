@@ -299,10 +299,6 @@ async def seed_canonical_intelligence():
             }
         ]
 
-        from app.db.sqlite_client import get_db_connection
-        conn = get_db_connection()
-        cursor = conn.cursor()
-
         for ev in evidence_items:
             # Seed to Graph Engine
             await graph_client.create_node(
@@ -311,6 +307,12 @@ async def seed_canonical_intelligence():
                 properties=ev,
                 case_id=ev["case_id"]
             )
+
+        from app.db.sqlite_client import get_db_connection
+        conn = get_db_connection()
+        cursor = conn.cursor()
+
+        for ev in evidence_items:
             # Seed to SQLite evidence_records
             cursor.execute("""
                 INSERT OR REPLACE INTO evidence_records (id, case_id, filename, file_path, file_hash, file_size, mime_type, collected_at, collected_by, metadata_json)

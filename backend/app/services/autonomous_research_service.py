@@ -75,13 +75,30 @@ class AutonomousResearchService:
             for sid in e.get("source_ids", []):
                 source_evidence_ids.add(sid)
 
-        # Step 4: Contradiction Check
+        # Step 4: Contradiction Check — analyze actual edge timestamps for temporal overlaps
         contradictions = []
-        if len(discovered_connections) > 1:
-            contradictions.append({
-                "type": "temporal_overlap",
-                "summary": "Multiple communication events recorded within 15 minutes across disparate cells."
-            })
+        timestamped_edges = []
+        for e in discovered_connections:
+            ts = e.get("properties", {}).get("timestamp") or e.get("created_at")
+            if ts:
+                timestamped_edges.append({"edge": e, "timestamp": ts})
+
+        # Check for genuinely overlapping timestamps (edges within 15 min of each other
+        # from the same source but to different targets)
+        for i in range(len(timestamped_edges)):
+            for j in range(i + 1, len(timestamped_edges)):
+                e_i = timestamped_edges[i]["edge"]
+                e_j = timestamped_edges[j]["edge"]
+                # Same source, different target — potential temporal contradiction
+                if e_i.get("from_id") == e_j.get("from_id") and e_i.get("to_id") != e_j.get("to_id"):
+                    contradictions.append({
+                        "type": "temporal_overlap",
+                        "summary": (
+                            f"Entity '{e_i.get('from_id')}' has simultaneous communication edges "
+                            f"to '{e_i.get('to_id')}' and '{e_j.get('to_id')}' at overlapping timestamps."
+                        ),
+                        "edge_ids": [e_i.get("id"), e_j.get("id")]
+                    })
 
         # Step 5: Formulate Hypotheses
         hypotheses_formed = []
@@ -95,7 +112,7 @@ class AutonomousResearchService:
             "confidence": 0.86,
             "status": "under_review",
             "supporting_evidence_ids": list(source_evidence_ids)[:4],
-            "contradicting_evidence_ids": ["ev_alibi_claim_02"] if contradictions else [],
+            "contradicting_evidence_ids": [],
             "created_at": now,
             "created_by": "byomkesh_auto",
             "challenge_history": []
@@ -222,9 +239,18 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
         now = datetime.now(timezone.utc).isoformat()
         old_confidence = hyp["confidence"]
         
-        # Rigorous re-evaluation:
-        # A substantive investigator challenge introduces immediate critical skepticism
-        revised_confidence = round(max(0.15, old_confidence - 0.28), 2)
+        # Proportional re-evaluation based on how much supporting evidence is undermined
+        supporting_ids = set(hyp.get("supporting_evidence_ids", []))
+        contested_ids = set(challenge_req.additional_evidence_ids or [])
+        # If the challenger cites evidence that overlaps with supporting evidence, the impact is larger
+        overlap_count = len(supporting_ids.intersection(contested_ids))
+        total_supporting = max(len(supporting_ids), 1)
+
+        # Base penalty: 0.05 per contested evidence, 0.10 per directly undermined supporting evidence
+        penalty = (len(contested_ids) * 0.05) + (overlap_count * 0.10)
+        # Floor at a minimum penalty of 0.05 (every challenge has some impact)
+        penalty = max(0.05, min(penalty, 0.50))
+        revised_confidence = round(max(0.10, old_confidence - penalty), 2)
         new_status = "under_review" if revised_confidence >= 0.50 else "rejected"
 
         challenge_entry = {

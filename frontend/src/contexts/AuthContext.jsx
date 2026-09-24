@@ -50,20 +50,6 @@ export function AuthProvider({ children }) {
         return data.user;
       }
     } catch (err) {
-      // Graceful offline fallback for canonical demo accounts
-      const defaultUsers = {
-        admin: { id: 'usr_admin', username: 'admin', full_name: 'Chief Intelligence Director', role: 'admin' },
-        investigator: { id: 'usr_investigator', username: 'investigator', full_name: 'Lead Intelligence Officer', role: 'investigator' },
-        analyst: { id: 'usr_analyst', username: 'analyst', full_name: 'Senior Intelligence Analyst', role: 'read_only' }
-      };
-
-      if (defaultUsers[username] && (password === 'password' || password.startsWith(username) || password.length >= 6)) {
-        const fallbackUser = defaultUsers[username];
-        setUser(fallbackUser);
-        localStorage.setItem('constellation_token', `demo_token_${username}`);
-        localStorage.setItem('constellation_user', JSON.stringify(fallbackUser));
-        return fallbackUser;
-      }
 
       const msg = err.detail || err.message || 'Login failed';
       setError(msg);

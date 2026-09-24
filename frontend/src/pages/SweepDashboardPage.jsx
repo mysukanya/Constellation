@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import ProvenanceBadge from '../components/desktop/ProvenanceBadge';
 import Panel3D from '../components/Panel3D';
@@ -6,6 +6,7 @@ import {
   Clock, Activity, AlertTriangle, CheckCircle2, RotateCcw,
   ArrowRight, Shield, Layers, FileText, Sparkles
 } from 'lucide-react';
+import api from '../services/api';
 import './SweepDashboardPage.css';
 
 export default function SweepDashboardPage() {
@@ -14,57 +15,44 @@ export default function SweepDashboardPage() {
   const [lastExecuted, setLastExecuted] = useState('2 hours ago');
   const [sweepCycle, setSweepCycle] = useState('CYCLE #8821-NIGHT');
 
-  const [sweepFindings, setSweepFindings] = useState([
-    {
-      id: 'sw-1',
-      type: 'CROSS_CASE_CONNECTION',
-      caseA: 'Case 102 (Silver Dune)',
-      caseB: 'Case 117 (Operation Black Tide)',
-      title: 'Shared Hawala Settlement Node #88219',
-      summary: 'Automated correlation of 14 split cash transactions matches ledger account operated by Tariq Merchant proxy.',
-      provenance: 'INFERENCE',
-      confidence: 0.94
-    },
-    {
-      id: 'sw-2',
-      type: 'CONTRADICTION',
-      caseA: 'Case 102',
-      caseB: 'Port of Kandla Authority Log',
-      title: '31-Hour Discrepancy in Cargo Clearance Papers',
-      summary: 'CCTV physical departure timestamp precedes official ICEGATE clearance file by 31 hours.',
-      provenance: 'OBSERVATION',
-      confidence: 0.99
-    },
-    {
-      id: 'sw-3',
-      type: 'HYPOTHESIS_REVISION',
-      caseA: 'Case 102',
-      caseB: 'Panama Public Registry',
-      title: 'Beneficial Ownership Proxy Directorship Established',
-      summary: 'Byomkesh elevated hypothesis confidence from 78% to 94% following corporate email correlation.',
-      provenance: 'HYPOTHESIS',
-      confidence: 0.94
-    }
-  ]);
+  const [sweepFindings, setSweepFindings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const handleRunManualSweep = () => {
+  useEffect(() => {
+    loadLatestSweep();
+  }, []);
+
+  const loadLatestSweep = async () => {
+    setLoading(true);
+    try {
+      const summary = await api.getLatestSweep();
+      setSweepCycle(`CYCLE #${summary.sweep_id?.split('_')[1]?.substring(0,6).toUpperCase() || 'MANUAL'}`);
+      setSweepFindings(summary.findings || []);
+      const execDate = summary.executed_at ? new Date(summary.executed_at) : new Date();
+      setLastExecuted(execDate.toLocaleTimeString());
+    } catch (err) {
+      setError('Failed to load latest sweep results.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRunManualSweep = async () => {
     setIsRunning(true);
-    setTimeout(() => {
-      setIsRunning(false);
+    setError(null);
+    try {
+      const summary = await api.triggerSweep();
+      setSweepCycle(`CYCLE #${summary.sweep_id?.split('_')[1]?.substring(0,6).toUpperCase() || 'FLASH'}`);
+      setSweepFindings(summary.findings || []);
       setLastExecuted('Just now');
-      setSweepCycle(`CYCLE #${Math.floor(8822 + Math.random() * 50)}-FLASH`);
-      const newFinding = {
-        id: `sw-${Date.now()}`,
-        type: 'CROSS_CASE_CONNECTION',
-        caseA: 'Case 102 (Silver Dune)',
-        caseB: 'FIU Realtime Gateway',
-        title: 'New Encrypted Escrow Account Identified in Dubai Gold Souk',
-        summary: 'Byomkesh correlated ledger timestamp #9921 with wire transfer sequence to Tariq Merchant proxy syndicate.',
-        provenance: 'INFERENCE',
-        confidence: 0.97
-      };
-      setSweepFindings(prev => [newFinding, ...prev]);
-    }, 1800);
+    } catch (err) {
+      setError('Failed to trigger sweep.');
+      console.error(err);
+    } finally {
+      setIsRunning(false);
+    }
   };
 
   const handleSendToWorkspace = (item) => {

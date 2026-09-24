@@ -7,7 +7,8 @@ import {
   CheckCircle2, Clock, ChevronRight, X, AlertTriangle,
   Radio, Check, Trash2, ArrowUpRight, Database,
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
-  UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink
+  UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
+  Briefcase, FileUp, UserSearch
 } from 'lucide-react';
 import './DesktopChrome.css';
 
@@ -132,10 +133,28 @@ export default function DesktopChrome({ children }) {
               >
                 Provenance
               </button>
+              <button
+                className={`nav-tab-btn ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
+                onClick={() => setActiveNavSection('cases')}
+              >
+                Cases
+              </button>
+              <button
+                className={`nav-tab-btn ${activeNavSection === 'er' ? 'active' : ''}`}
+                onClick={() => setActiveNavSection('er')}
+              >
+                Entity Res.
+              </button>
             </nav>
 
             {/* Right: Active Case Pill, Quick Search, Sweep Countdown, Notification Bell */}
             <div className="titlebar-right">
+              {localStorage.getItem('constellation_token')?.startsWith('demo_token') && (
+                <div className="titlebar-active-case-capsule font-mono" style={{ background: 'rgba(245, 158, 11, 0.1)', color: 'var(--accent-amber)', borderColor: 'rgba(245, 158, 11, 0.2)' }} title="Running with offline demonstration data">
+                  <span className="backend-pulse-dot" style={{ background: 'var(--accent-amber)', marginRight: '6px' }} />
+                  <span>DEMO MODE</span>
+                </div>
+              )}
               <div
                 className="titlebar-active-case-capsule font-mono"
                 onClick={() => setActiveNavSection('workspace')}
@@ -293,6 +312,33 @@ export default function DesktopChrome({ children }) {
                 >
                   <Globe size={18} />
                 </button>
+
+                {/* 6. Evidence Ingestion */}
+                <button
+                  className={`rail-btn ${activeNavSection === 'ingestion' ? 'active' : ''}`}
+                  onClick={() => setActiveNavSection('ingestion')}
+                  title="Evidence Ingestion (Upload PDFs, CSVs, Media Files)"
+                >
+                  <FileUp size={18} />
+                </button>
+
+                {/* 7. Byomkesh Dedicated Query Page */}
+                <button
+                  className={`rail-btn ${activeNavSection === 'byomkesh' ? 'active' : ''}`}
+                  onClick={() => setActiveNavSection('byomkesh')}
+                  title="Byomkesh AI Investigative Query Interface"
+                >
+                  <Sparkles size={18} />
+                </button>
+
+                {/* 8. Entity Resolution Queue */}
+                <button
+                  className={`rail-btn ${activeNavSection === 'er' ? 'active' : ''}`}
+                  onClick={() => setActiveNavSection('er')}
+                  title="Entity Resolution Match Review Queue"
+                >
+                  <UserSearch size={18} />
+                </button>
               </div>
 
               {/* Bottom Group: Settings & Profile Icon */}
@@ -404,6 +450,34 @@ export default function DesktopChrome({ children }) {
                 onClick={() => { setActiveNavSection('sweeps'); setShowSearchModal(false); }}
               >
                 <span>Inspect 12-Hour Sweep Discoveries</span>
+                <span className="palette-shortcut">↵</span>
+              </div>
+              <div
+                className="palette-result-item"
+                onClick={() => { setActiveNavSection('cases'); setShowSearchModal(false); }}
+              >
+                <span>Browse All Cases & Investigations</span>
+                <span className="palette-shortcut">↵</span>
+              </div>
+              <div
+                className="palette-result-item"
+                onClick={() => { setActiveNavSection('er'); setShowSearchModal(false); }}
+              >
+                <span>Entity Resolution Match Queue</span>
+                <span className="palette-shortcut">↵</span>
+              </div>
+              <div
+                className="palette-result-item"
+                onClick={() => { setActiveNavSection('ingestion'); setShowSearchModal(false); }}
+              >
+                <span>Upload Evidence & Ingest Data</span>
+                <span className="palette-shortcut">↵</span>
+              </div>
+              <div
+                className="palette-result-item"
+                onClick={() => { setActiveNavSection('byomkesh'); setShowSearchModal(false); }}
+              >
+                <span>Byomkesh AI Investigative Queries</span>
                 <span className="palette-shortcut">↵</span>
               </div>
               <div className="palette-group-title">CANONICAL ENTITIES</div>

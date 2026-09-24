@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import {
   FolderSearch, Plus, Scale, Users, GitBranch, Grid3X3, List
 } from 'lucide-react';
@@ -19,7 +18,7 @@ export default function CasesPage() {
   const [formData, setFormData] = useState({ title: '', description: '', legal_basis: '', status: 'active' });
   const [creating, setCreating] = useState(false);
   const [formError, setFormError] = useState('');
-  const navigate = useNavigate();
+  const { setActiveNavSection, setActiveCaseId } = useWorkspace();
 
   useEffect(() => { loadCases(); }, []);
 
@@ -49,6 +48,11 @@ export default function CasesPage() {
     } finally {
       setCreating(false);
     }
+  };
+
+  const handleOpenCase = (caseId) => {
+    setActiveCaseId(caseId);
+    setActiveNavSection('case-detail');
   };
 
   return (
@@ -87,17 +91,15 @@ export default function CasesPage() {
       ) : (
         <div className={viewMode === 'grid' ? 'cases-grid' : 'cases-list'}>
           {cases.map((c, idx) => (
-            <motion.div
+            <div
               key={c.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: idx * 0.05, duration: 0.3 }}
+              style={{ animation: `fadeIn 0.3s ease ${idx * 0.05}s both` }}
             >
               <Panel3D
                 className="case-card card-clickable"
                 glow="white"
                 maxAngle={5}
-                onClick={() => navigate(`/cases/${c.id}`)}
+                onClick={() => handleOpenCase(c.id)}
               >
                 <div className="case-card-top">
                   <StatusBadge status={c.status} />
@@ -116,7 +118,7 @@ export default function CasesPage() {
                   </div>
                 </div>
               </Panel3D>
-            </motion.div>
+            </div>
           ))}
         </div>
       )}

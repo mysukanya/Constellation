@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import {
   ArrowRight, ExternalLink, RefreshCw, Box,
@@ -9,145 +9,32 @@ import {
 } from 'lucide-react';
 import Panel3D from '../components/Panel3D';
 import Globe3D from '../components/Globe3D';
+import api from '../services/api';
 import './DashboardPage.css';
-
-const INITIAL_ALERTS = [
-  {
-    id: 'alt-01',
-    title: 'New financial link detected',
-    location: 'Surat, Gujarat',
-    time: '12 min ago',
-    type: 'red',
-    details: 'Unregistered hawala transfer of ₹4.8 Crore flagged between Surat diamond export shell and Dubai logistics firm.',
-    confidence: '94%',
-    priority: 'Critical',
-    caseId: 'case-102'
-  },
-  {
-    id: 'alt-02',
-    title: 'Known associate movement',
-    location: 'Nagpur, Maharashtra',
-    time: '36 min ago',
-    type: 'amber',
-    details: 'Automated ANPR camera match for vehicle MH-31-BK-9021 linked to courier network of Operation Black Tide.',
-    confidence: '88%',
-    priority: 'High',
-    caseId: 'case-117'
-  },
-  {
-    id: 'alt-03',
-    title: 'Suspicious communication cluster',
-    location: 'Jaipur, Rajasthan',
-    time: '1 hr ago',
-    type: 'green',
-    details: 'Encrypted VoIP cluster initiated across 8 disposable IMEI endpoints within a 400m radius of Jaipur industrial park.',
-    confidence: '82%',
-    priority: 'Medium',
-    caseId: 'case-121'
-  },
-  {
-    id: 'alt-04',
-    title: 'Cross-border transaction',
-    location: 'Chennai, Tamil Nadu',
-    time: '2 hrs ago',
-    type: 'red',
-    details: 'SWIFT wire transfer anomaly through Colombo intermediary to Singapore offshore account flagged by AML engine.',
-    confidence: '96%',
-    priority: 'Critical',
-    caseId: 'case-117'
-  },
-  {
-    id: 'alt-05',
-    title: 'New shell company registered',
-    location: 'Bengaluru, Karnataka',
-    time: '3 hrs ago',
-    type: 'cyan',
-    details: 'Ministry of Corporate Affairs filing links 3 known front directors to newly incorporated logistics entity.',
-    confidence: '79%',
-    priority: 'Informational',
-    caseId: 'case-102'
-  },
-];
-
-const ACTIVE_INVESTIGATIONS = [
-  {
-    id: 'case-black-tide',
-    targetCaseId: 'case-117',
-    title: 'Operation Black Tide',
-    subtitle: 'Narcotics • West Coast',
-    severity: 'High',
-    severityClass: 'badge-red',
-    iconBg: '#1f2937',
-    iconColor: '#ff4d4f'
-  },
-  {
-    id: 'case-red-sand',
-    targetCaseId: 'case-143',
-    title: 'Red Sand Syndicate',
-    subtitle: 'Human Trafficking • South India',
-    severity: 'Medium',
-    severityClass: 'badge-amber',
-    iconBg: '#3b2314',
-    iconColor: '#f59e0b'
-  },
-  {
-    id: 'case-eastern-shield',
-    targetCaseId: 'case-102',
-    title: 'Silver Dune Nexus',
-    subtitle: 'Arms & Contraband • Gujarat Port',
-    severity: 'High',
-    severityClass: 'badge-red',
-    iconBg: '#172554',
-    iconColor: '#3b82f6'
-  },
-  {
-    id: 'case-digital-hawala',
-    targetCaseId: 'case-168',
-    title: 'Darknet Thuraya Intercepts',
-    subtitle: 'Cyber & SIGINT • Metro Corridors',
-    severity: 'Critical',
-    severityClass: 'badge-red',
-    iconBg: '#064e3b',
-    iconColor: '#10b981'
-  }
-];
-
-const SWEEP_DISCOVERIES = [
-  {
-    id: 'swp-1',
-    badge: 'CRITICAL BREAKTHROUGH',
-    title: 'Byomkesh verified cross-case financial conduit linking Silver Dune to Operation Black Tide.',
-    desc: 'Offshore corporate filings and seized Dubai ledger records reveal Al-Barakah Logistics FZE funnels narcotics proceeds through forged Panamanian charter agreements into Surat diamond trading nodes and Hawala Account #88219.',
-    caseId: 'case-102',
-    targetCase: 'Case 102 ↔ Case 117',
-    confidence: '94% CORROBORATED',
-    volume: '₹14.8 Cr (14 Split Tranches)'
-  },
-  {
-    id: 'swp-2',
-    badge: 'LIVE SATELLITE OSINT',
-    title: 'Maritime AIS transponder shutdown detected off Saurashtra coast — MV Sagar Ratna dark run.',
-    desc: 'Automated satellite telemetry receiver logged unannounced transponder disconnect at 21:14 UTC. Acoustic hydrophone array picked up nocturnal lightering rendezvous with unflagged wooden dhow.',
-    caseId: 'case-102',
-    targetCase: 'Case 102 (Silver Dune)',
-    confidence: '1.4m Draft Change at Sea',
-    volume: 'Porbandar Coastal Creek'
-  },
-  {
-    id: 'swp-3',
-    badge: 'FORENSIC BALLISTICS',
-    title: 'Striation match on Dock 4 spent 9mm casing links hitman Vikram Jadhav to customs murder.',
-    desc: 'State Forensic Lab certified 99.4% breech face match between the weapon seized in Case 108 and the fatal bullet recovered from the customs informant murder scene.',
-    caseId: 'case-108',
-    targetCase: 'Case 108 (Waterfront Hit)',
-    confidence: '99.4% Striation Certainty',
-    volume: 'BNS Sec 103 / Arms Act'
-  }
-];
-
 export default function DashboardPage() {
-  const {
-    setActiveNavSection,
+  const { setActiveNavSection, setActiveCaseId } = useWorkspace();
+  const [loading, setLoading] = useState(true);
+  const [briefing, setBriefing] = useState(null);
+
+  useEffect(() => {
+    loadBriefing();
+  }, []);
+
+  const loadBriefing = async () => {
+    try {
+      const data = await api.getHomeBriefing();
+      setBriefing(data);
+    } catch (err) {
+      console.error("Failed to load briefing", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const activeInvestigations = briefing?.continue_cases || [];
+  const sweepDiscoveries = briefing?.sweep_status?.findings || [];
+  const liveIntel = briefing?.live_intelligence || [];
+  const heroDiscovery = briefing?.hero_discovery;
     setActiveCaseId,
     openWorkspace,
     workspaces,

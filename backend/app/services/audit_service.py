@@ -83,7 +83,7 @@ class AuditService:
         conn.close()
 
         if not rows:
-            return {"valid": True, "total_records": 0, "status": "empty"}
+            return {"valid": True, "verified": True, "total_records": 0, "status": "empty"}
 
         prev_hmac = self._genesis_hmac
         for idx, row in enumerate(rows):
@@ -91,6 +91,7 @@ class AuditService:
             if row["sequence_number"] != expected_seq:
                 return {
                     "valid": False,
+                    "verified": False,
                     "error": f"Sequence discontinuity: expected {expected_seq}, found {row['sequence_number']}",
                     "broken_at_sequence": row["sequence_number"]
                 }
@@ -98,6 +99,7 @@ class AuditService:
             if row["prev_event_hmac"] != prev_hmac:
                 return {
                     "valid": False,
+                    "verified": False,
                     "error": f"Hash chain broken at sequence {row['sequence_number']}: prev_event_hmac mismatch",
                     "broken_at_sequence": row["sequence_number"]
                 }
@@ -115,6 +117,7 @@ class AuditService:
             if recomputed_hmac != row["hmac"]:
                 return {
                     "valid": False,
+                    "verified": False,
                     "error": f"Tampered record at sequence {row['sequence_number']}: HMAC mismatch",
                     "broken_at_sequence": row["sequence_number"]
                 }
@@ -123,6 +126,7 @@ class AuditService:
 
         return {
             "valid": True,
+            "verified": True,
             "total_records": len(rows),
             "latest_hmac": prev_hmac,
             "status": "verified_intact"

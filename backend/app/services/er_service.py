@@ -3,7 +3,10 @@ import json
 import logging
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
-import duckdb
+import pandas as pd
+from splink import Linker, SettingsCreator
+import splink.comparison_library as cl
+from splink.backends.duckdb import DuckDBAPI
 from app.db.sqlite_client import get_db_connection
 from app.services.graph_service import graph_service
 from app.services.audit_service import audit_service
@@ -12,33 +15,91 @@ logger = logging.getLogger("constellation.er")
 
 class EntityResolutionService:
     """
-    Unsupervised Probabilistic Entity Resolution using Splink & Fellegi-Sunter methodology.
+    Unsupervised Probabilistic Entity Resolution powered by Splink, DuckDB,
+    and the Fellegi-Sunter record linkage methodology.
     
     Hard Rule:
     - NEVER auto-merge entities.
-    - Always surface {confidence, supporting_evidence_count, contradicting_evidence_count}
+    - Always surface {confidence, supporting_evidence_count, contradicting_evidence_count, comparison_details}
       to the investigator for explicit confirmation.
     """
-    
-    def _calculate_similarity(self, s1: str, s2: str) -> float:
-        """Jaro-Winkler string similarity approximation."""
-        if not s1 or not s2:
-            return 0.0
-        s1, s2 = s1.lower().strip(), s2.lower().strip()
-        if s1 == s2:
-            return 1.0
-        if s1 in s2 or s2 in s1:
-            return 0.88
-            
-        # Basic character overlap / token overlap
-        tokens1 = set(s1.split())
-        tokens2 = set(s2.split())
-        overlap = len(tokens1.intersection(tokens2))
-        total = max(len(tokens1), len(tokens2))
-        if total > 0 and overlap > 0:
-            return round(0.5 + (0.45 * (overlap / total)), 3)
-            
-        return 0.2
+
+    def __init__(self):
+        self.db_api = DuckDBAPI()
+
+    def _normalize_str(self, val: Optional[str]) -> Optional[str]:
+        if val is None:
+            return None
+        s = str(val).strip()
+        return s if s else None
+
+    def _normalize_phone(self, val: Optional[str]) -> Optional[str]:
+        if not val:
+            return None
+        return "".join(c for c in str(val) if c.isdigit() or c == "+")
+
+    def _run_splink_inference(
+        self,
+        record_a: Dict[str, Any],
+        record_b: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """
+        Executes genuine Splink + DuckDB Fellegi-Sunter probabilistic comparison.
+        """
+        df = pd.DataFrame([
+            {
+                "unique_id": record_a["id"],
+                "full_name": record_a.get("full_name"),
+                "phone": record_a.get("phone"),
+                "email": record_a.get("email"),
+                "date_of_birth": record_a.get("date_of_birth")
+            },
+            {
+                "unique_id": record_b["id"],
+                "full_name": record_b.get("full_name"),
+                "phone": record_b.get("phone"),
+                "email": record_b.get("email"),
+                "date_of_birth": record_b.get("date_of_birth")
+            }
+        ])
+
+        settings = SettingsCreator(
+            link_type="dedupe_only",
+            comparisons=[
+                cl.NameComparison("full_name"),
+                cl.ExactMatch("phone"),
+                cl.ExactMatch("email"),
+                cl.ExactMatch("date_of_birth")
+            ],
+            blocking_rules_to_generate_predictions=["1=1"],
+            probability_two_random_records_match=0.1
+        )
+
+        import duckdb
+        db_api = DuckDBAPI(connection=duckdb.connect())
+        linker = Linker(df, settings, db_api)
+        predictions = linker.inference.predict()
+        df_pred = predictions.as_pandas_dataframe()
+
+        if df_pred.empty:
+            return {
+                "match_probability": 0.0,
+                "match_weight": -20.0,
+                "gamma_full_name": -1,
+                "gamma_phone": -1,
+                "gamma_email": -1,
+                "gamma_date_of_birth": -1
+            }
+
+        row = df_pred.iloc[0]
+        return {
+            "match_probability": float(row.get("match_probability", 0.0)),
+            "match_weight": float(row.get("match_weight", 0.0)),
+            "gamma_full_name": int(row.get("gamma_full_name", -1)),
+            "gamma_phone": int(row.get("gamma_phone", -1)),
+            "gamma_email": int(row.get("gamma_email", -1)),
+            "gamma_date_of_birth": int(row.get("gamma_date_of_birth", -1))
+        }
 
     async def evaluate_candidate_pair(
         self,
@@ -47,95 +108,147 @@ class EntityResolutionService:
         case_id: Optional[str] = None
     ) -> Optional[Dict[str, Any]]:
         """
-        Evaluates a pair of entities using Fellegi-Sunter comparison principles.
+        Evaluates a pair of entities using Splink + Fellegi-Sunter methodology.
         Returns match dict if match confidence >= 0.40.
         """
         props_a = new_entity.get("properties", {})
         props_b = existing_entity.get("properties", {})
-        
-        name_a = props_a.get("full_name", "")
-        name_b = props_b.get("full_name", "")
-        
-        name_sim = self._calculate_similarity(name_a, name_b)
-        
+
+        id_a = new_entity.get("id") or str(uuid.uuid4())
+        id_b = existing_entity.get("id") or str(uuid.uuid4())
+
+        name_a = self._normalize_str(props_a.get("full_name") or props_a.get("name"))
+        name_b = self._normalize_str(props_b.get("full_name") or props_b.get("name"))
+        phone_a = self._normalize_phone(props_a.get("phone"))
+        phone_b = self._normalize_phone(props_b.get("phone"))
+        email_a = self._normalize_str(props_a.get("email"))
+        email_b = self._normalize_str(props_b.get("email"))
+        dob_a = self._normalize_str(props_a.get("date_of_birth"))
+        dob_b = self._normalize_str(props_b.get("date_of_birth"))
+
+        rec_a = {"id": id_a, "full_name": name_a, "phone": phone_a, "email": email_a, "date_of_birth": dob_a}
+        rec_b = {"id": id_b, "full_name": name_b, "phone": phone_b, "email": email_b, "date_of_birth": dob_b}
+
         # Check alias overlap
         aliases_a = set(props_a.get("aliases", []))
         aliases_b = set(props_b.get("aliases", []))
-        alias_overlap = len(aliases_a.intersection(aliases_b)) > 0 or name_a in aliases_b or name_b in aliases_a
-        if alias_overlap:
-            name_sim = max(name_sim, 0.92)
+        alias_overlap = bool(
+            aliases_a.intersection(aliases_b)
+            or (name_a and name_a in aliases_b)
+            or (name_b and name_b in aliases_a)
+        )
 
-        # Check phone / email / DOB
-        phone_a, phone_b = props_a.get("phone"), props_b.get("phone")
-        email_a, email_b = props_a.get("email"), props_b.get("email")
-        dob_a, dob_b = props_a.get("date_of_birth"), props_b.get("date_of_birth")
+        splink_res = self._run_splink_inference(rec_a, rec_b)
+        splink_prob = splink_res["match_probability"]
+        splink_weight = splink_res["match_weight"]
 
+        # Build comparison details & evidence counts
         supporting_evidence = 0
         contradicting_evidence = 0
-        
-        comparison_details = {
-            "full_name": {
-                "similarity": round(name_sim, 3),
-                "value_a": name_a,
-                "value_b": name_b,
-                "method": "jaro_winkler_token"
-            }
-        }
-        
-        if name_sim >= 0.80:
-            supporting_evidence += 2
-        elif name_sim < 0.40:
-            contradicting_evidence += 1
+        comparison_details: Dict[str, Any] = {}
 
+        # Name comparison details
+        gamma_name = splink_res["gamma_full_name"]
+        if gamma_name >= 2:
+            name_sim = 1.0
+            supporting_evidence += 2
+        elif gamma_name == 1:
+            name_sim = 0.88
+            supporting_evidence += 1
+        elif gamma_name == 0:
+            name_sim = 0.20
+            contradicting_evidence += 1
+        else:
+            name_sim = 0.0
+
+        if alias_overlap:
+            name_sim = max(name_sim, 0.95)
+            supporting_evidence += 2
+
+        comparison_details["full_name"] = {
+            "similarity": round(name_sim, 3),
+            "value_a": name_a,
+            "value_b": name_b,
+            "gamma": gamma_name,
+            "method": "splink_name_comparison"
+        }
+
+        # Phone comparison details
         if phone_a and phone_b:
-            phone_match = phone_a.replace("-", "").replace(" ", "") == phone_b.replace("-", "").replace(" ", "")
-            comparison_details["phone"] = {"match": phone_match, "value_a": phone_a, "value_b": phone_b}
+            phone_match = phone_a == phone_b
+            comparison_details["phone"] = {
+                "similarity": 1.0 if phone_match else 0.0,
+                "match": phone_match,
+                "value_a": phone_a,
+                "value_b": phone_b,
+                "gamma": splink_res["gamma_phone"]
+            }
             if phone_match:
                 supporting_evidence += 3
             else:
                 contradicting_evidence += 1
 
+        # Email comparison details
         if email_a and email_b:
             email_match = email_a.lower() == email_b.lower()
-            comparison_details["email"] = {"match": email_match, "value_a": email_a, "value_b": email_b}
+            comparison_details["email"] = {
+                "similarity": 1.0 if email_match else 0.0,
+                "match": email_match,
+                "value_a": email_a,
+                "value_b": email_b,
+                "gamma": splink_res["gamma_email"]
+            }
             if email_match:
                 supporting_evidence += 3
             else:
                 contradicting_evidence += 1
 
+        # DOB comparison details
         if dob_a and dob_b:
             dob_match = dob_a == dob_b
-            comparison_details["date_of_birth"] = {"match": dob_match, "value_a": dob_a, "value_b": dob_b}
+            comparison_details["date_of_birth"] = {
+                "similarity": 1.0 if dob_match else 0.0,
+                "match": dob_match,
+                "value_a": dob_a,
+                "value_b": dob_b,
+                "gamma": splink_res["gamma_date_of_birth"]
+            }
             if dob_match:
                 supporting_evidence += 2
             else:
                 contradicting_evidence += 1
 
-        # Calculate composite confidence score (0.0 to 1.0)
-        base_score = name_sim * 0.60
-        if comparison_details.get("phone", {}).get("match") is True:
-            base_score += 0.25
-        if comparison_details.get("email", {}).get("match") is True:
-            base_score += 0.25
-        if supporting_evidence > 2:
-            base_score += min(0.20, supporting_evidence * 0.05)
-        if contradicting_evidence > 0:
-            base_score -= min(0.30, contradicting_evidence * 0.12)
-            
-        confidence = round(max(0.0, min(0.99, base_score)), 3)
+        comparison_details["splink_fellegi_sunter"] = {
+            "engine": "Splink 4 (DuckDB)",
+            "match_probability": round(splink_prob, 4),
+            "match_weight": round(splink_weight, 3),
+            "algorithm": "Fellegi-Sunter Record Linkage"
+        }
 
-        if confidence < 0.45 and not alias_overlap:
-            return None # Not a plausible match
+        # Overall confidence score
+        confidence = splink_prob
+        if gamma_name >= 2 and contradicting_evidence == 0 and confidence < 0.65:
+            # Exact name agreement with unobserved secondary fields is a valid candidate for review
+            confidence = max(confidence, 0.65)
+        if alias_overlap and confidence < 0.85:
+            confidence = max(confidence, 0.85)
+            supporting_evidence = max(supporting_evidence, 2)
+
+        # Confidence rounding
+        confidence = round(max(0.0, min(0.99, confidence)), 3)
+
+        if confidence < 0.40 and not alias_overlap:
+            return None
 
         match_id = f"erm_{uuid.uuid4().hex[:12]}"
         now = datetime.now(timezone.utc).isoformat()
-        
+
         match_record = {
             "id": match_id,
             "case_id": case_id,
             "label": new_entity.get("label", "Person"),
-            "entity_a_id": new_entity["id"],
-            "entity_b_id": existing_entity["id"],
+            "entity_a_id": id_a,
+            "entity_b_id": id_b,
             "confidence": confidence,
             "supporting_evidence_count": supporting_evidence,
             "contradicting_evidence_count": contradicting_evidence,
@@ -144,7 +257,7 @@ class EntityResolutionService:
             "created_at": now
         }
 
-        # Store in SQLite match queue
+        # Persist to SQLite match queue
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("""
@@ -165,22 +278,18 @@ class EntityResolutionService:
         return match_record
 
     async def run_resolution_for_entity(self, entity_id: str, case_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        """
-        Compares the given entity against all other entities of the same label in the case/workspace.
-        """
         current_entity = await graph_service.get_node(entity_id)
         if not current_entity:
             return []
 
         label = current_entity.get("label", "Person")
         existing_nodes = await graph_service.list_nodes(label=label, case_id=case_id)
-        
+
         discovered_matches = []
         for other in existing_nodes:
             if other["id"] == entity_id:
                 continue
-            
-            # Check if this pair was already compared/decided
+
             if self._has_existing_decision(entity_id, other["id"]):
                 continue
 
@@ -189,6 +298,20 @@ class EntityResolutionService:
                 discovered_matches.append(match)
 
         return discovered_matches
+
+    async def run_full_er_sweep(self, case_id: Optional[str] = None) -> List[Dict[str, Any]]:
+        all_persons = await graph_service.list_nodes(label="Person", case_id=case_id)
+        new_matches = []
+        for i in range(len(all_persons)):
+            for j in range(i + 1, len(all_persons)):
+                p1 = all_persons[i]
+                p2 = all_persons[j]
+                if self._has_existing_decision(p1["id"], p2["id"]):
+                    continue
+                match = await self.evaluate_candidate_pair(p1, p2, case_id=case_id)
+                if match:
+                    new_matches.append(match)
+        return new_matches
 
     def _has_existing_decision(self, id1: str, id2: str) -> bool:
         conn = get_db_connection()
@@ -234,11 +357,6 @@ class EntityResolutionService:
         return results
 
     async def resolve_match(self, match_id: str, action: str, actor_id: str, notes: Optional[str] = None) -> Dict[str, Any]:
-        """
-        Executes investigator decision:
-        - 'confirm': Merges entity_b into entity_a in the graph and marks confirmed
-        - 'reject': Marks rejected (no merge), records audit event
-        """
         conn = get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM er_matches WHERE id = ?", (match_id,))
@@ -274,7 +392,6 @@ class EntityResolutionService:
 
         merge_result = None
         if db_status == "confirmed":
-            # Merge entity_b into entity_a
             merge_result = await graph_service.merge_entities(
                 keep_id=row["entity_a_id"],
                 drop_id=row["entity_b_id"],

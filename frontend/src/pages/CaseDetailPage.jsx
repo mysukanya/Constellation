@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useWorkspace } from '../contexts/WorkspaceContext';
 import {
   ArrowLeft, Network, Users, FileText, Lightbulb, ShieldCheck,
   Scale, Hash, Clock, ChevronRight, Swords
@@ -22,8 +21,8 @@ const TABS = [
 ];
 
 export default function CaseDetailPage() {
-  const { caseId } = useParams();
-  const navigate = useNavigate();
+  const { activeCaseId, setActiveNavSection } = useWorkspace();
+  const caseId = activeCaseId;
   const [caseData, setCaseData] = useState(null);
   const [subgraph, setSubgraph] = useState(null);
   const [entities, setEntities] = useState([]);
@@ -81,7 +80,7 @@ export default function CaseDetailPage() {
       <div className="page-container">
         <div className="empty-state">
           <h3>Case not found</h3>
-          <button className="btn btn-primary" onClick={() => navigate('/cases')}>Back to Cases</button>
+          <button className="btn btn-primary" onClick={() => setActiveNavSection('cases')}>Back to Cases</button>
         </div>
       </div>
     );
@@ -90,12 +89,11 @@ export default function CaseDetailPage() {
   return (
     <div className="page-container case-detail">
       {/* Back + Header */}
-      <motion.div
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
         className="case-detail-header"
+        style={{ animation: 'fadeIn 0.3s ease' }}
       >
-        <button className="btn btn-ghost btn-sm" onClick={() => navigate('/cases')}>
+        <button className="btn btn-ghost btn-sm" onClick={() => setActiveNavSection('cases')}>
           <ArrowLeft size={16} /> All Cases
         </button>
         <div className="case-detail-title-row">
@@ -111,7 +109,7 @@ export default function CaseDetailPage() {
           <span className="meta-item"><Users size={12} /> {caseData.entity_count} entities</span>
           <span className="meta-item"><Network size={12} /> {caseData.relationship_count} relationships</span>
         </div>
-      </motion.div>
+      </div>
 
       {/* Tabs */}
       <div className="tabs" style={{ marginBottom: 'var(--space-lg)' }}>
@@ -128,11 +126,9 @@ export default function CaseDetailPage() {
       </div>
 
       {/* Tab Content */}
-      <motion.div
+      <div
         key={activeTab}
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.25 }}
+        style={{ animation: 'fadeIn 0.25s ease' }}
       >
         {/* GRAPH */}
         {activeTab === 'graph' && (
@@ -266,7 +262,7 @@ export default function CaseDetailPage() {
             )}
           </div>
         )}
-      </motion.div>
+      </div>
     </div>
   );
 }

@@ -61,20 +61,60 @@ class SweepService:
                 )
                 findings.append(finding)
 
-        # Step 3: Analyze graph density and relationship patterns
-        if len(subgraph["edges"]) >= 2 and len(cases) >= 2 and not findings:
-            # Generate synthetic cross-case lead for initial demonstration
-            f_id = f"fnd_{uuid.uuid4().hex[:10]}"
-            findings.append(SweepFinding(
-                id=f_id,
-                finding_type="cross_case_connection",
-                title="Potential Financial Nexus Between Cases",
-                description="Transaction telemetry correlates communication endpoints between Case 101 and Case 102.",
-                case_ids=[c["id"] for c in cases[:2]],
-                entity_ids=[p["id"] for p in all_persons[:2]],
-                confidence=0.84,
-                detected_at=now
-            ))
+        # Step 3: Deep attribute cross-case correlation (phones, emails)
+        # Avoid duplicate findings by tracking pairs
+        seen_pairs = set()
+        
+        for p in all_persons:
+            props = p.get("properties", {})
+            phone = props.get("phone")
+            email = props.get("email")
+            c_id = p.get("case_id")
+            
+            if not c_id:
+                continue
+                
+            for other_p in all_persons:
+                other_c_id = other_p.get("case_id")
+                if not other_c_id or c_id == other_c_id or p["id"] == other_p["id"]:
+                    continue
+                    
+                pair_key = tuple(sorted([p["id"], other_p["id"]]))
+                if pair_key in seen_pairs:
+                    continue
+                    
+                other_props = other_p.get("properties", {})
+                
+                # Check for shared phone
+                if phone and phone == other_props.get("phone"):
+                    f_id = f"fnd_{uuid.uuid4().hex[:10]}"
+                    findings.append(SweepFinding(
+                        id=f_id,
+                        finding_type="cross_case_connection",
+                        title="Shared Telephony Infrastructure",
+                        description=f"Identical phone number ({phone}) detected across {c_id} and {other_c_id}.",
+                        case_ids=[c_id, other_c_id],
+                        entity_ids=[p["id"], other_p["id"]],
+                        confidence=0.92,
+                        detected_at=now
+                    ))
+                    seen_pairs.add(pair_key)
+                    continue
+                    
+                # Check for shared email
+                if email and email == other_props.get("email"):
+                    f_id = f"fnd_{uuid.uuid4().hex[:10]}"
+                    findings.append(SweepFinding(
+                        id=f_id,
+                        finding_type="cross_case_connection",
+                        title="Shared Digital Identity",
+                        description=f"Identical email address ({email}) detected across {c_id} and {other_c_id}.",
+                        case_ids=[c_id, other_c_id],
+                        entity_ids=[p["id"], other_p["id"]],
+                        confidence=0.95,
+                        detected_at=now
+                    ))
+                    seen_pairs.add(pair_key)
 
         # Check for potential contradictions
         for p in all_persons:
@@ -102,7 +142,7 @@ class SweepService:
             cases_scanned_count=len(cases),
             entities_analyzed_count=len(all_persons),
             findings_count=len(findings),
-            hypotheses_generated_count=max(1, len(findings)),
+            hypotheses_generated_count=len(findings),
             findings=findings
         )
 

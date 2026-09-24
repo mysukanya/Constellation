@@ -7,6 +7,11 @@ import InvestigationWorkspace from '../pages/InvestigationWorkspace';
 import LiveIntelligencePage from '../pages/LiveIntelligencePage';
 import SweepDashboardPage from '../pages/SweepDashboardPage';
 import AuditLedgerPage from '../pages/AuditLedgerPage';
+import CasesPage from '../pages/CasesPage';
+import CaseDetailPage from '../pages/CaseDetailPage';
+import EntityResolutionPage from '../pages/EntityResolutionPage';
+import IngestionPage from '../pages/IngestionPage';
+import ByomkeshPage from '../pages/ByomkeshPage';
 
 export default function Layout() {
   const { isAuthenticated, loading } = useAuth();
@@ -46,6 +51,12 @@ export default function Layout() {
       {activeNavSection === 'intel' && <LiveIntelligencePage />}
       {activeNavSection === 'sweeps' && <SweepDashboardPage />}
       {activeNavSection === 'audit' && <AuditLedgerPage />}
+      {activeNavSection === 'cases' && <CasesPage />}
+      {activeNavSection === 'case-detail' && <CaseDetailPage />}
+      {activeNavSection === 'er' && <EntityResolutionPage />}
+      {activeNavSection === 'ingestion' && <IngestionPage />}
+      {activeNavSection === 'byomkesh' && <ByomkeshPage />}
     </DesktopChrome>
   );
 }
+

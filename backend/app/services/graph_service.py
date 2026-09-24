@@ -171,6 +171,14 @@ class GraphService:
             "transferred_edges": transferred_edges
         }
 
+    async def execute_cypher(self, query: str) -> List[Dict[str, Any]]:
+        """
+        Execute a Cypher query against the graph engine.
+        Delegates to graph_client.execute_query() which enforces
+        security restrictions (blocks destructive operations).
+        """
+        return await graph_client.execute_query(query)
+
     async def get_case_subgraph(self, case_id: Optional[str] = None, center_id: Optional[str] = None) -> Dict[str, Any]:
         return await graph_client.get_subgraph(center_id=center_id, case_id=case_id)
 
