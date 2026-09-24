@@ -12,7 +12,14 @@ import Globe3D from '../components/Globe3D';
 import api from '../services/api';
 import './DashboardPage.css';
 export default function DashboardPage() {
-  const { setActiveNavSection, setActiveCaseId } = useWorkspace();
+  const {
+    setActiveNavSection,
+    setActiveCaseId,
+    openWorkspace,
+    workspaces,
+    addNodeToCanvas
+  } = useWorkspace();
+
   const [loading, setLoading] = useState(true);
   const [briefing, setBriefing] = useState(null);
 
@@ -35,11 +42,6 @@ export default function DashboardPage() {
   const sweepDiscoveries = briefing?.sweep_status?.findings || [];
   const liveIntel = briefing?.live_intelligence || [];
   const heroDiscovery = briefing?.hero_discovery;
-    setActiveCaseId,
-    openWorkspace,
-    workspaces,
-    addNodeToCanvas
-  } = useWorkspace();
 
   const [selectedAlert, setSelectedAlert] = useState(null);
   const [selectedRegion, setSelectedRegion] = useState('India');
