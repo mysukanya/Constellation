@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import ProvenanceBadge from '../components/desktop/ProvenanceBadge';
 import Panel3D from '../components/Panel3D';
@@ -6,6 +6,7 @@ import {
   Radio, ShieldAlert, Plus, CheckCircle2, XCircle,
   Eye, Filter, Building2, User, Car, Globe, Cpu, ArrowRight, X, ExternalLink
 } from 'lucide-react';
+import api from '../services/api';
 import './LiveIntelligencePage.css';
 
 export default function LiveIntelligencePage() {
@@ -14,92 +15,38 @@ export default function LiveIntelligencePage() {
   const [filterSource, setFilterSource] = useState('ALL');
   const [selectedDossier, setSelectedDossier] = useState(null);
 
-  const [signals, setSignals] = useState([
-    {
-      id: 'sig-1',
-      title: 'Shell Company Incorporation Match',
-      source: 'Ministry of Corporate Affairs (MCA)',
-      category: 'ORGANIZATION',
-      timestamp: '12 mins ago',
-      provenance: 'RAW DATA',
-      verified: false,
-      relatedCase: 'Case 102 (Silver Dune)',
-      summary: 'New entity "Blue Horizon Marine Exports" registered in Surat. Registered address matches front office associated with Tariq Merchant proxy.',
-      details: {
-        entityName: 'Blue Horizon Marine Exports LLP',
-        regNumber: 'CIN-U61100GJ2024PTC148901',
-        directors: ['Sunil V. Mehta', 'Tariq Merchant (Shadow Trustee)'],
-        address: 'Plot 41-B, Diamond Park SEZ, Surat, Gujarat',
-        declaredCapital: '₹ 50,00,000',
-        crossRef: 'Linked to Bank of Baroda account #0921002934 via common signatory stamp.'
-      }
-    },
-    {
-      id: 'sig-2',
-      title: 'Offshore Bulk Wire Flagged by AML Gateway',
-      source: 'Financial Intelligence Unit (FIU-IND)',
-      category: 'FINANCIAL',
-      timestamp: '34 mins ago',
-      provenance: 'RAW DATA',
-      verified: false,
-      relatedCase: 'Case 102, Case 117',
-      summary: 'SWIFT wire of ₹4.8 Crore routed from Colombo escrow account to Dubai bullion trader matching hawala transaction schedule.',
-      details: {
-        swiftRef: 'SWIFT-FIU-992014-COL-DXB',
-        originAccount: 'Commercial Bank of Ceylon Escrow #991024',
-        beneficiary: 'Al-Noor Bullion FZE (Deira Gold Souk)',
-        intermediary: 'Standard Chartered DIFC Branch',
-        amount: '₹ 4,80,00,000 (INR Equivalent)',
-        crossRef: 'Exact split amount mirrors Hawala Node #88219 dispersal logged 48 hrs prior.'
-      }
-    },
-    {
-      id: 'sig-3',
-      title: 'AIS Transponder Draft Anomaly Detected',
-      source: 'Maritime Port Authority Feed',
-      category: 'VEHICLE',
-      timestamp: '1 hr ago',
-      provenance: 'OBSERVATION',
-      verified: false,
-      relatedCase: 'Case 102',
-      summary: 'Vessel MV Sagar Ratna recorded a sudden 1.4-meter draft reduction while offshore Kandla before docking at berth 4.',
-      details: {
-        vesselName: 'MV Sagar Ratna',
-        imo: 'IMO 9218821',
-        flag: 'Panama (PA)',
-        anomaly: 'Draft dropped from 9.2m to 7.8m at coordinates 22°58\'N 70°13\'E (14 NM off Kandla).',
-        cargoManifest: 'Declared: 8,400 Metric Tons Industrial Fertilizer.',
-        suspectedOffload: 'Offshore lightering to unflagged fast dhows suspected.'
-      }
-    },
-    {
-      id: 'sig-4',
-      title: 'Encrypted Radio Transmission Burst',
-      source: 'SIGINT Regional Station',
-      category: 'CYBER',
-      timestamp: '2 hrs ago',
-      provenance: 'OBSERVATION',
-      verified: false,
-      relatedCase: 'Case 117 (Operation Black Tide)',
-      summary: 'Burst packet transmission detected across disposable Thuraya sat-phone frequency in vicinity of Porbandar coastal coordinates.',
-      details: {
-        frequency: '1544.15 MHz (Thuraya Band-3)',
-        burstDuration: '4.2 seconds',
-        encryptionType: 'Proprietary AES-CTR with Ephemeral Diffie-Hellman',
-        triangulation: 'Porbandar Coastal Outskirts, 5km SW of light beacon.',
-        signalStrength: '-68 dBm (High SNR)'
-      }
-    }
-  ]);
+  const [signals, setSignals] = useState([]);
+  const [watchlists, setWatchlists] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const watchlists = [
-    { target: 'Tariq "The Anchor" Merchant', type: 'PERSON', hits: 14, lastActive: '12m ago', alertLevel: 'CRITICAL' },
-    { target: 'Al-Barakah Logistics FZE', type: 'ORGANIZATION', hits: 8, lastActive: '34m ago', alertLevel: 'HIGH' },
-    { target: 'MV Sagar Ratna (IMO 921882)', type: 'VEHICLE', hits: 19, lastActive: '1h ago', alertLevel: 'HIGH' },
-    { target: 'Hawala Account #88219', type: 'FINANCIAL', hits: 23, lastActive: '2h ago', alertLevel: 'CRITICAL' },
-    { target: 'Kandla Berth 4 Gate 3', type: 'LOCATION', hits: 5, lastActive: '1d ago', alertLevel: 'MEDIUM' },
-    { target: 'Proxy Email: proxy@albarakah-fze.com', type: 'DOMAIN', hits: 3, lastActive: '3d ago', alertLevel: 'LOW' },
-  ];
+  useEffect(() => {
+    loadIntel();
+  }, []);
+
+  const loadIntel = async () => {
+    setLoading(true);
+    try {
+      const data = await api.getHomeBriefing();
+      const fetchedSignals = (data.live_intelligence || []).map(item => ({
+        id: item.id,
+        title: item.title,
+        source: item.source_name,
+        category: (item.source_type || 'GENERAL').toUpperCase(),
+        timestamp: new Date(item.detected_at).toLocaleTimeString(),
+        provenance: item.status === 'unverified' ? 'RAW DATA' : 'OBSERVATION',
+        verified: item.status === 'verified',
+        relatedCase: item.relevant_case_ids?.length ? item.relevant_case_ids.join(', ') : 'N/A',
+        summary: item.snippet,
+        details: { confidence: item.confidence, source_type: item.source_type }
+      }));
+      setSignals(fetchedSignals);
+      setWatchlists([]);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleAction = (id, action) => {
     if (action === 'REVIEW') {
@@ -156,85 +103,104 @@ export default function LiveIntelligencePage() {
       <div className="live-intel-viewport">
         {activeTab === 'FEED' && (
           <div className="signals-stream-list">
-            {signals.map(sig => (
-              <Panel3D key={sig.id} maxAngle={4} glow="white" className="signal-card-panel3d">
-                <div className="signal-intel-card">
-                  <div className="sig-header-row">
-                    <div className="sig-header-left">
-                      <span className="unverified-badge">UNVERIFIED SOURCE</span>
-                      <ProvenanceBadge level={sig.provenance} size="sm" />
-                      <span className="sig-source font-mono">{sig.source}</span>
+            {loading ? (
+              <div className="p-xl text-center text-muted">Scanning for live signals...</div>
+            ) : signals.length === 0 ? (
+              <div className="p-xl text-center text-muted">
+                <Radio size={48} className="mx-auto mb-md opacity-50" />
+                <h3>No incoming signals</h3>
+                <p>Monitoring gateways are active, but no new intelligence has arrived.</p>
+              </div>
+            ) : (
+              signals.map(sig => (
+                <Panel3D key={sig.id} maxAngle={4} glow="white" className="signal-card-panel3d">
+                  <div className="signal-intel-card">
+                    <div className="sig-header-row">
+                      <div className="sig-header-left">
+                        <span className="unverified-badge">UNVERIFIED SOURCE</span>
+                        <ProvenanceBadge level={sig.provenance} size="sm" />
+                        <span className="sig-source font-mono">{sig.source}</span>
+                      </div>
+                      <span className="sig-timestamp">{sig.timestamp}</span>
                     </div>
-                    <span className="sig-timestamp">{sig.timestamp}</span>
-                  </div>
-
-                  <div className="sig-headline">{sig.title}</div>
-                  <p className="sig-summary-text">{sig.summary}</p>
-
-                  <div className="sig-footer-row">
-                    <span className="sig-related-case text-blue">
-                      Related: {sig.relatedCase}
-                    </span>
-
-                    <div className="sig-actions-group">
-                      <button
-                        className="btn btn-secondary btn-sm"
-                        onClick={() => handleAction(sig.id, 'REVIEW')}
-                      >
-                        <Eye size={11} /> Review Dossier
-                      </button>
-                      <button
-                        className="btn btn-primary btn-sm"
-                        onClick={() => {
-                          handleAction(sig.id, 'ADD');
-                          addNodeToCanvas({
-                            id: `sig-${sig.id}`,
-                            title: sig.title,
-                            type: sig.category.toLowerCase(),
-                            subtitle: sig.source,
-                            provenance: sig.provenance,
-                            description: sig.summary,
-                            confidence: 0.88
-                          });
-                          setActiveCaseId('case-102');
-                          setActiveNavSection('workspace');
-                        }}
-                      >
-                        <CheckCircle2 size={11} /> Add to Case 102
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-sm"
-                        onClick={() => handleAction(sig.id, 'IGNORE')}
-                      >
-                        <XCircle size={11} /> Ignore
-                      </button>
+  
+                    <div className="sig-headline">{sig.title}</div>
+                    <p className="sig-summary-text">{sig.summary}</p>
+  
+                    <div className="sig-footer-row">
+                      <span className="sig-related-case text-blue">
+                        Related: {sig.relatedCase}
+                      </span>
+  
+                      <div className="sig-actions-group">
+                        <button
+                          className="btn btn-secondary btn-sm"
+                          onClick={() => handleAction(sig.id, 'REVIEW')}
+                        >
+                          <Eye size={11} /> Review Dossier
+                        </button>
+                        <button
+                          className="btn btn-primary btn-sm"
+                          onClick={() => {
+                            handleAction(sig.id, 'ADD');
+                            addNodeToCanvas({
+                              id: `sig-${sig.id}`,
+                              title: sig.title,
+                              type: sig.category.toLowerCase(),
+                              subtitle: sig.source,
+                              provenance: sig.provenance,
+                              description: sig.summary,
+                              confidence: 0.88
+                            });
+                            setActiveCaseId('case-102');
+                            setActiveNavSection('workspace');
+                          }}
+                        >
+                          <CheckCircle2 size={11} /> Add to Case 102
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => handleAction(sig.id, 'IGNORE')}
+                        >
+                          <XCircle size={11} /> Ignore
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Panel3D>
-            ))}
+                </Panel3D>
+              ))
+            )}
           </div>
         )}
 
         {activeTab === 'WATCHLISTS' && (
           <div className="watchlists-grid-view">
-            {watchlists.map((w, idx) => (
-              <Panel3D key={idx} maxAngle={5} glow="white" className="watchlist-card-panel3d">
-                <div className="watchlist-item-card">
-                  <div className="w-card-top">
-                    <span className="w-type font-mono">{w.type}</span>
-                    <span className={`w-threat-pill threat-${w.alertLevel.toLowerCase()}`}>
-                      {w.alertLevel}
-                    </span>
+            {loading ? (
+              <div className="p-xl text-center text-muted">Loading watchlists...</div>
+            ) : watchlists.length === 0 ? (
+              <div className="p-xl text-center text-muted">
+                <ShieldAlert size={48} className="mx-auto mb-md opacity-50" />
+                <h3>No active watchlists</h3>
+              </div>
+            ) : (
+              watchlists.map((w, idx) => (
+                <Panel3D key={idx} maxAngle={5} glow="white" className="watchlist-card-panel3d">
+                  <div className="watchlist-item-card">
+                    <div className="w-card-top">
+                      <span className="w-type font-mono">{w.type}</span>
+                      <span className={`w-threat-pill threat-${w.alertLevel.toLowerCase()}`}>
+                        {w.alertLevel}
+                      </span>
+                    </div>
+                    <div className="w-target-name">{w.target}</div>
+                    <div className="w-card-footer">
+                      <span>{w.hits} Sensor Hits</span>
+                      <span>Active: {w.lastActive}</span>
+                    </div>
                   </div>
-                  <div className="w-target-name">{w.target}</div>
-                  <div className="w-card-footer">
-                    <span>{w.hits} Sensor Hits</span>
-                    <span>Active: {w.lastActive}</span>
-                  </div>
-                </div>
-              </Panel3D>
-            ))}
+                </Panel3D>
+              ))
+            )}
           </div>
         )}
       </div>
