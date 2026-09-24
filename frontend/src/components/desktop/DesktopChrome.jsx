@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
 import Panel3D from '../Panel3D';
 import TotalFileExplorer from './TotalFileExplorer';
+import AdminUserManagementModal from './AdminUserManagementModal';
 import {
   Search, Bell, Shield, Activity, GitBranch,
   CheckCircle2, Clock, ChevronRight, X, AlertTriangle,
   Radio, Check, Trash2, ArrowUpRight, Database,
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
   UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
-  Briefcase, FileUp, UserSearch, Sun, Moon
+  Briefcase, FileUp, UserSearch, Sun, Moon, Users
 } from 'lucide-react';
 import './DesktopChrome.css';
 
@@ -41,6 +42,13 @@ export default function DesktopChrome({ children }) {
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showOfficerProfile, setShowOfficerProfile] = useState(false);
+  const [showAdminModal, setShowAdminModal] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('modal') === 'admin';
+    }
+    return false;
+  });
 
   // Live UTC Clock updater
   useEffect(() => {
@@ -172,6 +180,16 @@ export default function DesktopChrome({ children }) {
             <span className="openai-sweep-dot" />
             <span>Sweep: 10h</span>
           </div>
+
+          {/* Admin User Management Button */}
+          <button
+            className={`openai-admin-btn font-mono ${showAdminModal ? 'active' : ''}`}
+            onClick={() => setShowAdminModal(true)}
+            title="Admin User Management: Add Users to Database"
+          >
+            <Users size={12} />
+            <span>Admin</span>
+          </button>
 
           {/* Fully Functional Notification Bell */}
           <button
@@ -341,6 +359,15 @@ export default function DesktopChrome({ children }) {
             >
               <UserSearch size={17} />
             </button>
+
+            {/* 9. Admin User Management */}
+            <button
+              className={`rail-btn rail-btn-admin ${showAdminModal ? 'active' : ''}`}
+              onClick={() => setShowAdminModal(true)}
+              title="Admin User Management (Add & Manage Bureau Users in DB)"
+            >
+              <UserCheck size={17} />
+            </button>
           </div>
 
           {/* Bottom Group: Settings & Profile Icon */}
@@ -477,6 +504,13 @@ export default function DesktopChrome({ children }) {
                 <span>Byomkesh AI Investigative Queries</span>
                 <span className="palette-shortcut">↵</span>
               </div>
+              <div
+                className="palette-result-item"
+                onClick={() => { setShowAdminModal(true); setShowSearchModal(false); }}
+              >
+                <span>Admin: Manage Bureau Users & Add to Database</span>
+                <span className="palette-tag">ADMIN DB</span>
+              </div>
               <div className="palette-group-title">CANONICAL ENTITIES</div>
               <div
                 className="palette-result-item"
@@ -559,6 +593,12 @@ export default function DesktopChrome({ children }) {
           </div>
         </div>
       )}
+
+      {/* ── ADMIN USER MANAGEMENT MODAL (SQLite Users DB) ───────── */}
+      <AdminUserManagementModal
+        isOpen={showAdminModal}
+        onClose={() => setShowAdminModal(false)}
+      />
     </div>
   );
 }

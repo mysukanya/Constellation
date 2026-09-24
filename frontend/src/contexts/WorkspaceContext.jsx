@@ -345,7 +345,14 @@ export const DEFAULT_WORKSPACES = [
 
 export function WorkspaceProvider({ children }) {
   const [activeCaseId, setActiveCaseId] = useState('case-102');
-  const [activeNavSection, setActiveNavSection] = useState('home');
+  const [activeNavSection, setActiveNavSection] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tab = params.get('tab') || params.get('section');
+      if (tab) return tab;
+    }
+    return 'home';
+  });
 
   // Theme Management (Minimal Clean Light / Pure Black Dark)
   const [theme, setTheme] = useState(() => {
@@ -373,7 +380,13 @@ export function WorkspaceProvider({ children }) {
 
   // Workspaces Management State
   const [workspaces, setWorkspaces] = useState(DEFAULT_WORKSPACES);
-  const [activeWorkspaceId, setActiveWorkspaceId] = useState(null);
+  const [activeWorkspaceId, setActiveWorkspaceId] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('ws') || params.get('workspace') || null;
+    }
+    return null;
+  });
   
   // Interactive Canvas Nodes & Roping State
   const [canvasNodes, setCanvasNodes] = useState(INITIAL_CANVAS_NODES);

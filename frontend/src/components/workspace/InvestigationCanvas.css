@@ -1000,3 +1000,56 @@
   color: #ffffff !important;
   border-color: #0f172a !important;
 }
+
+[data-theme="light"] .canvas-workspace-container,
+.theme-light .canvas-workspace-container {
+  background-color: #ffffff !important;
+}
+
+[data-theme="light"] .canvas-command-bar,
+.theme-light .canvas-command-bar {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .canvas-board-viewport,
+.theme-light .canvas-board-viewport {
+  background-color: #f8fafc !important;
+  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.08) 1.2px, transparent 1.2px) !important;
+}
+
+[data-theme="light"] .canvas-entity-card,
+.theme-light .canvas-entity-card {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .card-top-cluster,
+.theme-light .card-top-cluster {
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+[data-theme="light"] .card-type-label,
+.theme-light .card-type-label {
+  color: #64748b !important;
+}
+
+[data-theme="light"] .card-title,
+.theme-light .card-title {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .card-desc,
+.theme-light .card-desc {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .rope-pill-label,
+.theme-light .rope-pill-label {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05) !important;
+}

@@ -75,6 +75,14 @@ class ApiService {
     return this.request('GET', '/auth/me');
   }
 
+  async listUsers() {
+    return this.request('GET', '/auth/users');
+  }
+
+  async createUser(userData) {
+    return this.request('POST', '/auth/users', userData);
+  }
+
   logout() {
     this.clearToken();
   }

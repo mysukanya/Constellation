@@ -321,17 +321,21 @@ code, kbd, .font-mono {
   box-shadow: none !important;
 }
 
-/* ── Light Mode Desktop Chrome Overrides (OpenAI Aesthetic) ───────── */
+/* ── Light Mode Desktop Chrome Overrides (Floating Panels Aesthetic) ── */
 [data-theme="light"] .desktop-window-container,
 .theme-light .desktop-window-container {
-  background-color: #f8fafc !important;
+  background-color: #f1f3f6 !important;
   color: #0f172a !important;
 }
 
 [data-theme="light"] .openai-topbar,
 .theme-light .openai-topbar {
-  background: #ffffff !important;
-  border-bottom: 1px solid #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 12px !important;
+  margin: 10px 14px 0 14px !important;
+  width: calc(100% - 28px) !important;
 }
 
 [data-theme="light"] .openai-brand-text,
@@ -396,6 +400,19 @@ code, kbd, .font-mono {
   color: #475569 !important;
 }
 
+[data-theme="light"] .openai-admin-btn,
+.theme-light .openai-admin-btn {
+  background: rgba(16, 185, 129, 0.12) !important;
+  color: #059669 !important;
+  border-color: rgba(16, 185, 129, 0.28) !important;
+}
+
+[data-theme="light"] .openai-admin-btn:hover,
+.theme-light .openai-admin-btn:hover {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #047857 !important;
+}
+
 [data-theme="light"] .openai-icon-btn,
 .theme-light .openai-icon-btn {
   color: #64748b !important;
@@ -409,13 +426,17 @@ code, kbd, .font-mono {
 
 [data-theme="light"] .desktop-main-split,
 .theme-light .desktop-main-split {
-  background: #f8fafc !important;
+  background: transparent !important;
+  padding: 10px 14px !important;
+  gap: 12px !important;
 }
 
 [data-theme="light"] .left-icon-rail-dock,
 .theme-light .left-icon-rail-dock {
-  background: #ffffff !important;
-  border-right: 1px solid #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 12px !important;
 }
 
 [data-theme="light"] .rail-btn,
@@ -438,13 +459,20 @@ code, kbd, .font-mono {
 
 [data-theme="light"] .desktop-workspace-canvas,
 .theme-light .desktop-workspace-canvas {
-  background: #f8fafc !important;
+  background: #ffffff !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
+  border-radius: 12px !important;
 }
 
 [data-theme="light"] .desktop-statusbar,
 .theme-light .desktop-statusbar {
-  background: #ffffff !important;
-  border-top: 1px solid #e2e8f0 !important;
+  background: rgba(255, 255, 255, 0.96) !important;
+  border: 1px solid rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03) !important;
+  border-radius: 10px !important;
+  margin: 0 14px 10px 14px !important;
+  width: calc(100% - 28px) !important;
   color: #64748b !important;
 }
 

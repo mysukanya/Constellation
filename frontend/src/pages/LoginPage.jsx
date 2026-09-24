@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
+import { Shield, Sparkles, ArrowRight, Lock, User, CheckCircle2 } from 'lucide-react';
 import './LoginPage.css';
 
 export default function LoginPage() {
   const { login, demoLogin } = useAuth();
-  
+
   // Stages: 'splash' -> 'login' -> 'welcome'
   const [phase, setPhase] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -14,6 +15,7 @@ export default function LoginPage() {
     }
     return 'splash';
   });
+
   const [typedText, setTypedText] = useState('');
   const [username, setUsername] = useState('Admin');
   const [password, setPassword] = useState('Password');
@@ -23,10 +25,10 @@ export default function LoginPage() {
   // 1. Initial Splash Screen: Plain Constellation typing effect on pure black
   useEffect(() => {
     if (phase !== 'splash') return;
-    
+
     const targetWord = 'Constellation';
     let index = 0;
-    
+
     const interval = setInterval(() => {
       index++;
       setTypedText(targetWord.slice(0, index));
@@ -97,61 +99,111 @@ export default function LoginPage() {
     );
   }
 
-  // ── PHASE 2: MINIMAL LOGIN (pure black bg, small white panel, 2 boxes, demo top right) ──
+  // ── PHASE 2: MINIMAL GLASSMORPHIC LOGIN (split panel with shard & login) ──
   return (
-    <div className="minimal-login-screen">
-      <div className="minimal-login-card">
-        {/* Top Header Row with Title and Top-Right Demo Button */}
-        <div className="minimal-card-header">
-          <span className="minimal-card-title">Sign In</span>
-          <button
-            type="button"
-            className="minimal-demo-btn"
-            onClick={() => handleStartAuth('demo')}
-            title="Instant Demo Access"
-          >
-            Demo
-          </button>
+    <div className="glass-login-viewport">
+      {/* Background Image Layer */}
+      <div className="glass-login-bg-layer" />
+      <div className="glass-login-vignette" />
+
+      {/* Centered Dual-Shard Glassmorphic Panel */}
+      <div className="glass-login-card">
+        {/* Left Shard: Constellation & What We Do */}
+        <div className="glass-shard-left">
+          <div className="shard-top-brand">
+            <h2 className="shard-brand-title">CONSTELLATION</h2>
+            <p className="shard-brand-kicker font-mono">SEE PATTERNS. STOP CRIME.</p>
+          </div>
+
+          <div className="shard-what-we-do">
+            <h3 className="shard-heading">
+              Autonomous Crime Intelligence &amp; Pattern Resolution
+            </h3>
+            <p className="shard-description">
+              A unified operating system for federal &amp; cross-jurisdictional investigations.
+              Correlating maritime narcotics, corporate AML shells, and encrypted communications in real time.
+            </p>
+
+            <div className="shard-feature-pills font-mono">
+              <div className="shard-pill">
+                <span className="shard-sparkle">✦</span>
+                <span>Autonomous 12h Sweeps</span>
+              </div>
+              <div className="shard-pill">
+                <span className="shard-sparkle">✦</span>
+                <span>Cross-Case Heuristic Resolution</span>
+              </div>
+              <div className="shard-pill">
+                <span className="shard-sparkle">✦</span>
+                <span>Cryptographic Provenance Ledger</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="shard-bottom-meta font-mono">
+            <span className="shard-authority-badge">
+              STATUTORY AUTHORITY: BNS SEC 111 / PMLA SEC 5
+            </span>
+          </div>
         </div>
 
-        {/* 2 Clean Input Boxes + Minimal Submit Button */}
-        <form
-          className="minimal-login-form"
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleStartAuth('submit');
-          }}
-        >
-          <div className="minimal-input-field">
-            <label className="minimal-field-label">Username</label>
-            <input
-              type="text"
-              className="minimal-text-input"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Admin"
-              autoComplete="username"
-              required
-            />
+        {/* Right Shard: Minimal Authentication Form */}
+        <div className="glass-shard-right">
+          <div className="shard-form-header">
+            <span className="shard-form-title">Investigator Access</span>
+            <button
+              type="button"
+              className="shard-demo-btn font-mono"
+              onClick={() => handleStartAuth('demo')}
+              title="Instant Demo Access"
+            >
+              Demo Mode
+            </button>
           </div>
 
-          <div className="minimal-input-field">
-            <label className="minimal-field-label">Password</label>
-            <input
-              type="password"
-              className="minimal-text-input"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              autoComplete="current-password"
-              required
-            />
-          </div>
+          <form
+            className="shard-login-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleStartAuth('submit');
+            }}
+          >
+            <div className="shard-field-group">
+              <label className="shard-label">Username</label>
+              <input
+                type="text"
+                className="shard-input"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                placeholder="Admin"
+                autoComplete="username"
+                required
+              />
+            </div>
 
-          <button type="submit" className="minimal-submit-btn">
-            Submit
-          </button>
-        </form>
+            <div className="shard-field-group">
+              <label className="shard-label">Password</label>
+              <input
+                type="password"
+                className="shard-input"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Password"
+                autoComplete="current-password"
+                required
+              />
+            </div>
+
+            <button type="submit" className="shard-submit-btn">
+              <span>Sign In</span>
+              <ArrowRight size={14} />
+            </button>
+          </form>
+
+          <div className="shard-footer-credentials font-mono">
+            <span>DEFAULT: ADMIN / PASSWORD</span>
+          </div>
+        </div>
       </div>
     </div>
   );

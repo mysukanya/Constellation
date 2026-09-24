@@ -4,9 +4,30 @@ import Panel3D from '../Panel3D';
 import {
   FolderPlus, Layers, Play, Clock, Shield, Search,
   Trash2, Plus, ArrowRight, CheckCircle2, ChevronRight,
-  Briefcase, Activity, AlertTriangle, X
+  Briefcase, Activity, AlertTriangle, X, MapPin, Compass,
+  RotateCcw, Filter, Anchor, Sparkles
 } from 'lucide-react';
 import './WorkspaceOverviewHub.css';
+
+const SECTOR_PILLS = [
+  { id: 'ALL', label: 'All Sectors' },
+  { id: 'narcotics', label: 'Maritime Narcotics (Case 102)', caseId: 'case-102' },
+  { id: 'corporate_fraud', label: 'Corporate Fraud & AML (Case 117)', caseId: 'case-117' },
+  { id: 'homicide', label: 'Contract Hit Syndicate (Case 108)', caseId: 'case-108' },
+  { id: 'theft', label: 'Diamond Vault Breach (Case 121)', caseId: 'case-121' },
+  { id: 'trafficking', label: 'Human Trafficking (Case 143)', caseId: 'case-143' },
+  { id: 'cyber', label: 'Cyber Infiltration (Case 168)', caseId: 'case-168' }
+];
+
+const HUB_PILLS = [
+  { id: 'ALL', label: 'All Hubs & Corridors' },
+  { id: 'kandla', label: 'Gulf of Kutch / Kandla Port', query: 'kandla' },
+  { id: 'dubai', label: 'Dubai Marina / JAFZA Free Zone', query: 'dubai' },
+  { id: 'surat', label: 'Surat Diamond Bourse', query: 'surat' },
+  { id: 'mumbai', label: 'Mumbai Customs Free Port', query: 'mumbai' },
+  { id: 'colombo', label: 'Colombo Escrow Anchorage', query: 'colombo' },
+  { id: 'porbandar', label: 'Porbandar Coastal Creek', query: 'porbandar' }
+];
 
 export default function WorkspaceOverviewHub() {
   const {
@@ -18,6 +39,8 @@ export default function WorkspaceOverviewHub() {
   } = useWorkspace();
 
   const [searchFilter, setSearchFilter] = useState('');
+  const [selectedSector, setSelectedSector] = useState('ALL');
+  const [selectedHub, setSelectedHub] = useState('ALL');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWsForm, setNewWsForm] = useState({
     name: '',
@@ -28,14 +51,43 @@ export default function WorkspaceOverviewHub() {
   const allCasesList = Object.values(CANONICAL_CASES);
 
   const filteredWorkspaces = workspaces.filter(w => {
-    if (!searchFilter.trim()) return true;
-    const q = searchFilter.toLowerCase().trim();
-    return (
-      w.name.toLowerCase().includes(q) ||
-      (w.caseName && w.caseName.toLowerCase().includes(q)) ||
-      (w.description && w.description.toLowerCase().includes(q)) ||
-      (w.genre && w.genre.toLowerCase().includes(q))
-    );
+    // 1. Search text filter
+    if (searchFilter.trim()) {
+      const q = searchFilter.toLowerCase().trim();
+      const matchSearch =
+        w.name.toLowerCase().includes(q) ||
+        (w.caseName && w.caseName.toLowerCase().includes(q)) ||
+        (w.description && w.description.toLowerCase().includes(q)) ||
+        (w.genre && w.genre.toLowerCase().includes(q));
+      if (!matchSearch) return false;
+    }
+
+    // 2. Sector filter
+    if (selectedSector !== 'ALL') {
+      const secDef = SECTOR_PILLS.find(s => s.id === selectedSector);
+      const matchSector =
+        (w.genre && w.genre.toLowerCase() === selectedSector.toLowerCase()) ||
+        (secDef?.caseId && w.caseId === secDef.caseId) ||
+        (w.caseName && w.caseName.toLowerCase().includes(selectedSector.toLowerCase()));
+      if (!matchSector) return false;
+    }
+
+    // 3. Hub / Place filter
+    if (selectedHub !== 'ALL') {
+      const hubDef = HUB_PILLS.find(h => h.id === selectedHub);
+      const targetQuery = hubDef?.query || selectedHub.toLowerCase();
+      const matchHub =
+        w.name.toLowerCase().includes(targetQuery) ||
+        (w.description && w.description.toLowerCase().includes(targetQuery)) ||
+        (w.nodes && w.nodes.some(n =>
+          (n.name && n.name.toLowerCase().includes(targetQuery)) ||
+          (n.role && n.role.toLowerCase().includes(targetQuery)) ||
+          (n.jurisdiction && n.jurisdiction.toLowerCase().includes(targetQuery))
+        ));
+      if (!matchHub) return false;
+    }
+
+    return true;
   });
 
   const handleCreateSubmit = (e) => {
@@ -54,6 +106,14 @@ export default function WorkspaceOverviewHub() {
       caseId: 'case-102',
       description: ''
     });
+  };
+
+  const hasActiveFilters = selectedSector !== 'ALL' || selectedHub !== 'ALL' || searchFilter.trim() !== '';
+
+  const handleClearFilters = () => {
+    setSelectedSector('ALL');
+    setSelectedHub('ALL');
+    setSearchFilter('');
   };
 
   return (
@@ -83,6 +143,58 @@ export default function WorkspaceOverviewHub() {
           </div>
         </div>
       </Panel3D>
+
+      {/* ── Minimal Clean Sector & Corridor Filter Bars ──────────── */}
+      <div className="hub-filters-panel">
+        <div className="hub-filter-row">
+          <div className="hub-filter-label font-mono">
+            <Briefcase size={12} />
+            <span>CRIME SECTOR:</span>
+          </div>
+          <div className="hub-pills-scroll">
+            {SECTOR_PILLS.map(s => (
+              <button
+                key={s.id}
+                className={`hub-filter-pill ${selectedSector === s.id ? 'active' : ''}`}
+                onClick={() => setSelectedSector(s.id)}
+              >
+                {s.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Minimal Clean Corridor / Jurisdictions Filter Bar ── */}
+        <div className="hub-filter-row">
+          <div className="hub-filter-label font-mono">
+            <Compass size={12} />
+            <span>CORRIDORS &amp; HUBS:</span>
+          </div>
+          <div className="hub-pills-scroll">
+            {HUB_PILLS.map(h => (
+              <button
+                key={h.id}
+                className={`hub-filter-pill ${selectedHub === h.id ? 'active' : ''}`}
+                onClick={() => setSelectedHub(h.id)}
+              >
+                {h.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {hasActiveFilters && (
+          <div className="hub-active-filters-bar font-mono">
+            <span className="active-filter-text">
+              Active Filters: {selectedSector !== 'ALL' ? `Sector: ${SECTOR_PILLS.find(p=>p.id===selectedSector)?.label}` : ''} {selectedHub !== 'ALL' ? `· Hub: ${HUB_PILLS.find(p=>p.id===selectedHub)?.label}` : ''} {searchFilter ? `· Search: "${searchFilter}"` : ''}
+            </span>
+            <button className="hub-clear-filters-btn" onClick={handleClearFilters}>
+              <RotateCcw size={11} />
+              <span>Reset All Filters</span>
+            </button>
+          </div>
+        )}
+      </div>
 
       {/* ── Search & Filter Controls ─────────────────────────────── */}
       <div className="hub-toolbar-strip">

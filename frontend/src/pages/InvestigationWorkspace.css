@@ -246,3 +246,101 @@
   from { opacity: 0.5; transform: scale(0.9); }
   to { opacity: 1; transform: scale(1.15); filter: drop-shadow(0 0 6px #a78bfa); }
 }
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   WHITE / LIGHT MODE OVERRIDES FOR INVESTIGATION WORKSPACE
+   ══════════════════════════════════════════════════════════════════════════════ */
+[data-theme="light"] .investigation-workspace-root,
+.theme-light .investigation-workspace-root {
+  background-color: #ffffff;
+  color: #0f172a;
+}
+
+[data-theme="light"] .workspace-top-bar,
+.theme-light .workspace-top-bar {
+  background-color: #ffffff;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .case-name-text,
+.theme-light .case-name-text {
+  color: #0f172a;
+}
+
+[data-theme="light"] .case-badge-pill,
+.theme-light .case-badge-pill {
+  color: #475569;
+  background: #f1f5f9;
+}
+
+[data-theme="light"] .topbar-back-btn,
+.theme-light .topbar-back-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .topbar-back-btn:hover,
+.theme-light .topbar-back-btn:hover {
+  background: #e2e8f0;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .topbar-divider,
+.theme-light .topbar-divider {
+  background: #e2e8f0;
+}
+
+[data-theme="light"] .topbar-toggle-btn,
+.theme-light .topbar-toggle-btn {
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+}
+
+[data-theme="light"] .topbar-toggle-btn:hover,
+.theme-light .topbar-toggle-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+[data-theme="light"] .topbar-toggle-btn.active,
+.theme-light .topbar-toggle-btn.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+}
+
+[data-theme="light"] .topbar-toggle-btn.btn-byomkesh,
+.theme-light .topbar-toggle-btn.btn-byomkesh {
+  border-color: #c4b5fd;
+  color: #7c3aed;
+  background: #f5f3ff;
+}
+
+[data-theme="light"] .topbar-toggle-btn.btn-byomkesh.active,
+.theme-light .topbar-toggle-btn.btn-byomkesh.active {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+  border-color: #7c3aed !important;
+}
+
+[data-theme="light"] .backend-status-pill,
+.theme-light .backend-status-pill {
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+  color: #475569;
+}
+
+[data-theme="light"] .workspace-byomkesh-dock,
+.theme-light .workspace-byomkesh-dock {
+  background-color: #ffffff;
+  border-left: 1px solid #e2e8f0;
+}
+
+[data-theme="light"] .workspace-importer-dock,
+.theme-light .workspace-importer-dock {
+  background-color: #ffffff;
+  border-left: 1px solid #e2e8f0;
+}
+

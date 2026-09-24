@@ -3,24 +3,31 @@
   flex-direction: column;
   width: 100vw;
   height: 100vh;
-  background-color: #000000;
+  background-color: #060608;
   overflow: hidden;
   color: #f4f4f5;
+  transition: background-color 0.2s ease;
 }
 
-/* ── OpenAI Style Minimal Flush Top Bar ────────────────────────── */
+/* ── OpenAI Style Minimal Floating Top Bar ────────────────────────── */
 .openai-topbar {
-  height: 54px;
-  width: 100%;
+  margin: 10px 14px 0 14px;
+  width: calc(100% - 28px);
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  background: #000000;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0 18px;
+  background: rgba(14, 14, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   flex-shrink: 0;
   z-index: 1000;
   position: relative;
+  transition: all 0.2s ease;
 }
 
 .topbar-left-zone {
@@ -185,6 +192,29 @@
   box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
 }
 
+.openai-admin-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.openai-admin-btn:hover,
+.openai-admin-btn.active {
+  background: rgba(16, 185, 129, 0.22);
+  color: #ffffff;
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+}
+
 .openai-icon-btn {
   position: relative;
   width: 32px;
@@ -223,21 +253,28 @@
   padding: 0 3px;
 }
 
-/* ── Main Split Viewport with Left Icon Dock ──────────────────── */
+/* ── Main Split Viewport with Floating Left Dock & Canvas ──────── */
 .desktop-main-split {
   display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
-  background: #000000;
+  padding: 10px 14px;
+  gap: 12px;
+  box-sizing: border-box;
+  background: transparent;
 }
 
 .left-icon-rail-dock {
   width: 50px;
   height: 100%;
-  background: #000000;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(14, 14, 18, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -245,6 +282,7 @@
   padding: 12px 0;
   flex-shrink: 0;
   z-index: 20;
+  transition: all 0.2s ease;
 }
 
 .rail-group-top,
@@ -295,6 +333,21 @@
   border-color: rgba(167, 139, 250, 0.4) !important;
 }
 
+.rail-btn-admin {
+  color: #34d399 !important;
+}
+
+.rail-btn-admin:hover {
+  background: rgba(16, 185, 129, 0.14) !important;
+  color: #ffffff !important;
+}
+
+.rail-btn-admin.active {
+  background: rgba(16, 185, 129, 0.24) !important;
+  color: #ffffff !important;
+  border-color: rgba(16, 185, 129, 0.45) !important;
+}
+
 .rail-btn-profile {
   position: relative;
   color: #71717a;
@@ -306,14 +359,25 @@
   height: 100%;
   overflow: hidden;
   position: relative;
-  background: #000000;
+  background: rgba(14, 14, 18, 0.7);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+  transition: all 0.2s ease;
 }
 
 .desktop-statusbar {
-  height: 26px;
-  width: 100%;
-  background: #000000;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  margin: 0 14px 10px 14px;
+  width: calc(100% - 28px);
+  height: 28px;
+  background: rgba(14, 14, 18, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -322,6 +386,7 @@
   color: #71717a;
   flex-shrink: 0;
   z-index: 10;
+  transition: all 0.2s ease;
 }
 
 .notif-panel-clean {
