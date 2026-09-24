@@ -9,13 +9,13 @@ def get_db_connection():
     db_path = Path(settings.SQLITE_DB_PATH)
     db_path.parent.mkdir(parents=True, exist_ok=True)
     conn = sqlite3.connect(str(db_path), timeout=30.0)
-    conn.execute("PRAGMA journal_mode=WAL;")
     conn.execute("PRAGMA busy_timeout=30000;")
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_sqlite_db():
     conn = get_db_connection()
+    conn.execute("PRAGMA journal_mode=WAL;")
     cursor = conn.cursor()
     
     # Users table

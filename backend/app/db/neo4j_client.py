@@ -96,24 +96,30 @@ class GraphClient:
                 count = cursor.fetchone()[0]
                 return [{"count": count}]
 
-            # 2. Check for MATCH (p:Person {id: '...'})-[r:CONTACTS]-(other:Person) or similar relationship queries
-            rel_pattern = re.search(
-                r"MATCH\s*\((?P<var1>\w+)?(?::(?P<label1>\w+))?(?:\s*\{(?P<props1>[^}]+)\})?\)\s*-\s*\[(?P<rel_var>\w+)?(?::(?P<rel_type>\w+))?[^\]]*\]\s*-\s*\((?P<var2>\w+)?(?::(?P<label2>\w+))?(?:\s*\{(?P<props2>[^}]+)\})?\)",
-                clean_q,
-                re.IGNORECASE
-            )
+            # 2. Check for relationship traversal queries:
+            # e.g. MATCH (p:Person {id: '...'})-[r:TYPE]-(other:Person)
+            # or MATCH (n {id: '...'})-[r]-(other)
+            # or MATCH (n {case_id: '...'})-[r]-(m)
+            has_rel = bool(re.search(r"-\s*\[[^\]]*\]\s*-", clean_q))
 
-            if rel_pattern:
-                props1_str = rel_pattern.group("props1") or ""
-                rel_type = rel_pattern.group("rel_type")
-                target_node_id = None
-
-                # Extract id if specified in props
-                id_match = re.search(r"id:\s*['\"]([^'\"]+)['\"]", props1_str)
+            if has_rel:
+                # Extract target node ID from props, WHERE, or parameters
+                target_node_id = parameters.get("id")
+                id_match = re.search(r"\bid\s*[:=]\s*['\"]([^'\"]+)['\"]", clean_q)
                 if id_match:
                     target_node_id = id_match.group(1)
-                elif "id" in parameters:
-                    target_node_id = parameters["id"]
+
+                # Extract case_id from props, WHERE, or parameters
+                case_id = parameters.get("case_id")
+                case_match = re.search(r"\bcase_id\s*[:=]\s*['\"]([^'\"]+)['\"]", clean_q)
+                if case_match:
+                    case_id = case_match.group(1)
+
+                # Extract rel_type if specified in [r:TYPE] or [r:TYPE1|TYPE2]
+                rel_match = re.search(r"-\s*\[(?:\w+)?(?::([A-Za-z0-9_|]+))?[^\]]*\]\s*-", clean_q)
+                rel_types = []
+                if rel_match and rel_match.group(1):
+                    rel_types = [t.strip() for t in rel_match.group(1).split("|") if t.strip()]
 
                 sql = """
                     SELECT e.id as edge_id, e.from_id, e.to_id, e.rel_type, e.confidence, e.source_ids, e.properties as edge_props,
@@ -126,13 +132,18 @@ class GraphClient:
                 """
                 sql_params = []
 
-                if rel_type:
-                    sql += " AND e.rel_type = ?"
-                    sql_params.append(rel_type)
+                if rel_types:
+                    placeholders = ",".join(["?"] * len(rel_types))
+                    sql += f" AND e.rel_type IN ({placeholders})"
+                    sql_params.extend(rel_types)
 
                 if target_node_id:
                     sql += " AND (e.from_id = ? OR e.to_id = ?)"
                     sql_params.extend([target_node_id, target_node_id])
+
+                if case_id:
+                    sql += " AND (n1.case_id = ? OR n2.case_id = ?)"
+                    sql_params.extend([case_id, case_id])
 
                 sql += " LIMIT 100"
                 cursor.execute(sql, tuple(sql_params))
@@ -140,9 +151,12 @@ class GraphClient:
 
                 results = []
                 for r in rows:
-                    n1_dict = json.loads(r["n1_props"])
-                    n2_dict = json.loads(r["n2_props"])
-                    edge_dict = json.loads(r["edge_props"])
+                    n1_dict = json.loads(r["n1_props"]) if r["n1_props"] else {}
+                    n1_dict.update({"id": r["n1_id"], "label": r["n1_label"], "case_id": r["n1_case"]})
+                    n2_dict = json.loads(r["n2_props"]) if r["n2_props"] else {}
+                    n2_dict.update({"id": r["n2_id"], "label": r["n2_label"], "case_id": r["n2_case"]})
+
+                    edge_dict = json.loads(r["edge_props"]) if r["edge_props"] else {}
                     edge_dict.update({
                         "id": r["edge_id"],
                         "from_id": r["from_id"],
@@ -153,14 +167,21 @@ class GraphClient:
                     })
                     results.append({
                         "p": n1_dict,
+                        "n": n1_dict,
                         "r": edge_dict,
-                        "other": n2_dict
+                        "other": n2_dict,
+                        "m": n2_dict
                     })
                 return results
 
-            # 3. Simple node lookup by case_id or label
+            # 3. Simple node lookup by id, case_id or label
+            target_id = parameters.get("id")
+            id_match = re.search(r"\bid\s*[:=]\s*['\"]([^'\"]+)['\"]", clean_q)
+            if id_match:
+                target_id = id_match.group(1)
+
             case_id_param = parameters.get("case_id")
-            case_match = re.search(r"case_id:\s*['\"]([^'\"]+)['\"]", clean_q)
+            case_match = re.search(r"\bcase_id\s*[:=]\s*['\"]([^'\"]+)['\"]", clean_q)
             if case_match:
                 case_id_param = case_match.group(1)
 
@@ -169,6 +190,9 @@ class GraphClient:
 
             sql = "SELECT * FROM graph_nodes WHERE 1=1"
             sql_params = []
+            if target_id:
+                sql += " AND id = ?"
+                sql_params.append(target_id)
             if label:
                 sql += " AND label = ?"
                 sql_params.append(label)
@@ -185,7 +209,7 @@ class GraphClient:
                     "id": r["id"],
                     "label": r["label"],
                     "case_id": r["case_id"],
-                    "properties": json.loads(r["properties"])
+                    "properties": json.loads(r["properties"]) if r["properties"] else {}
                 }
                 for r in rows
             ]
@@ -502,5 +526,22 @@ class GraphClient:
             })
 
         return {"nodes": nodes_out, "edges": edges_out}
+
+    async def delete_node(self, node_id: str):
+        """Deletes a node and all connected edges from SQLite and Neo4j."""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM graph_edges WHERE from_id = ? OR to_id = ?", (node_id, node_id))
+        cursor.execute("DELETE FROM graph_nodes WHERE id = ?", (node_id,))
+        conn.commit()
+        conn.close()
+
+        if self._is_neo4j_active and self._driver:
+            cypher = "MATCH (n {id: $id}) DETACH DELETE n"
+            try:
+                async with self._driver.session() as session:
+                    await session.run(cypher, id=node_id)
+            except Exception as e:
+                logger.warning(f"Neo4j delete_node error: {e}")
 
 graph_client = GraphClient()

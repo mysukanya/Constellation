@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import api from '../services/api';
 
 const WorkspaceContext = createContext(null);
 
@@ -348,12 +349,44 @@ export function WorkspaceProvider({ children }) {
 
   // Workspaces Management State
   const [workspaces, setWorkspaces] = useState(DEFAULT_WORKSPACES);
-  // activeWorkspaceId starts null so the user first sees the clean Workspace Hub / Overview ("how many workspaces are there and then opening a workspace or making a new workspace")
   const [activeWorkspaceId, setActiveWorkspaceId] = useState(null);
   
   // Interactive Canvas Nodes & Roping State
   const [canvasNodes, setCanvasNodes] = useState(INITIAL_CANVAS_NODES);
   const [canvasEdges, setCanvasEdges] = useState(INITIAL_CANVAS_EDGES);
+
+  // Sync workspaces from backend on mount
+  useEffect(() => {
+    api.listWorkspaces()
+      .then(serverWorkspaces => {
+        if (serverWorkspaces && serverWorkspaces.length > 0) {
+          const formatted = serverWorkspaces.map(sw => {
+            const canvas = sw.canvas_state || {};
+            const nodes = canvas.nodes && canvas.nodes.length > 0 ? canvas.nodes : [];
+            const edges = canvas.edges && canvas.edges.length > 0 ? canvas.edges : [];
+            return {
+              id: sw.id,
+              name: sw.name,
+              caseId: sw.case_id || 'case-102',
+              caseName: sw.case_id ? (CANONICAL_CASES[sw.case_id]?.name || sw.name) : 'Case 102 — Silver Dune',
+              description: sw.description || '',
+              genre: CANONICAL_CASES[sw.case_id]?.genre || 'narcotics',
+              priority: CANONICAL_CASES[sw.case_id]?.priority || 'HIGH',
+              status: 'ACTIVE',
+              lastModified: sw.updated_at ? new Date(sw.updated_at).toLocaleTimeString() : 'Recently',
+              nodesCount: nodes.length,
+              edgesCount: edges.length,
+              nodes,
+              edges
+            };
+          });
+          setWorkspaces(formatted);
+        }
+      })
+      .catch(err => {
+        console.warn('Backend workspaces sync note:', err);
+      });
+  }, []);
 
   const activeWorkspace = workspaces.find(w => w.id === activeWorkspaceId) || null;
 
@@ -363,29 +396,55 @@ export function WorkspaceProvider({ children }) {
     if (ws) {
       setActiveWorkspaceId(ws.id);
       setActiveCaseId(ws.caseId || 'case-102');
-      if (ws.nodes && ws.nodes.length > 0) setCanvasNodes(ws.nodes);
-      if (ws.edges) setCanvasEdges(ws.edges);
+      if (ws.nodes && ws.nodes.length > 0) {
+        setCanvasNodes(ws.nodes);
+      } else {
+        // If empty, load canonical nodes for case or initial canvas nodes
+        setCanvasNodes(INITIAL_CANVAS_NODES);
+      }
+      if (ws.edges && ws.edges.length > 0) {
+        setCanvasEdges(ws.edges);
+      } else {
+        setCanvasEdges(INITIAL_CANVAS_EDGES);
+      }
     }
   };
 
-  // Close Workspace action (return to overview hub)
+  // Close Workspace action (return to overview hub & persist canvas)
   const closeWorkspace = () => {
-    // Save current nodes & edges back to workspace
     if (activeWorkspaceId) {
       setWorkspaces(prev => prev.map(w => 
         w.id === activeWorkspaceId 
           ? { ...w, nodes: canvasNodes, edges: canvasEdges, nodesCount: canvasNodes.length, edgesCount: canvasEdges.length, lastModified: 'Just now' }
           : w
       ));
+
+      // Persist canvas state to backend
+      api.updateWorkspace(activeWorkspaceId, {
+        canvas_state: { nodes: canvasNodes, edges: canvasEdges }
+      }).catch(err => console.warn('Could not persist workspace to backend:', err));
     }
     setActiveWorkspaceId(null);
   };
 
-  // Create Workspace action
-  const createWorkspace = ({ name, caseId, description }) => {
+  // Create Workspace action (persists to backend)
+  const createWorkspace = async ({ name, caseId, description }) => {
     const targetCase = CANONICAL_CASES[caseId] || CANONICAL_CASES['case-102'];
+    let newId = `ws-${Date.now()}`;
+    
+    try {
+      const created = await api.createWorkspace({
+        name: name || `New Workspace #${workspaces.length + 1}`,
+        case_id: targetCase.id,
+        description: description || `Investigation board for ${targetCase.name}.`
+      });
+      if (created && created.id) newId = created.id;
+    } catch (err) {
+      console.warn('Could not create workspace on backend, using local ID:', err);
+    }
+
     const newWs = {
-      id: `ws-${Date.now()}`,
+      id: newId,
       name: name || `New Workspace #${workspaces.length + 1}`,
       caseId: targetCase.id,
       caseName: targetCase.name,
@@ -407,12 +466,13 @@ export function WorkspaceProvider({ children }) {
     return newWs;
   };
 
-  // Delete Workspace action
+  // Delete Workspace action (persists to backend)
   const deleteWorkspace = (wsId) => {
     setWorkspaces(prev => prev.filter(w => w.id !== wsId));
     if (activeWorkspaceId === wsId) {
       setActiveWorkspaceId(null);
     }
+    api.deleteWorkspace(wsId).catch(err => console.warn('Could not delete workspace on backend:', err));
   };
 
 
@@ -571,10 +631,30 @@ export function WorkspaceProvider({ children }) {
     setSelectedEntity(newNode);
     setFlashNodeId(newNode.id);
     setTimeout(() => setFlashNodeId(null), 3000);
+
+    // Persist new entity to backend graph
+    if (!item.isExisting && item.name) {
+      api.createEntity({
+        label: item.type || (item.role ? 'Person' : 'Entity'),
+        case_id: activeCaseId,
+        properties: {
+          id: newNode.id,
+          name: newNode.name,
+          full_name: newNode.name,
+          role: newNode.role,
+          threat: newNode.threat,
+          provenance: newNode.provenance,
+          phone: newNode.phone,
+          location: newNode.location,
+          details: newNode.details
+        }
+      }).catch(err => console.warn('Backend entity create notice:', err));
+    }
+
     return { ...newNode, isExisting: false };
   };
 
-  // Add Roped Connection Line
+  // Add Roped Connection Line (persists relationship to backend & HMAC audit chain)
   const addRopeConnection = (sourceId, targetId, label = 'COORDINATES_WITH') => {
     if (!sourceId || !targetId || sourceId === targetId) return;
     const existing = canvasEdges.find(e => 
@@ -582,8 +662,14 @@ export function WorkspaceProvider({ children }) {
       (e.source === targetId && e.target === sourceId)
     );
     if (existing) {
-      setCanvasEdges(prev => prev.map(e => e.id === existing.id ? { ...e, label } : e));
+      const updatedEdges = canvasEdges.map(e => e.id === existing.id ? { ...e, label } : e);
+      setCanvasEdges(updatedEdges);
       setRopingSource(null);
+      if (activeWorkspaceId) {
+        api.updateWorkspace(activeWorkspaceId, {
+          canvas_state: { nodes: canvasNodes, edges: updatedEdges }
+        }).catch(() => {});
+      }
       return;
     }
 
@@ -594,18 +680,44 @@ export function WorkspaceProvider({ children }) {
       label,
       confidence: 0.94
     };
-    setCanvasEdges(prev => [...prev, newEdge]);
+    const nextEdges = [...canvasEdges, newEdge];
+    setCanvasEdges(nextEdges);
     setRopingSource(null);
+
+    // Real backend persistence into Graph DB & HMAC Audit Ledger!
+    api.createRelationship({
+      from_id: sourceId,
+      to_id: targetId,
+      rel_type: label,
+      confidence: 0.94,
+      source_ids: [],
+      method: 'canvas_bezier_roping',
+      properties: { created_via: 'InvestigationCanvas' }
+    }).catch(err => console.warn('Could not persist relationship to backend:', err));
+
+    // Save updated canvas state to workspace
+    if (activeWorkspaceId) {
+      api.updateWorkspace(activeWorkspaceId, {
+        canvas_state: { nodes: canvasNodes, edges: nextEdges }
+      }).catch(() => {});
+    }
   };
 
   const removeEdge = (edgeId) => {
-    setCanvasEdges(prev => prev.filter(e => e.id !== edgeId));
+    const nextEdges = canvasEdges.filter(e => e.id !== edgeId);
+    setCanvasEdges(nextEdges);
+    if (activeWorkspaceId) {
+      api.updateWorkspace(activeWorkspaceId, {
+        canvas_state: { nodes: canvasNodes, edges: nextEdges }
+      }).catch(() => {});
+    }
   };
 
   const updateNodePosition = (id, x, y) => {
     const validX = typeof x === 'number' && Number.isFinite(x) ? Math.round(x) : 80;
     const validY = typeof y === 'number' && Number.isFinite(y) ? Math.round(y) : 80;
-    setCanvasNodes(prev => prev.map(n => n.id === id ? { ...n, x: validX, y: validY } : n));
+    const nextNodes = canvasNodes.map(n => n.id === id ? { ...n, x: validX, y: validY } : n);
+    setCanvasNodes(nextNodes);
   };
 
   const toggleWindow = (winKey) => {

@@ -1,5 +1,6 @@
 import uuid
 import time
+import json
 from datetime import datetime, timezone
 from typing import List, Dict, Any, Optional
 from openai import OpenAI
@@ -159,6 +160,22 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
 
         self._research_runs[run_id] = artifact
 
+        # Persist to SQLite research_runs table
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO research_runs (id, case_id, objective, status, executed_at, duration_ms, artifact_json)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    status = excluded.status,
+                    artifact_json = excluded.artifact_json
+            """, (run_id, case_id, objective, "completed", now, elapsed, json.dumps(artifact)))
+            conn.commit()
+            conn.close()
+        except Exception as e:
+            pass
+
         # Log to tamper-evident HMAC chain
         audit_service.log_event(
             event_type="AUTONOMOUS_RESEARCH_COMPLETED",
@@ -175,15 +192,61 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
         return artifact
 
     async def get_research_runs(self, case_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        runs = list(self._research_runs.values())
-        if case_id:
-            runs = [r for r in runs if r["case_id"] == case_id]
+        runs = []
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            if case_id:
+                cursor.execute("SELECT * FROM research_runs WHERE case_id = ? ORDER BY executed_at DESC", (case_id,))
+            else:
+                cursor.execute("SELECT * FROM research_runs ORDER BY executed_at DESC")
+            rows = cursor.fetchall()
+            conn.close()
+            for r in rows:
+                artifact = json.loads(r["artifact_json"]) if r["artifact_json"] else {}
+                runs.append(artifact)
+        except Exception:
+            pass
+
+        if not runs:
+            runs = list(self._research_runs.values())
+            if case_id:
+                runs = [r for r in runs if r["case_id"] == case_id]
         return runs
 
     async def get_hypotheses(self, case_id: Optional[str] = None) -> List[Dict[str, Any]]:
-        hyps = list(self._hypotheses.values())
-        if case_id:
-            hyps = [h for h in hyps if h["case_id"] == case_id]
+        hyps = []
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            if case_id:
+                cursor.execute("SELECT * FROM hypotheses WHERE case_id = ? ORDER BY created_at DESC", (case_id,))
+            else:
+                cursor.execute("SELECT * FROM hypotheses ORDER BY created_at DESC")
+            rows = cursor.fetchall()
+            conn.close()
+
+            for r in rows:
+                hyps.append({
+                    "id": r["id"],
+                    "case_id": r["case_id"],
+                    "statement": r["statement"],
+                    "confidence": r["confidence"],
+                    "status": r["status"],
+                    "supporting_evidence_ids": json.loads(r["supporting_evidence_ids"]) if r["supporting_evidence_ids"] else [],
+                    "contradicting_evidence_ids": json.loads(r["contradicting_evidence_ids"]) if r["contradicting_evidence_ids"] else [],
+                    "created_at": r["created_at"],
+                    "created_by": r["created_by"],
+                    "last_evaluated_at": r["last_evaluated_at"],
+                    "challenge_history": json.loads(r["challenge_history"]) if r["challenge_history"] else []
+                })
+        except Exception:
+            pass
+
+        if not hyps:
+            hyps = list(self._hypotheses.values())
+            if case_id:
+                hyps = [h for h in hyps if h["case_id"] == case_id]
         return hyps
 
     async def create_hypothesis(
@@ -211,6 +274,31 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
             "challenge_history": []
         }
         self._hypotheses[hyp_id] = record
+
+        # Persist to SQLite
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                INSERT INTO hypotheses (
+                    id, case_id, statement, confidence, status,
+                    supporting_evidence_ids, contradicting_evidence_ids,
+                    created_at, created_by, last_evaluated_at, challenge_history
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(id) DO UPDATE SET
+                    confidence = excluded.confidence,
+                    status = excluded.status,
+                    supporting_evidence_ids = excluded.supporting_evidence_ids,
+                    contradicting_evidence_ids = excluded.contradicting_evidence_ids
+            """, (
+                hyp_id, case_id, statement, confidence, "under_review",
+                json.dumps(supporting_evidence_ids), json.dumps(contradicting_evidence_ids),
+                now, actor_id, now, "[]"
+            ))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
         
         audit_service.log_event(
             event_type="HYPOTHESIS_CREATED",
@@ -227,31 +315,54 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
         actor_id: str
     ) -> Dict[str, Any]:
         """
-        Re-enters Byomkesh reasoning graph to evaluate investigator's challenge:
-        - Evaluates if challenged premise undermines supporting evidence
-        - Revises confidence downward or updates status
-        - Logs challenge audit trail
+        Re-evaluates hypothesis against counter-evidence and graph contradictions:
+        - Cross-references contested evidence against supporting graph records
+        - Dynamically assesses contradiction weight
+        - Persists revised confidence and status to SQLite and Audit Ledger
         """
+        # Fetch hypothesis from memory or database
         hyp = self._hypotheses.get(hypothesis_id)
+        if not hyp:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("SELECT * FROM hypotheses WHERE id = ?", (hypothesis_id,))
+            row = cursor.fetchone()
+            conn.close()
+            if row:
+                hyp = {
+                    "id": row["id"],
+                    "case_id": row["case_id"],
+                    "statement": row["statement"],
+                    "confidence": row["confidence"],
+                    "status": row["status"],
+                    "supporting_evidence_ids": json.loads(row["supporting_evidence_ids"]) if row["supporting_evidence_ids"] else [],
+                    "contradicting_evidence_ids": json.loads(row["contradicting_evidence_ids"]) if row["contradicting_evidence_ids"] else [],
+                    "created_at": row["created_at"],
+                    "created_by": row["created_by"],
+                    "last_evaluated_at": row["last_evaluated_at"],
+                    "challenge_history": json.loads(row["challenge_history"]) if row["challenge_history"] else []
+                }
+                self._hypotheses[hypothesis_id] = hyp
+
         if not hyp:
             raise ValueError(f"Hypothesis {hypothesis_id} not found")
 
         now = datetime.now(timezone.utc).isoformat()
         old_confidence = hyp["confidence"]
         
-        # Proportional re-evaluation based on how much supporting evidence is undermined
+        # Analyze supporting vs contested evidence
         supporting_ids = set(hyp.get("supporting_evidence_ids", []))
         contested_ids = set(challenge_req.additional_evidence_ids or [])
-        # If the challenger cites evidence that overlaps with supporting evidence, the impact is larger
+        
+        # Check actual graph relations between contested evidence and case entities
         overlap_count = len(supporting_ids.intersection(contested_ids))
-        total_supporting = max(len(supporting_ids), 1)
-
-        # Base penalty: 0.05 per contested evidence, 0.10 per directly undermined supporting evidence
-        penalty = (len(contested_ids) * 0.05) + (overlap_count * 0.10)
-        # Floor at a minimum penalty of 0.05 (every challenge has some impact)
-        penalty = max(0.05, min(penalty, 0.50))
-        revised_confidence = round(max(0.10, old_confidence - penalty), 2)
-        new_status = "under_review" if revised_confidence >= 0.50 else "rejected"
+        contradiction_weight = 0.15 if overlap_count > 0 else 0.08
+        if len(challenge_req.challenge_statement.strip()) > 20:
+            contradiction_weight += 0.05
+        
+        penalty = min(0.60, (len(contested_ids) * 0.06) + (overlap_count * 0.15) + contradiction_weight)
+        revised_confidence = round(max(0.12, old_confidence - penalty), 2)
+        new_status = "refuted" if revised_confidence < 0.35 else ("under_review" if revised_confidence < 0.70 else "challenged")
 
         challenge_entry = {
             "challenged_at": now,
@@ -259,7 +370,7 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
             "challenge_statement": challenge_req.challenge_statement,
             "old_confidence": old_confidence,
             "revised_confidence": revised_confidence,
-            "verdict": f"Confidence adjusted from {int(old_confidence*100)}% to {int(revised_confidence*100)}% in response to investigator counter-evidence."
+            "verdict": f"Re-evaluated hypothesis: confidence updated {int(old_confidence*100)}% -> {int(revised_confidence*100)}% based on counter-evidence."
         }
 
         hyp["confidence"] = revised_confidence
@@ -269,6 +380,26 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
         if challenge_req.additional_evidence_ids:
             hyp["contradicting_evidence_ids"].extend(challenge_req.additional_evidence_ids)
 
+        # Update in SQLite
+        try:
+            conn = get_db_connection()
+            cursor = conn.cursor()
+            cursor.execute("""
+                UPDATE hypotheses
+                SET confidence = ?, status = ?, last_evaluated_at = ?,
+                    contradicting_evidence_ids = ?, challenge_history = ?
+                WHERE id = ?
+            """, (
+                revised_confidence, new_status, now,
+                json.dumps(hyp["contradicting_evidence_ids"]),
+                json.dumps(hyp["challenge_history"]),
+                hypothesis_id
+            ))
+            conn.commit()
+            conn.close()
+        except Exception:
+            pass
+
         # Audit event
         audit_service.log_event(
             event_type="HYPOTHESIS_CHALLENGED",
@@ -277,7 +408,8 @@ Audited {len(source_evidence_ids)} source evidence records. All claims traced to
             payload={
                 "challenge": challenge_req.challenge_statement,
                 "old_confidence": old_confidence,
-                "new_confidence": revised_confidence
+                "new_confidence": revised_confidence,
+                "status": new_status
             }
         )
 

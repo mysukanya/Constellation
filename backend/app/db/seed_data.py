@@ -48,6 +48,61 @@ async def seed_canonical_intelligence():
                     "legal_basis": "IPC Sec 370 / Passports Act",
                     "status": "active"
                 }
+            },
+            {
+                "id": "case-108",
+                "label": "Case",
+                "properties": {
+                    "id": "case-108",
+                    "title": "Case 108 — Waterfront Contract Hit",
+                    "description": "Targeted execution of customs informant at Dock 4. 9mm Glock ballistics match to syndicate hitman.",
+                    "legal_basis": "BNS Sec 103 (IPC 302) & Arms Act",
+                    "status": "active"
+                }
+            },
+            {
+                "id": "case-121",
+                "label": "Case",
+                "properties": {
+                    "id": "case-121",
+                    "title": "Case 121 — Diamond Bourse Vault Breach",
+                    "description": "Inside-job biometric override and armed breach of Bharat Diamond Bourse subterranean vault.",
+                    "legal_basis": "BNS Sec 309 (IPC 392) & Cyber Fraud",
+                    "status": "active"
+                }
+            },
+            {
+                "id": "case-135",
+                "label": "Case",
+                "properties": {
+                    "id": "case-135",
+                    "title": "Case 135 — Black Pearl Extortion",
+                    "description": "Coercive extortion ring targeting Kandla shipping contractors with VoIP death threats and ransom calls.",
+                    "legal_basis": "IPC Sec 384 / IT Act Sec 66D",
+                    "status": "active"
+                }
+            },
+            {
+                "id": "case-155",
+                "label": "Case",
+                "properties": {
+                    "id": "case-155",
+                    "title": "Case 155 — Blue Horizon Maritime Dispute",
+                    "description": "Arrest warrant for MT Desert Pearl over unpaid bunker fuel claims and flag registry falsification.",
+                    "legal_basis": "Admiralty Act 2017 & UNCLOS Art 110",
+                    "status": "active"
+                }
+            },
+            {
+                "id": "case-168",
+                "label": "Case",
+                "properties": {
+                    "id": "case-168",
+                    "title": "Case 168 — Darknet Cyber Infiltration",
+                    "description": "Encrypted Thuraya packet bursts and command-and-control beaconing off Saurashtra coastal light beacon.",
+                    "legal_basis": "IT Act Sec 66F (Cyber Terrorism)",
+                    "status": "active"
+                }
             }
         ]
 
@@ -308,6 +363,35 @@ async def seed_canonical_intelligence():
                 case_id=ev["case_id"]
             )
 
+        # Additional canonical nodes and edges for cases 117, 143, 108, 121, 135, 155, 168
+        extra_entities = [
+            ("p-101", "Person", "case-117", {"id": "p-101", "name": 'Farhan "Ghost" Qureshi', "full_name": "Farhan Qureshi", "role": "AML Smurfing Master", "threat": "CRITICAL", "phone": "+94-77-229-1002", "case_id": "case-117"}),
+            ("org-102", "Organization", "case-117", {"id": "org-102", "name": "Blue Horizon Marine LLP", "full_name": "Blue Horizon Marine LLP", "role": "Surat SEZ Front Entity", "threat": "HIGH", "case_id": "case-117"}),
+            ("evd-103", "Evidence", "case-117", {"id": "evd-103", "title": "SWIFT Wire Transfer Log #FIU-99201", "evidence_type": "document", "file_hash": "11b9a87c001234567890abcdef1234567890abcdef1234567890abcdef123456", "case_id": "case-117"}),
+            ("p-201", "Person", "case-143", {"id": "p-201", "name": 'Dinesh "Koli" Patel', "full_name": "Dinesh Patel", "role": "Coastal Dhow Master", "threat": "HIGH", "case_id": "case-143"}),
+            ("loc-202", "Location", "case-143", {"id": "loc-202", "name": "Porbandar Coastal Creek Berth 9", "full_name": "Porbandar Coastal Creek Berth 9", "role": "Clandestine Offload Depot", "case_id": "case-143"}),
+            ("p-301", "Person", "case-108", {"id": "p-301", "name": 'Vikram "Blade" Jadhav', "full_name": "Vikram Jadhav", "role": "Contract Shooter", "threat": "CRITICAL", "case_id": "case-108"}),
+            ("evd-302", "Evidence", "case-108", {"id": "evd-302", "title": "9mm Glock Ballistics Striation Report", "evidence_type": "document", "file_hash": "aa19c344001234567890abcdef1234567890abcdef1234567890abcdef123456", "case_id": "case-108"}),
+            ("p-401", "Person", "case-121", {"id": "p-401", "name": "Arjun Singhania (Insider)", "full_name": "Arjun Singhania", "role": "Access Controller", "threat": "HIGH", "case_id": "case-121"}),
+            ("p-501", "Person", "case-135", {"id": "p-501", "name": 'Sameer "Viper" Mir', "full_name": "Sameer Mir", "role": "Ring Leader", "threat": "HIGH", "case_id": "case-135"}),
+            ("veh-601", "Vehicle", "case-155", {"id": "veh-601", "name": "MT Desert Pearl (Ghost Tanker)", "full_name": "MT Desert Pearl", "role": "Sanctions Evasion Tanker", "threat": "HIGH", "case_id": "case-155"}),
+            ("dig-701", "Digital", "case-168", {"id": "dig-701", "name": "Thuraya Frequency Band 1544.15 MHz", "full_name": "Thuraya Satellite Telemetry 1544.15", "role": "Encrypted Radio Burst", "threat": "CRITICAL", "case_id": "case-168"})
+        ]
+        for nid, lbl, cid, props in extra_entities:
+            await graph_client.create_node(label=lbl, node_id=nid, properties=props, case_id=cid)
+
+        extra_relationships = [
+            ("edge-101", "p-101", "org-102", "CONTROLS", 0.95, ["evd-103"], "Corporate Registrar & FIU"),
+            ("edge-102", "org-102", "evd-103", "EVIDENCE_OF", 0.98, ["evd-103"], "Wire Transfer Link"),
+            ("edge-201", "p-201", "loc-202", "VISITED", 0.89, [], "Coast Guard Radar Log"),
+            ("edge-301", "p-301", "evd-302", "ACCUSED_OF", 0.99, ["evd-302"], "Ballistics Striation Match")
+        ]
+        for rel_id, src, dst, r_type, conf, sources, method in extra_relationships:
+            await graph_client.create_relationship(
+                rel_id=rel_id, from_id=src, to_id=dst, rel_type=r_type,
+                confidence=conf, source_ids=sources, method=method, created_at="2026-09-23T12:00:00Z"
+            )
+
         from app.db.sqlite_client import get_db_connection
         conn = get_db_connection()
         cursor = conn.cursor()
@@ -350,29 +434,84 @@ async def seed_canonical_intelligence():
 
         # 7. Seed Canonical Workspaces
         import json
-        ws_canvas_102 = json.dumps({
-            "nodes": [
-                {"id": "p-1", "name": 'Tariq "The Anchor" Merchant', "type": "Person", "role": "Syndicate Coordinator", "threat": "CRITICAL", "x": 80, "y": 80},
-                {"id": "p-2", "name": "Rajesh Sharma", "type": "Person", "role": "Charter Broker", "threat": "HIGH", "x": 420, "y": 90},
-                {"id": "org-1", "name": "Al-Barakah Logistics FZE", "type": "Organization", "role": "Shell Charterer (Dubai)", "threat": "HIGH", "x": 180, "y": 280},
-                {"id": "fin-1", "name": "Hawala Account #88219", "type": "Financial", "role": "₹14.8 Cr Settlement Mirror", "threat": "CRITICAL", "x": 480, "y": 310}
-            ],
-            "edges": [
-                {"id": "edge-1", "source": "p-1", "target": "org-1", "label": "BENEFICIAL_OWNER", "confidence": 0.94},
-                {"id": "edge-2", "source": "p-1", "target": "p-2", "label": "COMMUNICATES_WITH", "confidence": 0.88},
-                {"id": "edge-3", "source": "org-1", "target": "fin-1", "label": "FUNDS_TRANSFERRED", "confidence": 0.96},
-                {"id": "edge-4", "source": "p-2", "target": "fin-1", "label": "AUTHORIZED_SIGNATORY", "confidence": 0.91}
-            ]
-        })
+        ws_list = [
+            {
+                "id": "ws-102",
+                "name": "Silver Dune — Maritime Narcotics & Hawala Board",
+                "case_id": "case-102",
+                "description": "Tracing cross-border lightering off Saurashtra coast and Hawala split mirror accounts.",
+                "canvas_state": json.dumps({
+                    "nodes": [
+                        {"id": "p-1", "name": 'Tariq "The Anchor" Merchant', "type": "Person", "role": "Syndicate Coordinator", "threat": "CRITICAL", "x": 80, "y": 80},
+                        {"id": "p-2", "name": "Rajesh Sharma", "type": "Person", "role": "Charter Broker", "threat": "HIGH", "x": 420, "y": 90},
+                        {"id": "org-1", "name": "Al-Barakah Logistics FZE", "type": "Organization", "role": "Shell Charterer (Dubai)", "threat": "HIGH", "x": 180, "y": 280},
+                        {"id": "fin-1", "name": "Hawala Account #88219", "type": "Financial", "role": "₹14.8 Cr Settlement Mirror", "threat": "CRITICAL", "x": 480, "y": 310}
+                    ],
+                    "edges": [
+                        {"id": "edge-1", "source": "p-1", "target": "org-1", "label": "BENEFICIAL_OWNER", "confidence": 0.94},
+                        {"id": "edge-2", "source": "p-1", "target": "p-2", "label": "COMMUNICATES_WITH", "confidence": 0.88},
+                        {"id": "edge-3", "source": "org-1", "target": "fin-1", "label": "FUNDS_TRANSFERRED", "confidence": 0.96},
+                        {"id": "edge-4", "source": "p-2", "target": "fin-1", "label": "AUTHORIZED_SIGNATORY", "confidence": 0.91}
+                    ]
+                })
+            },
+            {
+                "id": "ws-117",
+                "name": "Operation Black Tide — Corporate Shells & AML",
+                "case_id": "case-117",
+                "description": "Analyzing Farhan Qureshi straw account network and Colombo escrow wire transfers.",
+                "canvas_state": json.dumps({
+                    "nodes": [
+                        {"id": "p-101", "name": 'Farhan "Ghost" Qureshi', "role": "AML Smurfing Master", "type": "Person", "threat": "CRITICAL", "x": 120, "y": 100},
+                        {"id": "org-102", "name": "Blue Horizon Marine LLP", "role": "Surat SEZ Front Entity", "type": "Organization", "threat": "HIGH", "x": 440, "y": 120},
+                        {"id": "evd-103", "name": "SWIFT Transfer Log #FIU-99201", "role": "Cryptographic SWIFT Trace", "type": "Evidence", "threat": "HIGH", "x": 280, "y": 300}
+                    ],
+                    "edges": [
+                        {"id": "edge-101", "source": "p-101", "target": "org-102", "label": "CONTROLS", "confidence": 0.95},
+                        {"id": "edge-102", "source": "org-102", "target": "evd-103", "label": "EVIDENCE_OF", "confidence": 0.98}
+                    ]
+                })
+            },
+            {
+                "id": "ws-143",
+                "name": "Red Sand Syndicate — Porbandar Creek Smuggling",
+                "case_id": "case-143",
+                "description": "Tracking unflagged nocturnal dhow routes and counterfeit passport broker safehouses.",
+                "canvas_state": json.dumps({
+                    "nodes": [
+                        {"id": "p-201", "name": 'Dinesh "Koli" Patel', "role": "Coastal Dhow Master", "type": "Person", "threat": "HIGH", "x": 140, "y": 120},
+                        {"id": "loc-202", "name": "Porbandar Coastal Creek Berth 9", "role": "Clandestine Offload Depot", "type": "Location", "threat": "HIGH", "x": 420, "y": 160}
+                    ],
+                    "edges": [
+                        {"id": "edge-201", "source": "p-201", "target": "loc-202", "label": "VISITED", "confidence": 0.89}
+                    ]
+                })
+            },
+            {
+                "id": "ws-108",
+                "name": "Waterfront Contract Hit — Ballistics Board",
+                "case_id": "case-108",
+                "description": "Forensic matching of Dock 4 spent casings to syndicate hitman Vikram Jadhav.",
+                "canvas_state": json.dumps({
+                    "nodes": [
+                        {"id": "p-301", "name": 'Vikram "Blade" Jadhav', "role": "Shooter / Hitman", "type": "Person", "threat": "CRITICAL", "x": 150, "y": 120},
+                        {"id": "evd-302", "name": "9mm Glock Ballistics Striation Report", "role": "Forensic Ballistics Proof", "type": "Evidence", "threat": "CRITICAL", "x": 450, "y": 140}
+                    ],
+                    "edges": [
+                        {"id": "edge-301", "source": "p-301", "target": "evd-302", "label": "ACCUSED_OF", "confidence": 0.99}
+                    ]
+                })
+            }
+        ]
 
-        cursor.execute("""
-            INSERT OR REPLACE INTO workspaces (id, name, case_id, description, canvas_state, created_by, created_at, updated_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-        """, (
-            "ws-102", "Silver Dune — Maritime Narcotics & Hawala Board", "case-102",
-            "Tracing cross-border lightering off Saurashtra coast and Hawala split mirror accounts.",
-            ws_canvas_102, "usr_investigator", "2026-09-23T10:00:00Z", "2026-09-23T12:00:00Z"
-        ))
+        for ws in ws_list:
+            cursor.execute("""
+                INSERT OR REPLACE INTO workspaces (id, name, case_id, description, canvas_state, created_by, created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                ws["id"], ws["name"], ws["case_id"], ws["description"],
+                ws["canvas_state"], "usr_investigator", "2026-09-23T10:00:00Z", "2026-09-23T12:00:00Z"
+            ))
 
         # 8. Seed Initial Notifications
         notifications = [

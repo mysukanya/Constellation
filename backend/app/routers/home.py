@@ -39,31 +39,40 @@ async def get_home_briefing(current_user: UserResponse = Depends(get_current_use
             "last_active": props.get("created_at", datetime.now(timezone.utc).isoformat())
         })
 
-    # 4. Live unverified intelligence items
-    live_intel = [
-        LiveIntelligenceItem(
+    # 4. Live unverified intelligence items tied to real graph entities
+    all_persons = await graph_service.list_nodes(label="Person")
+    p1 = next((p for p in all_persons if p["id"] == "p-1"), all_persons[0] if all_persons else None)
+    p2 = next((p for p in all_persons if p["id"] == "p-101"), all_persons[1] if len(all_persons) > 1 else p1)
+
+    live_intel = []
+    if p1:
+        p1_name = p1.get("properties", {}).get("full_name", "Tariq Merchant")
+        live_intel.append(LiveIntelligenceItem(
             id="intel_01",
-            source_name="Financial Regulatory Wire",
+            source_name="Financial Regulatory Wire (FIU-IND)",
             source_type="public_records",
-            title="Entity Transfer Involving Off-Shore Account",
-            snippet="Cross-border wire of $420,000 flagged matching identifier associated with Marcus Vance.",
+            title=f"Structured Hawala Dispersal Flagged: {p1_name}",
+            snippet=f"Unusual high-frequency wire settlement of ₹14.8 Crore matching syndicate accounts associated with {p1_name}.",
             status="unverified",
-            confidence=0.74,
+            confidence=0.91,
             detected_at=datetime.now(timezone.utc).isoformat(),
-            relevant_entity_ids=["person_marcus_vance"]
-        ),
-        LiveIntelligenceItem(
+            relevant_entity_ids=[p1["id"]],
+            relevant_case_ids=["case-102"]
+        ))
+    if p2:
+        p2_name = p2.get("properties", {}).get("full_name", "Farhan Qureshi")
+        live_intel.append(LiveIntelligenceItem(
             id="intel_02",
-            source_name="Maritime AIS Telemetry",
+            source_name="Maritime AIS Telemetry & Port Logs",
             source_type="osint",
-            title="Vessel Northern Star Port Entry",
-            snippet="Vessel linked to Case 102 logistics docked at Port of Rotterdam at 04:15 UTC.",
+            title="AIS Transponder Discontinuity off Gujarat Shelf",
+            snippet=f"Bulk vessel associated with {p2_name} offshore logistics deactivated transponder for 31 hours before Kandla berth entry.",
             status="unverified",
             confidence=0.88,
             detected_at=datetime.now(timezone.utc).isoformat(),
-            relevant_case_ids=[cases[0]["id"]] if cases else []
-        )
-    ]
+            relevant_entity_ids=[p2["id"]],
+            relevant_case_ids=[p2.get("case_id") or "case-117"]
+        ))
 
     return HomeBriefingResponse(
         greeting=f"Good evening, Special Agent {current_user.username.title()}.",

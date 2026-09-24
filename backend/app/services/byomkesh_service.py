@@ -1,3 +1,4 @@
+import re
 import time
 import uuid
 import json
@@ -78,12 +79,26 @@ class ByomkeshAgent:
         question = state["question"].lower()
         subgraph = await graph_service.get_case_subgraph(case_id=state.get("case_id"))
         
-        # Match entities referenced in question text
+        # Match entities referenced in question text (full name or significant token)
         matched_nodes = []
         for n in subgraph.get("nodes", []):
-            name = n.get("properties", {}).get("full_name") or n.get("properties", {}).get("name", "")
-            if name and name.lower() in question:
-                matched_nodes.append(n)
+            props = n.get("properties", {})
+            names = [props.get("full_name"), props.get("name"), props.get("title")]
+            for name in names:
+                if not name:
+                    continue
+                name_clean = name.lower()
+                # Direct substring match
+                if name_clean in question:
+                    if n not in matched_nodes:
+                        matched_nodes.append(n)
+                    break
+                # Significant token match (tokens > 3 chars like 'tariq', 'merchant', 'barakah')
+                tokens = [t for t in re.split(r'[\s\-_",.]+', name_clean) if len(t) > 3]
+                if any(t in question for t in tokens):
+                    if n not in matched_nodes:
+                        matched_nodes.append(n)
+                    break
 
         # Include explicitly focused entity IDs
         for fid in state.get("focus_entity_ids", []):
@@ -92,8 +107,8 @@ class ByomkeshAgent:
                 matched_nodes.append(node)
 
         intent = {
-            "is_contacts_query": any(w in question for w in ["contact", "call", "communicate", "talk", "reach", "who", "associate"]),
-            "is_financial_query": any(w in question for w in ["money", "hawala", "transfer", "financial", "payment", "bank", "account", "swift"]),
+            "is_contacts_query": any(w in question for w in ["contact", "call", "communicate", "talk", "reach", "who", "associate", "connection"]),
+            "is_financial_query": any(w in question for w in ["money", "hawala", "transfer", "financial", "payment", "bank", "account", "swift", "fund"]),
             "is_evidence_query": any(w in question for w in ["evidence", "proof", "source", "document", "hash", "bol", "transcript"]),
             "matched_nodes": matched_nodes
         }
@@ -108,11 +123,18 @@ class ByomkeshAgent:
 
         if matched_nodes:
             target_id = matched_nodes[0]["id"]
-            queries.append(f"MATCH (p:Person {{id: '{target_id}'}})-[r:CONTACTS]-(other:Person) RETURN p, r, other")
+            if intent.get("is_financial_query"):
+                queries.append(f"MATCH (n {{id: '{target_id}'}})-[r:FUNDS_TRANSFERRED|AUTHORIZED_SIGNATORY|TRANSFERS_TO]-(other) RETURN n, r, other")
+                queries.append(f"MATCH (n {{id: '{target_id}'}})-[r]-(other) RETURN n, r, other")
+            elif intent.get("is_contacts_query"):
+                queries.append(f"MATCH (n {{id: '{target_id}'}})-[r:COMMUNICATES_WITH|CONTACTS|COORDINATES_WITH]-(other) RETURN n, r, other")
+                queries.append(f"MATCH (n {{id: '{target_id}'}})-[r]-(other) RETURN n, r, other")
+            else:
+                queries.append(f"MATCH (n {{id: '{target_id}'}})-[r]-(other) RETURN n, r, other")
         elif case_id:
             queries.append(f"MATCH (n {{case_id: '{case_id}'}})-[r]-(m) RETURN n, r, m LIMIT 50")
         else:
-            queries.append("MATCH (p:Person)-[r:CONTACTS]-(other:Person) RETURN p, r, other LIMIT 50")
+            queries.append("MATCH (n)-[r]-(other) RETURN n, r, other LIMIT 50")
 
         return {"planned_queries": queries}
 
@@ -120,11 +142,20 @@ class ByomkeshAgent:
     async def _node_execute_cypher(self, state: ByomkeshState) -> Dict[str, Any]:
         queries = state.get("planned_queries", [])
         results = []
+        seen_edges = set()
 
         for q in queries:
             try:
                 records = await graph_client.execute_query(q)
-                results.extend(records)
+                for rec in records:
+                    edge = rec.get("r")
+                    if edge and isinstance(edge, dict):
+                        e_id = edge.get("id")
+                        if e_id and e_id in seen_edges:
+                            continue
+                        if e_id:
+                            seen_edges.add(e_id)
+                    results.append(rec)
             except Exception as e:
                 logger.error(f"Error executing Cypher query '{q}': {e}")
 

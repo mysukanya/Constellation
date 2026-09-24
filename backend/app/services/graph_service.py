@@ -151,6 +151,9 @@ class GraphService:
             case_id=keep_node.get("case_id")
         )
 
+        # Delete drop_id and its legacy edges to complete clean merge
+        await graph_client.delete_node(drop_id)
+
         # Audit event
         audit_service.log_event(
             event_type="ENTITIES_MERGED",
