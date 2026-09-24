@@ -13,7 +13,7 @@ export default function LoginPage() {
       if (params.get('screen') === 'welcome') return 'welcome';
       if (params.get('screen') === 'login') return 'login';
     }
-    return 'splash';
+    return 'login';
   });
 
   const [typedSplash, setTypedSplash] = useState('');

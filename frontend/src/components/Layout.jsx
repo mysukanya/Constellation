@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { useWorkspace } from '../contexts/WorkspaceContext';
 import DesktopChrome from './desktop/DesktopChrome';
+import SplashScreen from './SplashScreen';
 import LoginPage from '../pages/LoginPage';
 import DashboardPage from '../pages/DashboardPage';
 import InvestigationWorkspace from '../pages/InvestigationWorkspace';
@@ -16,6 +18,18 @@ import ByomkeshPage from '../pages/ByomkeshPage';
 export default function Layout() {
   const { isAuthenticated, loading, user } = useAuth();
   const { activeNavSection } = useWorkspace();
+
+  const [showSplash, setShowSplash] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('nosplash') === '1') return false;
+    }
+    return true;
+  });
+
+  const handleSplashComplete = () => {
+    setShowSplash(false);
+  };
 
   // Show clean minimal loading spinner ONLY if truly loading without cached user
   if (loading && !user) {
@@ -36,24 +50,27 @@ export default function Layout() {
     );
   }
 
-  // Show login page when not authenticated
-  if (!isAuthenticated) {
-    return <LoginPage />;
-  }
-
   return (
-    <DesktopChrome>
-      {activeNavSection === 'home' && <DashboardPage />}
-      {activeNavSection === 'workspace' && <InvestigationWorkspace />}
-      {activeNavSection === 'intel' && <LiveIntelligencePage />}
-      {activeNavSection === 'sweeps' && <SweepDashboardPage />}
-      {activeNavSection === 'audit' && <AuditLedgerPage />}
-      {activeNavSection === 'cases' && <CasesPage />}
-      {activeNavSection === 'case-detail' && <CaseDetailPage />}
-      {activeNavSection === 'er' && <EntityResolutionPage />}
-      {activeNavSection === 'ingestion' && <IngestionPage />}
-      {activeNavSection === 'byomkesh' && <ByomkeshPage />}
-    </DesktopChrome>
+    <>
+      {showSplash && <SplashScreen onComplete={handleSplashComplete} />}
+
+      {!isAuthenticated ? (
+        <LoginPage />
+      ) : (
+        <DesktopChrome>
+          {activeNavSection === 'home' && <DashboardPage />}
+          {activeNavSection === 'workspace' && <InvestigationWorkspace />}
+          {activeNavSection === 'intel' && <LiveIntelligencePage />}
+          {activeNavSection === 'sweeps' && <SweepDashboardPage />}
+          {activeNavSection === 'audit' && <AuditLedgerPage />}
+          {activeNavSection === 'cases' && <CasesPage />}
+          {activeNavSection === 'case-detail' && <CaseDetailPage />}
+          {activeNavSection === 'er' && <EntityResolutionPage />}
+          {activeNavSection === 'ingestion' && <IngestionPage />}
+          {activeNavSection === 'byomkesh' && <ByomkeshPage />}
+        </DesktopChrome>
+      )}
+    </>
   );
 }
 

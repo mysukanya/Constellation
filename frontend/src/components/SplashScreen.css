@@ -1,0 +1,45 @@
+.app-splash-overlay {
+  position: fixed;
+  inset: 0;
+  background: #000000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100000;
+  cursor: pointer;
+  user-select: none;
+  opacity: 1;
+  transition: opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.app-splash-overlay.is-fading {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.app-splash-content {
+  display: flex;
+  align-items: baseline;
+  color: #ffffff;
+  font-size: 26px;
+  font-weight: 400;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.app-splash-word {
+  color: #ffffff;
+}
+
+.app-splash-cursor {
+  color: #ffffff;
+  font-weight: 300;
+  margin-left: 4px;
+  animation: splashCursorBlink 0.85s step-start infinite;
+}
+
+@keyframes splashCursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
