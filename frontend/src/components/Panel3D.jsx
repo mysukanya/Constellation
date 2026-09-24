@@ -22,6 +22,7 @@ export default function Panel3D({
 
   const handleMouseMove = useCallback((e) => {
     if (!enableTilt || !panelRef.current) return;
+    if (document.documentElement.getAttribute('data-theme') === 'light') return;
     const rect = panelRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;

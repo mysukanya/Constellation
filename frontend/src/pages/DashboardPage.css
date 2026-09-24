@@ -780,3 +780,117 @@
   border-color: var(--accent-green);
   color: var(--accent-green);
 }
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MINIMALIST THEME FOR DASHBOARD
+   ═══════════════════════════════════════════════════════ */
+[data-theme="light"] .grid-dashboard-root,
+.theme-light .grid-dashboard-root {
+  background: #f8fafc !important;
+}
+
+[data-theme="light"] .hero-grid-panel,
+.theme-light .hero-grid-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .hero-main-heading,
+.theme-light .hero-main-heading {
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .hero-description-text,
+.theme-light .hero-description-text {
+  color: #475569 !important;
+}
+
+[data-theme="light"] .hero-explore-btn,
+.theme-light .hero-explore-btn {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+[data-theme="light"] .hero-explore-btn:hover,
+.theme-light .hero-explore-btn:hover {
+  background: #e2e8f0 !important;
+  border-color: #94a3b8 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+[data-theme="light"] .overview-stat-card,
+.theme-light .overview-stat-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transform: none !important;
+}
+
+[data-theme="light"] .overview-stat-card:hover,
+.theme-light .overview-stat-card:hover {
+  border-color: #cbd5e1 !important;
+  background: #f8fafc !important;
+  transform: none !important;
+}
+
+[data-theme="light"] .radar-screen-panel,
+.theme-light .radar-screen-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .side-rail-panel,
+.theme-light .side-rail-panel {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .active-investigation-item,
+.theme-light .active-investigation-item {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .active-investigation-item:hover,
+.theme-light .active-investigation-item:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+  transform: none !important;
+}
+
+[data-theme="light"] .sweep-discovery-card,
+.theme-light .sweep-discovery-card {
+  background: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .sweep-discovery-card:hover,
+.theme-light .sweep-discovery-card:hover {
+  background: #f1f5f9 !important;
+  border-color: #cbd5e1 !important;
+}
+
+[data-theme="light"] .intel-card-inner,
+.theme-light .intel-card-inner {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .dropdown-pill-menu,
+.theme-light .dropdown-pill-menu {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .region-pill-dropdown,
+.theme-light .region-pill-dropdown {
+  background: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #334155 !important;
+}

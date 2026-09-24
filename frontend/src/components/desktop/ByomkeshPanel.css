@@ -754,3 +754,60 @@
   gap: 8px;
   margin-top: 6px;
 }
+
+/* ═══════════════════════════════════════════════════════
+   LIGHT MINIMALIST THEME FOR BYOMKESH PANEL
+   ═══════════════════════════════════════════════════════ */
+[data-theme="light"] .byomkesh-panel-root,
+.theme-light .byomkesh-panel-root {
+  background-color: #f8fafc !important;
+  border-left: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .byomkesh-panel-header,
+.theme-light .byomkesh-panel-header {
+  background: #ffffff !important;
+  border-bottom: 1px solid #e2e8f0 !important;
+}
+
+[data-theme="light"] .byomkesh-input-box,
+.theme-light .byomkesh-input-box {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+[data-theme="light"] .msg-bubble-assistant,
+.theme-light .msg-bubble-assistant {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #0f172a !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .msg-bubble-user,
+.theme-light .msg-bubble-user {
+  background: #2563eb !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] .citation-pill,
+.theme-light .citation-pill {
+  background: #eff6ff !important;
+  border: 1px solid #bfdbfe !important;
+  color: #1d4ed8 !important;
+}
+
+[data-theme="light"] .suggestion-chip,
+.theme-light .suggestion-chip {
+  background: #ffffff !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+
+[data-theme="light"] .suggestion-chip:hover,
+.theme-light .suggestion-chip:hover {
+  background: #f1f5f9 !important;
+  border-color: #94a3b8 !important;
+  color: #0f172a !important;
+}

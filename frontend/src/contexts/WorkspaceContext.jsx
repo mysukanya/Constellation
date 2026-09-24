@@ -347,6 +347,30 @@ export function WorkspaceProvider({ children }) {
   const [activeCaseId, setActiveCaseId] = useState('case-102');
   const [activeNavSection, setActiveNavSection] = useState('workspace');
 
+  // Theme Management (Light Minimal / Dark Cinematic) - Defaults to Light as requested
+  const [theme, setTheme] = useState(() => {
+    return localStorage.getItem('constellation_theme') || 'light';
+  });
+
+  const toggleTheme = () => {
+    setTheme(prev => {
+      const next = prev === 'light' ? 'dark' : 'light';
+      localStorage.setItem('constellation_theme', next);
+      return next;
+    });
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    if (theme === 'light') {
+      document.body.classList.add('theme-light');
+      document.body.classList.remove('theme-dark');
+    } else {
+      document.body.classList.add('theme-dark');
+      document.body.classList.remove('theme-light');
+    }
+  }, [theme]);
+
   // Workspaces Management State
   const [workspaces, setWorkspaces] = useState(DEFAULT_WORKSPACES);
   const [activeWorkspaceId, setActiveWorkspaceId] = useState(null);
@@ -821,7 +845,10 @@ export function WorkspaceProvider({ children }) {
       crossCaseOpen,
       setCrossCaseOpen,
       totalExplorerOpen,
-      setTotalExplorerOpen
+      setTotalExplorerOpen,
+      theme,
+      setTheme,
+      toggleTheme
     }}>
       {children}
     </WorkspaceContext.Provider>

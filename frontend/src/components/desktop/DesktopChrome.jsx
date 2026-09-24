@@ -8,7 +8,7 @@ import {
   Radio, Check, Trash2, ArrowUpRight, Database,
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
   UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
-  Briefcase, FileUp, UserSearch
+  Briefcase, FileUp, UserSearch, Sun, Moon
 } from 'lucide-react';
 import './DesktopChrome.css';
 
@@ -32,7 +32,9 @@ export default function DesktopChrome({ children }) {
     crossCaseOpen,
     setCrossCaseOpen,
     totalExplorerOpen,
-    setTotalExplorerOpen
+    setTotalExplorerOpen,
+    theme,
+    toggleTheme
   } = useWorkspace();
 
   const [utcTime, setUtcTime] = useState('');
@@ -183,6 +185,16 @@ export default function DesktopChrome({ children }) {
               >
                 <Bell size={14} />
                 {unreadCount > 0 && <span className="notif-badge-pill">{unreadCount}</span>}
+              </button>
+
+              {/* Minimal Clean Light / Dark Mode Switcher */}
+              <button
+                className="titlebar-icon-action theme-toggle-btn"
+                title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Minimal Light Mode'}
+                onClick={toggleTheme}
+                style={{ marginLeft: '2px' }}
+              >
+                {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
               </button>
             </div>
           </header>
