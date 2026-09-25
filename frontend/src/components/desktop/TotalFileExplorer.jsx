@@ -721,7 +721,13 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
     if (parentCase.caseId) {
       setActiveCaseId(parentCase.caseId);
       const matchingWs = (workspaces || []).find(w => w.caseId === parentCase.caseId);
-      if (matchingWs) openWorkspace(matchingWs.id);
+      if (matchingWs) {
+        openWorkspace(matchingWs.id);
+      } else if (workspaces && workspaces.length > 0) {
+        openWorkspace(workspaces[0].id);
+      }
+    } else if (workspaces && workspaces.length > 0) {
+      openWorkspace(workspaces[0].id);
     }
 
     setActiveNavSection('workspace');

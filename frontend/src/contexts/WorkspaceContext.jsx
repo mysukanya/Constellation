@@ -469,16 +469,22 @@ export function WorkspaceProvider({ children }) {
     setActiveWorkspaceId(null);
   };
 
-  // Create Workspace action (persists to backend)
-  const createWorkspace = async ({ name, caseId, description }) => {
-    const targetCase = CANONICAL_CASES[caseId] || CANONICAL_CASES['case-102'];
+  // Create Workspace action (persists to backend, supports custom case labeling and standalone investigations)
+  const createWorkspace = async ({ name, caseId, description, caseType, customLabel }) => {
+    const isStandalone = !caseId || caseId === 'none' || caseId === 'standalone';
+    const targetCase = !isStandalone ? (CANONICAL_CASES[caseId] || CANONICAL_CASES['case-102']) : null;
     let newId = `ws-${Date.now()}`;
     
+    const computedName = name || (customLabel ? `${customLabel} Workspace` : `Investigation Workspace #${workspaces.length + 1}`);
+    const computedGenre = caseType || targetCase?.genre || 'narcotics';
+    const computedCaseName = targetCase ? targetCase.name : (customLabel || 'Standalone Investigation');
+    const computedCaseId = targetCase ? targetCase.id : (caseId || 'case-custom');
+
     try {
       const created = await api.createWorkspace({
-        name: name || `New Workspace #${workspaces.length + 1}`,
-        case_id: targetCase.id,
-        description: description || `Investigation board for ${targetCase.name}.`
+        name: computedName,
+        case_id: computedCaseId,
+        description: description || `Investigation board for ${computedCaseName}.`
       });
       if (created && created.id) newId = created.id;
     } catch (err) {
@@ -487,12 +493,12 @@ export function WorkspaceProvider({ children }) {
 
     const newWs = {
       id: newId,
-      name: name || `New Workspace #${workspaces.length + 1}`,
-      caseId: targetCase.id,
-      caseName: targetCase.name,
-      description: description || `Investigation board for ${targetCase.name}.`,
-      genre: targetCase.genre || 'narcotics',
-      priority: targetCase.priority || 'HIGH',
+      name: computedName,
+      caseId: computedCaseId,
+      caseName: computedCaseName,
+      description: description || `Investigation board for ${computedCaseName}.`,
+      genre: computedGenre,
+      priority: targetCase?.priority || 'HIGH',
       status: 'ACTIVE',
       lastModified: 'Just now',
       nodesCount: 0,
@@ -502,11 +508,24 @@ export function WorkspaceProvider({ children }) {
     };
     setWorkspaces(prev => [newWs, ...prev]);
     setActiveWorkspaceId(newWs.id);
-    setActiveCaseId(targetCase.id);
+    setActiveCaseId(computedCaseId);
     setCanvasNodes([]);
     setCanvasEdges([]);
     return newWs;
   };
+
+  // Open Workspace for a specific case with fallback
+  const openWorkspaceForCase = (caseId) => {
+    const matching = workspaces.find(w => w.caseId === caseId);
+    if (matching) {
+      openWorkspace(matching.id);
+    } else if (workspaces.length > 0) {
+      openWorkspace(workspaces[0].id);
+    }
+    setActiveCaseId(caseId);
+    setActiveNavSection('workspace');
+  };
+
 
   // Delete Workspace action (persists to backend)
   const deleteWorkspace = (wsId) => {
@@ -728,14 +747,17 @@ export function WorkspaceProvider({ children }) {
   };
 
   // Add Roped Connection Line (persists relationship to backend & HMAC audit chain)
-  const addRopeConnection = (sourceId, targetId, label = 'COORDINATES_WITH') => {
+  const addRopeConnection = (sourceId, targetId, label = 'COORDINATES_WITH', options = {}) => {
     if (!sourceId || !targetId || sourceId === targetId) return;
     const existing = canvasEdges.find(e => 
       (e.source === sourceId && e.target === targetId) || 
       (e.source === targetId && e.target === sourceId)
     );
+    const confidence = options.confidence !== undefined ? options.confidence : 0.94;
+    const notes = options.notes || '';
+
     if (existing) {
-      const updatedEdges = canvasEdges.map(e => e.id === existing.id ? { ...e, label } : e);
+      const updatedEdges = canvasEdges.map(e => e.id === existing.id ? { ...e, label, confidence, notes } : e);
       setCanvasEdges(updatedEdges);
       setRopingSource(null);
       if (activeWorkspaceId) {
@@ -751,7 +773,8 @@ export function WorkspaceProvider({ children }) {
       source: sourceId,
       target: targetId,
       label,
-      confidence: 0.94
+      confidence,
+      notes
     };
     const nextEdges = [...canvasEdges, newEdge];
     setCanvasEdges(nextEdges);
@@ -762,10 +785,10 @@ export function WorkspaceProvider({ children }) {
       from_id: sourceId,
       to_id: targetId,
       rel_type: label,
-      confidence: 0.94,
+      confidence,
       source_ids: [],
       method: 'canvas_bezier_roping',
-      properties: { created_via: 'InvestigationCanvas' }
+      properties: { created_via: 'InvestigationCanvas', notes }
     }).catch(err => console.warn('Could not persist relationship to backend:', err));
 
     // Save updated canvas state to workspace
@@ -776,9 +799,22 @@ export function WorkspaceProvider({ children }) {
     }
   };
 
+  // Update an existing edge connection's label, confidence, or notes
+  const updateRopeConnection = (edgeId, updates) => {
+    if (!edgeId) return;
+    const nextEdges = canvasEdges.map(e => e.id === edgeId ? { ...e, ...updates } : e);
+    setCanvasEdges(nextEdges);
+    if (activeWorkspaceId) {
+      api.updateWorkspace(activeWorkspaceId, {
+        canvas_state: { nodes: canvasNodes, edges: nextEdges }
+      }).catch(err => console.warn('Could not update edge in workspace:', err));
+    }
+  };
+
   const removeEdge = (edgeId) => {
     const nextEdges = canvasEdges.filter(e => e.id !== edgeId);
     setCanvasEdges(nextEdges);
+
 
     // Persist severance to backend graph and audit ledger
     api.deleteRelationship(edgeId).catch(err => {
@@ -859,7 +895,9 @@ export function WorkspaceProvider({ children }) {
       setCanvasEdges,
       addNodeToCanvas,
       addRopeConnection,
+      updateRopeConnection,
       removeEdge,
+      openWorkspaceForCase,
       updateNodePosition,
       windowsState,
       setWindowsState,

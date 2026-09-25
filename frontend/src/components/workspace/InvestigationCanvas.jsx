@@ -19,6 +19,7 @@ export default function InvestigationCanvas() {
     canvasEdges,
     addNodeToCanvas,
     addRopeConnection,
+    updateRopeConnection,
     removeEdge,
     updateNodePosition,
     selectedEntity,
@@ -43,6 +44,11 @@ export default function InvestigationCanvas() {
   const [doubleClickMenu, setDoubleClickMenu] = useState(null); // { x: number, y: number }
   const [quickNodeName, setQuickNodeName] = useState('');
   const lastTapRef = useRef(0);
+
+  // Interactive Relationship Builder State (for new links)
+  const [pendingLink, setPendingLink] = useState(null);
+  // Interactive Relationship Editor State (for existing links)
+  const [editingEdge, setEditingEdge] = useState(null);
 
   // Manual connection state
   const [connectFrom, setConnectFrom] = useState('');
@@ -82,7 +88,7 @@ export default function InvestigationCanvas() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [ropingSource, setShowConnectBar]);
 
-  // Complete roping connection between two nodes
+  // Complete roping connection between two nodes - opens interactive relationship modal
   const completeRoping = (targetNodeId) => {
     dragStateRef.current = { id: null, startX: 0, startY: 0, nodeStartX: 0, nodeStartY: 0, isDragging: false };
     setDraggingNode(null);
@@ -93,9 +99,51 @@ export default function InvestigationCanvas() {
     }
     const srcNode = canvasNodes.find(n => n.id === ropingSource);
     const dstNode = canvasNodes.find(n => n.id === targetNodeId);
-    addRopeConnection(ropingSource, targetNodeId, connectRel || 'COORDINATES_WITH');
-    triggerToast(`Linked ${srcNode?.name || 'Node'} ➔ ${dstNode?.name || 'Node'} (${connectRel || 'COORDINATES_WITH'})`);
+    
+    // Open relationship creation dialog so the user can define the connection
+    setPendingLink({
+      sourceId: ropingSource,
+      targetId: targetNodeId,
+      sourceName: srcNode?.name || 'Entity A',
+      targetName: dstNode?.name || 'Entity B',
+      relType: connectRel || 'COORDINATES_WITH',
+      customType: '',
+      confidence: 0.94,
+      notes: ''
+    });
     setRopingSource(null);
+  };
+
+  const handleConfirmPendingLink = (e) => {
+    if (e) e.preventDefault();
+    if (!pendingLink) return;
+    const finalRel = (pendingLink.relType === 'CUSTOM' ? pendingLink.customType.trim() : pendingLink.relType) || 'COORDINATES_WITH';
+    addRopeConnection(pendingLink.sourceId, pendingLink.targetId, finalRel, {
+      confidence: Number(pendingLink.confidence) || 0.94,
+      notes: pendingLink.notes || ''
+    });
+    triggerToast(`Connected ${pendingLink.sourceName} ➔ ${pendingLink.targetName} [${finalRel}]`);
+    setPendingLink(null);
+  };
+
+  const handleSaveEditingEdge = (e) => {
+    if (e) e.preventDefault();
+    if (!editingEdge) return;
+    const finalRel = (editingEdge.label === 'CUSTOM' ? editingEdge.customType.trim() : editingEdge.label) || editingEdge.label;
+    updateRopeConnection(editingEdge.id, {
+      label: finalRel,
+      confidence: Number(editingEdge.confidence) || 0.94,
+      notes: editingEdge.notes || ''
+    });
+    triggerToast(`Updated relationship: ${finalRel}`);
+    setEditingEdge(null);
+  };
+
+  const handleSeverEditingEdge = () => {
+    if (!editingEdge) return;
+    removeEdge(editingEdge.id);
+    triggerToast(`Severed connection: ${editingEdge.label}`);
+    setEditingEdge(null);
   };
 
   // Dragging node on canvas with delta displacement & threshold
@@ -246,10 +294,18 @@ export default function InvestigationCanvas() {
       triggerToast('Please select two distinct entities to connect.');
       return;
     }
-    addRopeConnection(connectFrom, connectTo, connectRel || 'COORDINATES_WITH');
-    const n1 = canvasNodes.find(n => n.id === connectFrom)?.name;
-    const n2 = canvasNodes.find(n => n.id === connectTo)?.name;
-    triggerToast(`Connected ${n1} ➔ ${n2} (${connectRel})`);
+    const n1 = canvasNodes.find(n => n.id === connectFrom);
+    const n2 = canvasNodes.find(n => n.id === connectTo);
+    setPendingLink({
+      sourceId: connectFrom,
+      targetId: connectTo,
+      sourceName: n1?.name || 'Entity A',
+      targetName: n2?.name || 'Entity B',
+      relType: connectRel || 'COORDINATES_WITH',
+      customType: '',
+      confidence: 0.94,
+      notes: ''
+    });
     setShowConnectBar(false);
   };
 
@@ -681,14 +737,33 @@ export default function InvestigationCanvas() {
                   height="26"
                   className="rope-foreign-object"
                 >
-                  <div className="rope-label-pill" title={`${edge.label} (Confidence: ${edge.confidence || 0.94})`}>
+                  <div
+                    className="rope-label-pill"
+                    title={`Click to edit or sever connection: ${edge.label} (Confidence: ${edge.confidence || 0.94})`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const src = canvasNodes.find(n => n.id === edge.source);
+                      const dst = canvasNodes.find(n => n.id === edge.target);
+                      setEditingEdge({
+                        id: edge.id,
+                        sourceId: edge.source,
+                        targetId: edge.target,
+                        sourceName: src?.name || edge.source,
+                        targetName: dst?.name || edge.target,
+                        label: edge.label || 'COORDINATES_WITH',
+                        customType: '',
+                        confidence: edge.confidence || 0.94,
+                        notes: edge.notes || ''
+                      });
+                    }}
+                  >
                     <span className="rope-text">{edge.label}</span>
                     <button
                       className="rope-sever-btn"
                       onClick={(e) => {
                         e.stopPropagation();
                         removeEdge(edge.id);
-                        triggerToast(`Severed rope: ${edge.label}`);
+                        triggerToast(`Severed connection: ${edge.label}`);
                       }}
                       title="Sever / Cut Rope"
                     >
@@ -787,6 +862,226 @@ export default function InvestigationCanvas() {
             </div>
           );
         })}
+        {/* ── Dialog 1: Define New Forensic Relationship Modal ── */}
+        {pendingLink && (
+          <div className="canvas-modal-overlay" onClick={() => setPendingLink(null)}>
+            <div className="canvas-modal-dialog" onClick={e => e.stopPropagation()}>
+              <div className="canvas-modal-header">
+                <div className="modal-title-row">
+                  <Link2 size={15} className="modal-title-icon" />
+                  <span className="modal-title-text font-mono">DEFINE FORENSIC RELATIONSHIP</span>
+                </div>
+                <button className="canvas-modal-close" onClick={() => setPendingLink(null)}>
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="modal-entity-preview">
+                <div className="entity-preview-box">
+                  <span className="preview-label font-mono">SOURCE</span>
+                  <span className="preview-name">{pendingLink.sourceName}</span>
+                </div>
+                <span className="preview-arrow font-mono">➔</span>
+                <div className="entity-preview-box">
+                  <span className="preview-label font-mono">TARGET</span>
+                  <span className="preview-name">{pendingLink.targetName}</span>
+                </div>
+              </div>
+
+              <form onSubmit={handleConfirmPendingLink} className="canvas-modal-form">
+                <div className="modal-form-section">
+                  <label className="modal-field-label font-mono">RELATIONSHIP TYPE / CLASSIFICATION</label>
+                  <div className="rel-type-chips">
+                    {[
+                      'COORDINATES_WITH',
+                      'FINANCES',
+                      'OWNS_VESSEL',
+                      'CONTROLS',
+                      'SMURF_WIRE_TO',
+                      'COMMUNICATES_WITH',
+                      'TRANSFERS_FUNDS_TO',
+                      'SUPPLIES_CONTRABAND',
+                      'CUSTOM'
+                    ].map(type => (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`rel-chip ${pendingLink.relType === type ? 'active' : ''}`}
+                        onClick={() => setPendingLink(prev => ({ ...prev, relType: type }))}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+
+                  {pendingLink.relType === 'CUSTOM' && (
+                    <input
+                      type="text"
+                      className="modal-custom-rel-input"
+                      placeholder="Type custom relationship (e.g. SATELLITE_UPLINK_TO)..."
+                      value={pendingLink.customType}
+                      onChange={e => setPendingLink(prev => ({ ...prev, customType: e.target.value.toUpperCase().replace(/\s+/g, '_') }))}
+                      autoFocus
+                      required
+                    />
+                  )}
+                </div>
+
+                <div className="modal-form-section">
+                  <div className="slider-label-row font-mono">
+                    <span>EVIDENTIARY CONFIDENCE:</span>
+                    <span className="confidence-number">{Math.round(pendingLink.confidence * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.0"
+                    step="0.01"
+                    value={pendingLink.confidence}
+                    onChange={e => setPendingLink(prev => ({ ...prev, confidence: parseFloat(e.target.value) }))}
+                    className="modal-range-slider"
+                  />
+                </div>
+
+                <div className="modal-form-section">
+                  <label className="modal-field-label font-mono">INVESTIGATIVE NOTES / EVIDENCE CORROBORATION (OPTIONAL)</label>
+                  <input
+                    type="text"
+                    className="modal-notes-input"
+                    placeholder="e.g. Inferred from Hawala mirror ledger entry #88219"
+                    value={pendingLink.notes}
+                    onChange={e => setPendingLink(prev => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+
+                <div className="modal-actions-bar">
+                  <button type="button" className="btn-cancel" onClick={() => setPendingLink(null)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn-confirm-link">
+                    <Check size={13} /> Establish Relationship
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ── Dialog 2: Edit Existing Relationship Modal ── */}
+        {editingEdge && (
+          <div className="canvas-modal-overlay" onClick={() => setEditingEdge(null)}>
+            <div className="canvas-modal-dialog" onClick={e => e.stopPropagation()}>
+              <div className="canvas-modal-header">
+                <div className="modal-title-row">
+                  <Zap size={15} className="modal-title-icon" />
+                  <span className="modal-title-text font-mono">EDIT RELATIONSHIP &amp; EVIDENCE LINK</span>
+                </div>
+                <button className="canvas-modal-close" onClick={() => setEditingEdge(null)}>
+                  <X size={14} />
+                </button>
+              </div>
+
+              <div className="modal-entity-preview">
+                <div className="entity-preview-box">
+                  <span className="preview-label font-mono">SOURCE</span>
+                  <span className="preview-name">{editingEdge.sourceName}</span>
+                </div>
+                <span className="preview-arrow font-mono">➔</span>
+                <div className="entity-preview-box">
+                  <span className="preview-label font-mono">TARGET</span>
+                  <span className="preview-name">{editingEdge.targetName}</span>
+                </div>
+              </div>
+
+              <form onSubmit={handleSaveEditingEdge} className="canvas-modal-form">
+                <div className="modal-form-section">
+                  <label className="modal-field-label font-mono">RELATIONSHIP TYPE</label>
+                  <div className="rel-type-chips">
+                    {[
+                      'COORDINATES_WITH',
+                      'FINANCES',
+                      'OWNS_VESSEL',
+                      'CONTROLS',
+                      'SMURF_WIRE_TO',
+                      'COMMUNICATES_WITH',
+                      'TRANSFERS_FUNDS_TO',
+                      'SUPPLIES_CONTRABAND',
+                      'CUSTOM'
+                    ].map(type => (
+                      <button
+                        key={type}
+                        type="button"
+                        className={`rel-chip ${editingEdge.label === type ? 'active' : ''}`}
+                        onClick={() => setEditingEdge(prev => ({ ...prev, label: type }))}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+
+                  {editingEdge.label === 'CUSTOM' && (
+                    <input
+                      type="text"
+                      className="modal-custom-rel-input"
+                      placeholder="Type custom relationship..."
+                      value={editingEdge.customType}
+                      onChange={e => setEditingEdge(prev => ({ ...prev, customType: e.target.value.toUpperCase().replace(/\s+/g, '_') }))}
+                      autoFocus
+                      required
+                    />
+                  )}
+                </div>
+
+                <div className="modal-form-section">
+                  <div className="slider-label-row font-mono">
+                    <span>EVIDENTIARY CONFIDENCE:</span>
+                    <span className="confidence-number">{Math.round(editingEdge.confidence * 100)}%</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="1.0"
+                    step="0.01"
+                    value={editingEdge.confidence}
+                    onChange={e => setEditingEdge(prev => ({ ...prev, confidence: parseFloat(e.target.value) }))}
+                    className="modal-range-slider"
+                  />
+                </div>
+
+                <div className="modal-form-section">
+                  <label className="modal-field-label font-mono">INVESTIGATIVE NOTES</label>
+                  <input
+                    type="text"
+                    className="modal-notes-input"
+                    placeholder="e.g. Corroborated with AIS transponder trace"
+                    value={editingEdge.notes}
+                    onChange={e => setEditingEdge(prev => ({ ...prev, notes: e.target.value }))}
+                  />
+                </div>
+
+                <div className="modal-actions-bar split-actions">
+                  <button
+                    type="button"
+                    className="btn-sever-link"
+                    onClick={handleSeverEditingEdge}
+                    title="Sever and delete this link"
+                  >
+                    <Scissors size={13} /> Sever Connection
+                  </button>
+
+                  <div className="modal-right-buttons">
+                    <button type="button" className="btn-cancel" onClick={() => setEditingEdge(null)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn-confirm-link">
+                      <Check size={13} /> Save Changes
+                    </button>
+                  </div>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

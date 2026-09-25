@@ -49,7 +49,13 @@ const SUGGESTED_QUERIES = [
 ];
 
 export default function ByomkeshPage() {
-  const { setActiveNavSection, setActiveCaseId, addNodeToCanvas } = useWorkspace();
+  const {
+    setActiveNavSection,
+    setActiveCaseId,
+    addNodeToCanvas,
+    openWorkspace,
+    workspaces
+  } = useWorkspace();
 
   const [inputQuery, setInputQuery] = useState('');
   const [selectedCase, setSelectedCase] = useState('case-102');
@@ -201,6 +207,12 @@ export default function ByomkeshPage() {
       provenance: 'INFERENCE',
       details: msg.answer.slice(0, 160) + '...'
     });
+
+    if (workspaces && workspaces.length > 0) {
+      const matchWs = workspaces.find(w => w.caseId === selectedCase) || workspaces[0];
+      if (matchWs) openWorkspace(matchWs.id);
+    }
+
     setActiveNavSection('workspace');
   };
 

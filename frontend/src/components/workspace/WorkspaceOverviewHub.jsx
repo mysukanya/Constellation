@@ -44,6 +44,9 @@ export default function WorkspaceOverviewHub() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [newWsForm, setNewWsForm] = useState({
     name: '',
+    associationMode: 'standalone', // 'standalone' | 'case'
+    caseType: 'narcotics',
+    customLabel: '',
     caseId: 'case-102',
     description: ''
   });
@@ -96,13 +99,18 @@ export default function WorkspaceOverviewHub() {
 
     createWorkspace({
       name: newWsForm.name,
-      caseId: newWsForm.caseId,
+      caseId: newWsForm.associationMode === 'case' ? newWsForm.caseId : 'none',
+      caseType: newWsForm.caseType,
+      customLabel: newWsForm.customLabel || (newWsForm.associationMode === 'standalone' ? 'Standalone Docket' : ''),
       description: newWsForm.description
     });
 
     setShowCreateModal(false);
     setNewWsForm({
       name: '',
+      associationMode: 'standalone',
+      caseType: 'narcotics',
+      customLabel: '',
       caseId: 'case-102',
       description: ''
     });
@@ -219,6 +227,17 @@ export default function WorkspaceOverviewHub() {
 
       {/* ── Workspaces Grid ──────────────────────────────────────── */}
       <div className="hub-workspaces-grid">
+        {/* Create Workspace Quick Tile - AT THE TOP */}
+        <div className="hub-create-tile" onClick={() => setShowCreateModal(true)}>
+          <div className="create-tile-inner">
+            <div className="create-tile-icon-box">
+              <Plus size={24} />
+            </div>
+            <h3 className="create-tile-title">Create Workspace</h3>
+            <p className="create-tile-caption">Start a clean investigation board or label a custom case</p>
+          </div>
+        </div>
+
         {filteredWorkspaces.map(ws => (
           <Panel3D key={ws.id} className="hub-card-panel3d" glow="white" maxAngle={4}>
             <div
@@ -280,17 +299,6 @@ export default function WorkspaceOverviewHub() {
             </div>
           </Panel3D>
         ))}
-
-        {/* Create Workspace Quick Tile */}
-        <div className="hub-create-tile" onClick={() => setShowCreateModal(true)}>
-          <div className="create-tile-inner">
-            <div className="create-tile-icon-box">
-              <Plus size={24} />
-            </div>
-            <h3 className="create-tile-title">New Workspace</h3>
-            <p className="create-tile-caption">Create a clean board or link an existing case dossier</p>
-          </div>
-        </div>
       </div>
 
       {/* ── CREATE WORKSPACE MODAL ───────────────────────────────── */}
@@ -300,7 +308,7 @@ export default function WorkspaceOverviewHub() {
             <div className="hub-modal-header">
               <div className="modal-title-group">
                 <FolderPlus size={16} className="modal-title-icon" />
-                <h3 className="modal-title">Create New Investigation Workspace</h3>
+                <h3 className="modal-title">Create Investigation Workspace</h3>
               </div>
               <button className="modal-close-btn" onClick={() => setShowCreateModal(false)}>
                 <X size={15} />
@@ -309,11 +317,11 @@ export default function WorkspaceOverviewHub() {
 
             <form onSubmit={handleCreateSubmit} className="hub-modal-form">
               <div className="modal-form-group">
-                <label className="modal-label font-mono">WORKSPACE NAME</label>
+                <label className="modal-label font-mono">WORKSPACE TITLE</label>
                 <input
                   type="text"
                   className="modal-input"
-                  placeholder="e.g. Dubai Hawala Trail & Shells"
+                  placeholder="e.g. Dubai Hawala Trail &amp; Shell Companies"
                   value={newWsForm.name}
                   onChange={(e) => setNewWsForm(prev => ({ ...prev, name: e.target.value }))}
                   required
@@ -321,27 +329,86 @@ export default function WorkspaceOverviewHub() {
                 />
               </div>
 
+              {/* Case Classification & Kind */}
               <div className="modal-form-group">
-                <label className="modal-label font-mono">ASSOCIATE PRIMARY CASE</label>
+                <label className="modal-label font-mono">CASE CLASSIFICATION / WHAT IS THIS CASE ABOUT?</label>
                 <select
                   className="modal-select"
-                  value={newWsForm.caseId}
-                  onChange={(e) => setNewWsForm(prev => ({ ...prev, caseId: e.target.value }))}
+                  value={newWsForm.caseType}
+                  onChange={(e) => setNewWsForm(prev => ({ ...prev, caseType: e.target.value }))}
                 >
-                  {allCasesList.map(c => (
-                    <option key={c.id} value={c.id}>
-                      {c.name} ({c.genreLabel || c.genre})
-                    </option>
-                  ))}
+                  <option value="narcotics">Maritime Narcotics Smuggling (NDPS)</option>
+                  <option value="corporate_fraud">Hawala, Shell Companies &amp; Money Laundering (PMLA)</option>
+                  <option value="homicide">Contract Hit Syndicate &amp; Firearms</option>
+                  <option value="theft">Vault Breach &amp; Diamond Asset Embezzlement</option>
+                  <option value="trafficking">Human Trafficking &amp; Coastal Forgery</option>
+                  <option value="cyber">Cyber Extortion, Malware &amp; Crypto Laundering</option>
+                  <option value="custom">Custom Investigation Classification...</option>
                 </select>
               </div>
 
+              {newWsForm.caseType === 'custom' && (
+                <div className="modal-form-group">
+                  <label className="modal-label font-mono">CUSTOM CASE CLASSIFICATION LABEL</label>
+                  <input
+                    type="text"
+                    className="modal-input"
+                    placeholder="e.g. Illicit Arms Procurement &amp; Forged Manifests"
+                    value={newWsForm.customLabel}
+                    onChange={(e) => setNewWsForm(prev => ({ ...prev, customLabel: e.target.value }))}
+                    required
+                  />
+                </div>
+              )}
+
+              {/* Association Mode: Standalone vs Linked */}
               <div className="modal-form-group">
-                <label className="modal-label font-mono">DESCRIPTION & INVESTIGATIVE GOAL</label>
+                <label className="modal-label font-mono">CASE ASSOCIATION</label>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                  <button
+                    type="button"
+                    className={`btn ${newWsForm.associationMode === 'standalone' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '11px', flex: 1, padding: '6px 8px' }}
+                    onClick={() => setNewWsForm(prev => ({ ...prev, associationMode: 'standalone' }))}
+                  >
+                    Independent / Standalone Docket
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${newWsForm.associationMode === 'case' ? 'btn-primary' : 'btn-secondary'}`}
+                    style={{ fontSize: '11px', flex: 1, padding: '6px 8px' }}
+                    onClick={() => setNewWsForm(prev => ({ ...prev, associationMode: 'case' }))}
+                  >
+                    Link to Existing Case
+                  </button>
+                </div>
+
+                {newWsForm.associationMode === 'case' && (
+                  <select
+                    className="modal-select"
+                    value={newWsForm.caseId}
+                    onChange={(e) => setNewWsForm(prev => ({ ...prev, caseId: e.target.value }))}
+                  >
+                    {allCasesList.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.name} ({c.genreLabel || c.genre})
+                      </option>
+                    ))}
+                  </select>
+                )}
+                {newWsForm.associationMode === 'standalone' && (
+                  <p style={{ fontSize: '11px', color: '#94a3b8', margin: '4px 0 0 0' }}>
+                    Creates a dedicated workspace classified under your selected crime category without requiring a formal case binding.
+                  </p>
+                )}
+              </div>
+
+              <div className="modal-form-group">
+                <label className="modal-label font-mono">INVESTIGATIVE GOAL &amp; BRIEF</label>
                 <textarea
                   className="modal-textarea"
-                  rows={3}
-                  placeholder="Brief note on what this workspace board is analyzing..."
+                  rows={2}
+                  placeholder="Key objective: e.g. Map ultimate beneficial owners of bulk carriers..."
                   value={newWsForm.description}
                   onChange={(e) => setNewWsForm(prev => ({ ...prev, description: e.target.value }))}
                 />

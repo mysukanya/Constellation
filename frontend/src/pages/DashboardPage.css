@@ -840,3 +840,116 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── ACTIVE WORKSPACES DASHBOARD STACK ───────────────────────────────── */
+.dash-workspaces-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-ws-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  background: var(--bg-surface, #ffffff);
+  border: 1px solid var(--border-subtle, #e5e7eb);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.dash-ws-card-row:hover {
+  border-color: var(--border-strong, #94a3b8);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.04);
+}
+
+.dash-ws-left {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-ws-badge-line {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.dash-ws-genre {
+  font-size: 9px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  background: rgba(2, 132, 199, 0.1);
+  color: #0284c7;
+  border: 1px solid rgba(2, 132, 199, 0.25);
+  letter-spacing: 0.05em;
+}
+
+.dash-ws-tag {
+  font-size: 9.5px;
+  color: var(--text-secondary, #6b7280);
+}
+
+.dash-ws-title {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary, #111827);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-ws-desc {
+  margin: 0;
+  font-size: 11px;
+  color: var(--text-secondary, #6b7280);
+  line-height: 1.35;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dash-ws-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9.5px;
+  color: var(--text-tertiary, #9ca3af);
+  margin-top: 2px;
+}
+
+.dash-ws-right {
+  margin-left: 14px;
+  flex-shrink: 0;
+}
+
+[data-theme="dark"] .dash-ws-card-row,
+.theme-dark .dash-ws-card-row {
+  background: #0d0d0d !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+}
+
+[data-theme="dark"] .dash-ws-card-row:hover,
+.theme-dark .dash-ws-card-row:hover {
+  border-color: rgba(255, 255, 255, 0.22) !important;
+  background: #121212 !important;
+}
+
+[data-theme="dark"] .dash-ws-title,
+.theme-dark .dash-ws-title {
+  color: #ffffff !important;
+}
+
+[data-theme="dark"] .dash-ws-genre,
+.theme-dark .dash-ws-genre {
+  background: rgba(56, 189, 248, 0.12) !important;
+  color: #38bdf8 !important;
+  border-color: rgba(56, 189, 248, 0.25) !important;
+}
+

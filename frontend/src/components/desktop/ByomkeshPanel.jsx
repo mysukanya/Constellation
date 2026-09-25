@@ -12,7 +12,17 @@ import './ByomkeshPanel.css';
 import api from '../../services/api';
 
 export default function ByomkeshPanel({ onClose }) {
-  const { activeCaseId, activeCase, openTab, setSelectedEntity, canvasNodes } = useWorkspace();
+  const {
+    activeCaseId,
+    activeCase,
+    openTab,
+    setSelectedEntity,
+    canvasNodes,
+    addNodeToCanvas,
+    openWorkspace,
+    workspaces,
+    setActiveNavSection
+  } = useWorkspace();
   const [mode, setMode] = useState('ASSIST'); // 'ASSIST' | 'RESEARCH' | 'REVIEW'
 
   // Assist Mode State
@@ -38,6 +48,25 @@ export default function ByomkeshPanel({ onClose }) {
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [expandedTraceIdx, setExpandedTraceIdx] = useState(null);
+
+  const handlePinFindingToCanvas = (msg) => {
+    addNodeToCanvas({
+      id: `byomkesh-nexus-${Date.now()}`,
+      name: 'Byomkesh Forensic Nexus',
+      type: 'Evidence Nexus',
+      role: 'AI Corroboration Finding',
+      threat: 'CRITICAL',
+      provenance: msg.provenance || 'ANALYTICAL_INFERENCE',
+      details: msg.text
+    });
+
+    if (workspaces && workspaces.length > 0) {
+      const matchWs = workspaces.find(w => w.caseId === activeCaseId) || workspaces[0];
+      if (matchWs) openWorkspace(matchWs.id);
+    }
+    setActiveNavSection('workspace');
+    if (onClose) onClose();
+  };
 
   // Research Mode State (Autonomous Investigation)
   const [autoStatus, setAutoStatus] = useState('IDLE'); // 'ACTIVE' | 'PAUSED' | 'IDLE'
@@ -273,6 +302,14 @@ export default function ByomkeshPanel({ onClose }) {
                         onClick={() => setExpandedTraceIdx(prev => prev === idx ? null : idx)}
                       >
                         [{expandedTraceIdx === idx ? 'HIDE TRACE' : 'SHOW TRACE'}]
+                      </button>
+                      <button
+                        className="btn-show-trace"
+                        style={{ background: 'rgba(2, 132, 199, 0.18)', color: '#38bdf8', borderColor: 'rgba(56, 189, 248, 0.4)' }}
+                        onClick={() => handlePinFindingToCanvas(msg)}
+                        title="Add this AI synthesis finding directly to Workspace Board"
+                      >
+                        [+ PIN TO BOARD]
                       </button>
                     </div>
                   </div>

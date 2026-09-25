@@ -306,26 +306,8 @@ class ByomkeshAgent:
             )
             facts_context = json.dumps({"citations": citations, "question": question, "contradictions": contradictions})
 
-            # Try Gemini first (fast response)
-            if self.gemini_client and getattr(settings, "GEMINI_API_KEY", None):
-                try:
-                    resp = self.gemini_client.chat.completions.create(
-                        model=settings.GEMINI_MODEL,
-                        messages=[
-                            {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": f"Context: {facts_context}\n\nQuestion: {question}"}
-                        ],
-                        temperature=0.2,
-                        max_tokens=600,
-                        timeout=10.0
-                    )
-                    if resp.choices and resp.choices[0].message.content:
-                        answer_text = resp.choices[0].message.content.strip()
-                except Exception as e:
-                    logger.warning(f"Gemini synthesis bypassed or timed out: {e}")
-
-            # Try NVIDIA NIM if Gemini was not available or produced no output
-            if not answer_text and self.nvidia_client and getattr(settings, "NVIDIA_API_KEY", None):
+            # Try NVIDIA NIM first (fast 0.4s response)
+            if self.nvidia_client and getattr(settings, "NVIDIA_API_KEY", None):
                 try:
                     resp = self.nvidia_client.chat.completions.create(
                         model=settings.NVIDIA_MODEL,
@@ -335,12 +317,30 @@ class ByomkeshAgent:
                         ],
                         temperature=0.2,
                         max_tokens=600,
-                        timeout=12.0
+                        timeout=8.0
                     )
                     if resp.choices and resp.choices[0].message.content:
                         answer_text = resp.choices[0].message.content.strip()
                 except Exception as e:
-                    logger.warning(f"NVIDIA NIM query bypassed or timed out: {e}")
+                    logger.warning(f"NVIDIA NIM query bypassed: {e}")
+
+            # Try Gemini if NVIDIA NIM was not available
+            if not answer_text and self.gemini_client and getattr(settings, "GEMINI_API_KEY", None):
+                try:
+                    resp = self.gemini_client.chat.completions.create(
+                        model=settings.GEMINI_MODEL,
+                        messages=[
+                            {"role": "system", "content": system_prompt},
+                            {"role": "user", "content": f"Context: {facts_context}\n\nQuestion: {question}"}
+                        ],
+                        temperature=0.2,
+                        max_tokens=600,
+                        timeout=8.0
+                    )
+                    if resp.choices and resp.choices[0].message.content:
+                        answer_text = resp.choices[0].message.content.strip()
+                except Exception as e:
+                    logger.warning(f"Gemini synthesis bypassed or quota reached: {e}")
 
         if not answer_text:
             if not citations:

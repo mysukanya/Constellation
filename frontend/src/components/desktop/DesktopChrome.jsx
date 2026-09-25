@@ -10,7 +10,7 @@ import {
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
   UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
   Briefcase, FileUp, UserSearch, Sun, Moon, Users, Layers, ShieldCheck,
-  PanelLeftClose, PanelLeftOpen
+  PanelLeftClose, PanelLeftOpen, PanelLeft, ChevronLeft, Menu
 } from 'lucide-react';
 import './DesktopChrome.css';
 
@@ -39,7 +39,8 @@ export default function DesktopChrome({ children }) {
     toggleTheme
   } = useWorkspace();
 
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  // 3-state sidebar: 'compact' (vertical rail), 'full' (expanded drawer), 'collapsed' (completely hidden)
+  const [sidebarMode, setSidebarMode] = useState('compact');
   const [utcTime, setUtcTime] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -75,7 +76,7 @@ export default function DesktopChrome({ children }) {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
-        setSidebarCollapsed(prev => !prev);
+        setSidebarMode(prev => prev === 'collapsed' ? 'compact' : (prev === 'compact' ? 'full' : 'collapsed'));
       }
       if (e.key === 'Escape') {
         setShowSearchModal(false);
@@ -100,85 +101,28 @@ export default function DesktopChrome({ children }) {
 
   return (
     <div className="desktop-window-container">
-      {/* ── TOP OPENAI-STYLE FLUSH TOPBAR ── */}
+      {/* ── TOP OPENAI-STYLE FLUSH TOPBAR (ULTRA-MINIMAL) ── */}
       <header className="openai-topbar">
-        {/* Left: Sidebar toggle + Wordmark */}
+        {/* Left: Clean Sidebar Toggle + Wordmark */}
         <div className="topbar-left-zone">
           <button
             className="sidebar-toggle-btn"
-            onClick={() => setSidebarCollapsed(prev => !prev)}
-            title={sidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+            onClick={() => setSidebarMode(prev => prev === 'collapsed' ? 'compact' : (prev === 'compact' ? 'full' : 'collapsed'))}
+            title={`Sidebar (${sidebarMode === 'collapsed' ? 'Hidden - Click to Show' : sidebarMode === 'compact' ? 'Compact - Click to Expand' : 'Expanded - Click to Hide'})`}
             aria-label="Toggle Sidebar"
           >
-            {sidebarCollapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+            <PanelLeft size={14} />
           </button>
           <div className="openai-brand-lockup" onClick={() => setActiveNavSection('home')}>
             <span className="openai-brand-text">CONSTELLATION</span>
           </div>
         </div>
 
-        {/* Center: Clean Minimal Navigation Links (No wrapping, single line) */}
-        <nav className="openai-nav-links">
-          <button
-            className={`openai-nav-link ${activeNavSection === 'home' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('home')}
-          >
-            Dashboard
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'workspace' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('workspace')}
-          >
-            Workspace
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'ingestion' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('ingestion')}
-          >
-            Evidence
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'byomkesh' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('byomkesh')}
-          >
-            Byomkesh
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('cases')}
-          >
-            Cases
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'sweeps' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('sweeps')}
-          >
-            Sweeps
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'intel' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('intel')}
-          >
-            Intel
-          </button>
-          <button
-            className={`openai-nav-link ${activeNavSection === 'audit' ? 'active' : ''}`}
-            onClick={() => setActiveNavSection('audit')}
-          >
-            Ledger
-          </button>
-        </nav>
+        {/* Center: Pure clean space */}
+        <div className="openai-topbar-center" />
 
-        {/* Right: Clean, Fresh Controls - No Mock Jargon */}
+        {/* Extreme Right: Notifications, Officer Profile, Theme */}
         <div className="openai-topbar-right">
-          <button
-            className={`openai-icon-btn ${showAdminModal ? 'active' : ''}`}
-            onClick={() => setShowAdminModal(true)}
-            title="Admin User Management"
-          >
-            <Users size={14} />
-          </button>
-
           <button
             className={`openai-icon-btn ${showNotifications ? 'active' : ''}`}
             title="Intelligence Alerts"
@@ -186,6 +130,14 @@ export default function DesktopChrome({ children }) {
           >
             <Bell size={14} />
             {unreadCount > 0 && <span className="openai-badge-dot">{unreadCount}</span>}
+          </button>
+
+          <button
+            className={`openai-icon-btn ${showOfficerProfile ? 'active' : ''}`}
+            title="Lead Officer Profile & Clearance"
+            onClick={() => setShowOfficerProfile(true)}
+          >
+            <Shield size={14} />
           </button>
 
           <button
@@ -260,10 +212,41 @@ export default function DesktopChrome({ children }) {
         </div>
       )}
 
-      {/* ── DESKTOP MAIN VIEWPORT WITH FLUSH LEFT TOOL RAIL ─── */}
+      {/* ── DESKTOP MAIN VIEWPORT WITH 3-STATE SIDEBAR ─── */}
       <div className="desktop-main-split">
-        <aside className={`left-icon-rail-dock ${sidebarCollapsed ? 'is-collapsed' : ''}`}>
-          {/* Main Navigation Group - Mutually exclusive, no duplicates */}
+        <aside className={`left-icon-rail-dock sidebar-${sidebarMode}`}>
+          {/* Header row in sidebar: Expand/Collapse controls */}
+          {sidebarMode === 'full' ? (
+            <div className="sidebar-full-top-bar">
+              <span className="sidebar-top-label font-mono">INTELLIGENCE</span>
+              <div className="sidebar-top-actions">
+                <button
+                  className="sidebar-subtle-toggle"
+                  onClick={() => setSidebarMode('compact')}
+                  title="Collapse to vertical rail"
+                >
+                  <ChevronLeft size={13} />
+                </button>
+                <button
+                  className="sidebar-subtle-toggle"
+                  onClick={() => setSidebarMode('collapsed')}
+                  title="Hide sidebar completely"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              className="rail-expand-btn"
+              onClick={() => setSidebarMode('full')}
+              title="Expand Sidebar"
+            >
+              <ChevronRight size={13} />
+            </button>
+          )}
+
+          {/* Main Navigation Group - Clean, no bureau cases */}
           <div className="rail-group-top">
             {/* 1. Global Intelligence Grid Dashboard */}
             <button
@@ -271,16 +254,18 @@ export default function DesktopChrome({ children }) {
               onClick={() => setActiveNavSection('home')}
               title="Global Intelligence Grid Dashboard"
             >
-              <Globe size={17} />
+              <Globe size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Dashboard</span>}
             </button>
 
             {/* 2. Investigation Workspace & Canvas Hub */}
             <button
               className={`rail-btn ${activeNavSection === 'workspace' ? 'active' : ''}`}
               onClick={() => setActiveNavSection('workspace')}
-              title="Investigation Workspace Canvas & Hub"
+              title="Investigation Workspace Hub & Canvas"
             >
-              <Layers size={17} />
+              <Layers size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Workspace</span>}
             </button>
 
             {/* 3. Evidence Ingestion & Drag-and-Drop Organization */}
@@ -289,7 +274,8 @@ export default function DesktopChrome({ children }) {
               onClick={() => setActiveNavSection('ingestion')}
               title="Evidence Ingestion (Folder Upload & Organization)"
             >
-              <FileUp size={17} />
+              <FileUp size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Evidence</span>}
             </button>
 
             {/* 4. Byomkesh AI Forensic Co-Pilot */}
@@ -298,25 +284,28 @@ export default function DesktopChrome({ children }) {
               onClick={() => setActiveNavSection('byomkesh')}
               title="Byomkesh AI Forensic Co-Pilot"
             >
-              <Brain size={17} />
+              <Brain size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Byomkesh AI</span>}
             </button>
 
-            {/* 5. Bureau Cases Directory */}
-            <button
-              className={`rail-btn ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
-              onClick={() => setActiveNavSection('cases')}
-              title="Bureau Cases & Investigations"
-            >
-              <Briefcase size={17} />
-            </button>
-
-            {/* 6. Autonomous 12-Hour Sweeps */}
+            {/* 5. Autonomous 12-Hour Sweeps */}
             <button
               className={`rail-btn ${activeNavSection === 'sweeps' ? 'active' : ''}`}
               onClick={() => setActiveNavSection('sweeps')}
               title="Autonomous 12H Sweeps & Cross-Case Corroboration"
             >
-              <Sparkles size={17} />
+              <Sparkles size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Sweeps</span>}
+            </button>
+
+            {/* 6. Live Intel */}
+            <button
+              className={`rail-btn ${activeNavSection === 'intel' ? 'active' : ''}`}
+              onClick={() => setActiveNavSection('intel')}
+              title="Live Intelligence Signals & Intercepts"
+            >
+              <Radio size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Live Intel</span>}
             </button>
 
             {/* 7. Provenance & Sealed Ledger */}
@@ -325,18 +314,20 @@ export default function DesktopChrome({ children }) {
               onClick={() => setActiveNavSection('audit')}
               title="Cryptographic Evidence Provenance Ledger"
             >
-              <ShieldCheck size={17} />
+              <ShieldCheck size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Ledger</span>}
             </button>
           </div>
 
-          {/* Bottom Group: Bureau File Explorer & Security Clearance Dossier */}
+          {/* Bottom Group: Total Bureau File Explorer & Command Palette */}
           <div className="rail-group-bottom">
             <button
               className={`rail-btn ${totalExplorerOpen ? 'active' : ''}`}
               onClick={() => setTotalExplorerOpen(true)}
-              title="Total File Explorer (Case Files & Evidence Archive)"
+              title="Total File Explorer (Case Files & Archive)"
             >
-              <Folder size={17} />
+              <Folder size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">File Explorer</span>}
             </button>
 
             <button
@@ -344,16 +335,8 @@ export default function DesktopChrome({ children }) {
               onClick={() => setShowSearchModal(true)}
               title="Global Search & Command Palette (⌘K)"
             >
-              <Search size={17} />
-            </button>
-
-            <button
-              className={`rail-btn rail-btn-profile ${showOfficerProfile ? 'active' : ''}`}
-              onClick={() => setShowOfficerProfile(true)}
-              title="Lead Officer Dossier & Security Clearance"
-            >
-              <Shield size={17} />
-              <span className="rail-profile-dot" />
+              <Search size={16} />
+              {sidebarMode === 'full' && <span className="rail-item-text">Command (⌘K)</span>}
             </button>
           </div>
         </aside>

@@ -4,7 +4,8 @@ import {
   ArrowRight, ExternalLink, RefreshCw, Box,
   Users, ShieldAlert, Activity, CheckCircle2,
   TrendingUp, FileText, Sparkles, ArrowUpRight,
-  ShieldCheck, UploadCloud, Brain, Search, Clock, MapPin, Database
+  ShieldCheck, UploadCloud, Brain, Search, Clock, MapPin, Database,
+  Play, Layers
 } from 'lucide-react';
 import api from '../services/api';
 import TacticalGlobe from '../components/dashboard/TacticalGlobe';
@@ -227,7 +228,13 @@ export default function DashboardPage() {
     if (targetCaseId) {
       setActiveCaseId(targetCaseId);
       const matchingWs = (workspaces || []).find(w => w.caseId === targetCaseId);
-      if (matchingWs) openWorkspace(matchingWs.id);
+      if (matchingWs) {
+        openWorkspace(matchingWs.id);
+      } else if (workspaces && workspaces.length > 0) {
+        openWorkspace(workspaces[0].id);
+      }
+    } else if (workspaces && workspaces.length > 0) {
+      openWorkspace(workspaces[0].id);
     }
     setActiveNavSection('workspace');
   };
@@ -340,60 +347,60 @@ export default function DashboardPage() {
         {/* LEFT COLUMN: ACTIVE CASES + 12H SWEEPS ───────────── */}
         <div className="dash-col-primary">
           
-          {/* Active Investigations Section */}
-          <section className="dash-card-section">
+          {/* Active Workspace Command Boards Section - Clean & Lightweight */}
+          <section className="dash-card-section workspaces-overview-section">
             <div className="section-header-row">
               <div className="section-title-wrap">
-                <h2 className="section-title">Active Investigations</h2>
-                <span className="section-count-pill">{casesList.length} Active</span>
+                <Layers size={16} className="text-cyan" />
+                <h2 className="section-title">Investigation Workspaces</h2>
+                <span className="section-count-pill font-mono">{workspaces.length} Boards</span>
               </div>
               <button
                 className="section-link-btn"
-                onClick={() => setActiveNavSection('cases')}
+                onClick={() => setActiveNavSection('workspace')}
               >
-                <span>View Bureau Cases</span>
+                <span>Open Workspace Hub</span>
                 <ArrowRight size={13} />
               </button>
             </div>
 
-            <div className="cases-cards-stack">
-              {casesList.map(c => (
+            <div className="dash-workspaces-stack">
+              {workspaces.slice(0, 3).map(ws => (
                 <div
-                  key={c.id}
-                  className="case-card-row"
-                  onClick={() => handleLaunchCase(c.id)}
+                  key={ws.id}
+                  className="dash-ws-card-row"
+                  onClick={() => {
+                    openWorkspace(ws.id);
+                    setActiveNavSection('workspace');
+                  }}
                 >
-                  <div className="case-row-left">
-                    <div className="case-row-badge-line">
-                      <span className={`case-priority-pill priority-${(c.priority || 'ACTIVE').toLowerCase()}`}>
-                        {c.priority || 'ACTIVE'}
-                      </span>
-                      <span className="case-sector-label">{c.sector}</span>
-                      <span className="case-legal-label">{c.legalBasis}</span>
+                  <div className="dash-ws-left">
+                    <div className="dash-ws-badge-line">
+                      <span className="dash-ws-genre font-mono">{(ws.genre || 'INVESTIGATION').toUpperCase()}</span>
+                      <span className="dash-ws-tag font-mono">{ws.caseName || 'Workspace'}</span>
                     </div>
-                    <h3 className="case-row-name">{c.name}</h3>
-                    <p className="case-row-summary">{c.summary}</p>
-                    <div className="case-row-meta">
-                      <span>Lead: <strong>{c.lead}</strong></span>
+                    <h3 className="dash-ws-title">{ws.name}</h3>
+                    <p className="dash-ws-desc">{ws.description}</p>
+                    <div className="dash-ws-meta font-mono">
+                      <span>{ws.nodesCount || ws.nodes?.length || 0} Entities</span>
                       <span className="meta-dot">·</span>
-                      <span>{c.evidenceCount} Evidence Items</span>
+                      <span>{ws.edgesCount || ws.edges?.length || 0} Ropes</span>
                       <span className="meta-dot">·</span>
-                      <span>{c.entitiesCount} Entities</span>
-                      <span className="meta-dot">·</span>
-                      <span className="meta-time"><Clock size={11} /> {c.lastUpdate}</span>
+                      <span>{ws.lastModified || 'Recent'}</span>
                     </div>
                   </div>
 
-                  <div className="case-row-right">
+                  <div className="dash-ws-right">
                     <button
-                      className="case-launch-btn"
+                      className="case-launch-btn font-mono"
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleLaunchCase(c.id);
+                        openWorkspace(ws.id);
+                        setActiveNavSection('workspace');
                       }}
                     >
-                      <span>Open Workspace</span>
-                      <ArrowRight size={13} />
+                      <Play size={11} fill="currentColor" />
+                      <span>Launch Board</span>
                     </button>
                   </div>
                 </div>

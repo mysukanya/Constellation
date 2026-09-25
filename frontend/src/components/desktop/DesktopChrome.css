@@ -302,21 +302,20 @@
   padding: 0 3px;
 }
 
-/* ── Main Split Viewport with Floating Left Dock & Canvas ──────── */
+/* ── Main Split Viewport with 3-State Floating Sidebar ──────── */
 .desktop-main-split {
   display: flex;
   flex: 1;
   min-height: 0;
   overflow: hidden;
   position: relative;
-  padding: 8px 12px;
+  padding: 6px 10px;
   gap: 8px;
   box-sizing: border-box;
   background: transparent;
 }
 
 .left-icon-rail-dock {
-  width: 40px;
   height: 100%;
   background: rgba(14, 14, 18, 0.92);
   backdrop-filter: blur(20px);
@@ -327,15 +326,29 @@
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
   flex-shrink: 0;
   z-index: 20;
-  transition: width 0.22s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease, padding 0.22s ease, margin 0.22s ease;
+  transition: width 0.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.18s ease, padding 0.2s ease, margin 0.2s ease;
   overflow: hidden;
+  box-sizing: border-box;
 }
 
-.left-icon-rail-dock.is-collapsed {
+/* 1. Compact (default vertical bar) */
+.left-icon-rail-dock.sidebar-compact {
+  width: 42px;
+  padding: 8px 0;
+  align-items: center;
+}
+
+/* 2. Full (expanded sidebar) */
+.left-icon-rail-dock.sidebar-full {
+  width: 190px;
+  padding: 8px 8px;
+  align-items: stretch;
+}
+
+/* 3. Collapsed (completely vanished) */
+.left-icon-rail-dock.sidebar-collapsed {
   width: 0 !important;
   min-width: 0 !important;
   max-width: 0 !important;
@@ -348,17 +361,87 @@
   box-shadow: none !important;
 }
 
+.sidebar-full-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px 6px 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 6px;
+}
+
+.sidebar-top-label {
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #71717a;
+}
+
+.sidebar-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.sidebar-subtle-toggle {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #71717a;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.sidebar-subtle-toggle:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+.rail-expand-btn {
+  width: 28px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  color: #71717a;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-bottom: 4px;
+  transition: all 0.12s ease;
+}
+
+.rail-expand-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
 .rail-group-top,
 .rail-group-bottom {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 2px;
 }
 
-.rail-btn {
-  width: 30px;
-  height: 30px;
+.sidebar-compact .rail-group-top,
+.sidebar-compact .rail-group-bottom {
+  align-items: center;
+}
+
+.sidebar-full .rail-group-top,
+.sidebar-full .rail-group-bottom {
+  align-items: stretch;
+}
+
+.sidebar-compact .rail-btn {
+  width: 32px;
+  height: 32px;
   border-radius: 5px;
   background: transparent;
   border: 1px solid transparent;
@@ -370,6 +453,29 @@
   transition: all 0.15s ease;
 }
 
+.sidebar-full .rail-btn {
+  width: 100%;
+  height: 32px;
+  border-radius: 5px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: #8e8e93;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0 8px;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.rail-item-text {
+  font-size: 11.5px;
+  font-weight: 450;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
 .rail-btn:hover {
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
@@ -379,6 +485,7 @@
   background: rgba(255, 255, 255, 0.12);
   color: #ffffff;
   border-color: rgba(255, 255, 255, 0.16);
+  font-weight: 500;
 }
 
 .rail-btn-byomkesh {
