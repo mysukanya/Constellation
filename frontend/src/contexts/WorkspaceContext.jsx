@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import api from '../services/api';
 
 const WorkspaceContext = createContext(null);
@@ -551,7 +551,36 @@ export function WorkspaceProvider({ children }) {
   });
   const [searchQuery, setSearchQuery] = useState('');
 
-  const activeCase = CANONICAL_CASES[activeCaseId] || CANONICAL_CASES['case-102'];
+  const [canvasFilterType, setCanvasFilterType] = useState('ALL');
+  const [showConnectBar, setShowConnectBar] = useState(false);
+
+  // Strictly synchronize activeCase with activeWorkspace if a workspace is loaded
+  const activeCase = (activeWorkspace && activeWorkspace.caseId && CANONICAL_CASES[activeWorkspace.caseId])
+    ? CANONICAL_CASES[activeWorkspace.caseId]
+    : (CANONICAL_CASES[activeCaseId] || CANONICAL_CASES['case-102']);
+
+  const quickSpawnNode = (type) => {
+    const nodeSeq = canvasNodes.length + 1;
+    const id = `node-${Date.now().toString(36)}-${nodeSeq}`;
+    let item;
+    if (type === 'Person') {
+      const names = ['Kareem Merchant', 'Imran Malik', 'Suresh Varma', 'Zoya Chen', 'Deepak Mehta'];
+      const pick = names[canvasNodes.length % names.length];
+      item = { id, name: `${pick} (Op-${nodeSeq})`, role: 'Syndicate Operative / Proxy', type: 'Person', threat: 'HIGH', provenance: 'EXTRACTED_ENTITY' };
+    } else if (type === 'Organization') {
+      const orgs = ['Apex Horizon FZE', 'Caspian Freight Lines', 'Diamond Port Logistics', 'Gulf Stream Bullion LLC'];
+      const pick = orgs[canvasNodes.length % orgs.length];
+      item = { id, name: `${pick}`, role: 'Offshore Trading Shell', type: 'Organization', threat: 'CRITICAL', provenance: 'ANALYTICAL_INFERENCE' };
+    } else if (type === 'Vehicle') {
+      const boats = ['MV Sagar Priya', 'Dhow Bahr-al-Noor', 'Speedcraft Falcon-9', 'Cargo Vessel Al-Rayyan'];
+      const pick = boats[canvasNodes.length % boats.length];
+      item = { id, name: `${pick}`, role: 'Lightering & Transshipment Vessel', type: 'Vehicle', threat: 'HIGH', provenance: 'RAW_DATA' };
+    } else {
+      item = { id, name: `Hawala Mirror Ledger #${nodeSeq}`, role: 'Split Tranche Clearing Mirror', type: 'Financial', threat: 'CRITICAL', provenance: 'VERIFIED_RELATIONSHIP' };
+    }
+    const added = addNodeToCanvas(item);
+    return added;
+  };
 
   const openTab = (tab) => {
     setOpenTabs(prev => {
@@ -630,11 +659,11 @@ export function WorkspaceProvider({ children }) {
   const addNodeToCanvas = (item, x = null, y = null) => {
     if (!item) return;
     
-    // Smart cascading placement if coordinates not explicitly provided
-    const defaultX = 80 + ((canvasNodes.length * 60) % 400);
-    const defaultY = 70 + ((canvasNodes.length * 50) % 280);
-    const posX = typeof x === 'number' && Number.isFinite(x) ? Math.round(x) : defaultX;
-    const posY = typeof y === 'number' && Number.isFinite(y) ? Math.round(y) : defaultY;
+    // Smart cascading placement if coordinates not explicitly provided (min 80px)
+    const defaultX = 120 + ((canvasNodes.length * 75) % 450);
+    const defaultY = 100 + ((canvasNodes.length * 60) % 320);
+    const posX = typeof x === 'number' && Number.isFinite(x) && x >= 30 ? Math.round(x) : defaultX;
+    const posY = typeof y === 'number' && Number.isFinite(y) && y >= 30 ? Math.round(y) : defaultY;
 
     const existingIndex = canvasNodes.findIndex(n => 
       n.id === item.id || (item.name && n.name === item.name) || (item.title && n.name === item.title)
@@ -642,9 +671,11 @@ export function WorkspaceProvider({ children }) {
 
     if (existingIndex !== -1) {
       const existing = canvasNodes[existingIndex];
-      // Move to target drop position or cascade position
-      const updatedX = typeof x === 'number' && Number.isFinite(x) ? posX : (Number.isFinite(existing.x) ? existing.x : defaultX);
-      const updatedY = typeof y === 'number' && Number.isFinite(y) ? posY : (Number.isFinite(existing.y) ? existing.y : defaultY);
+      // Move to target drop position or keep current safe position (never snap to 0 or 10)
+      const curSafeX = Number.isFinite(existing.x) && existing.x >= 30 ? existing.x : defaultX;
+      const curSafeY = Number.isFinite(existing.y) && existing.y >= 30 ? existing.y : defaultY;
+      const updatedX = typeof x === 'number' && Number.isFinite(x) && x >= 30 ? Math.round(x) : curSafeX;
+      const updatedY = typeof y === 'number' && Number.isFinite(y) && y >= 30 ? Math.round(y) : curSafeY;
       
       setCanvasNodes(prev => prev.map((n, idx) => 
         idx === existingIndex ? { ...n, x: updatedX, y: updatedY } : n
@@ -656,7 +687,7 @@ export function WorkspaceProvider({ children }) {
     }
 
     const newNode = {
-      id: item.id || `node-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      id: item.id || `node-${Date.now().toString(36)}-${canvasNodes.length + 1}`,
       name: item.name || item.title || 'New Entity',
       type: item.type || (item.role ? 'Person' : 'Entity'),
       role: item.role || item.classification || 'Investigative Artifact',
@@ -748,6 +779,12 @@ export function WorkspaceProvider({ children }) {
   const removeEdge = (edgeId) => {
     const nextEdges = canvasEdges.filter(e => e.id !== edgeId);
     setCanvasEdges(nextEdges);
+
+    // Persist severance to backend graph and audit ledger
+    api.deleteRelationship(edgeId).catch(err => {
+      console.warn('Could not sever edge in backend graph:', err);
+    });
+
     if (activeWorkspaceId) {
       api.updateWorkspace(activeWorkspaceId, {
         canvas_state: { nodes: canvasNodes, edges: nextEdges }
@@ -755,12 +792,14 @@ export function WorkspaceProvider({ children }) {
     }
   };
 
-  const updateNodePosition = (id, x, y) => {
-    const validX = typeof x === 'number' && Number.isFinite(x) ? Math.round(x) : 80;
-    const validY = typeof y === 'number' && Number.isFinite(y) ? Math.round(y) : 80;
-    const nextNodes = canvasNodes.map(n => n.id === id ? { ...n, x: validX, y: validY } : n);
-    setCanvasNodes(nextNodes);
-  };
+  const updateNodePosition = useCallback((id, x, y) => {
+    setCanvasNodes(prev => prev.map(n => {
+      if (n.id !== id) return n;
+      const validX = typeof x === 'number' && Number.isFinite(x) && x >= 20 ? Math.round(x) : (n.x >= 20 ? n.x : 80);
+      const validY = typeof y === 'number' && Number.isFinite(y) && y >= 20 ? Math.round(y) : (n.y >= 20 ? n.y : 80);
+      return { ...n, x: validX, y: validY };
+    }));
+  }, []);
 
   const toggleWindow = (winKey) => {
     setWindowsState(prev => ({
@@ -842,6 +881,11 @@ export function WorkspaceProvider({ children }) {
       setRopingSource,
       isRopingMode,
       setIsRopingMode,
+      canvasFilterType,
+      setCanvasFilterType,
+      showConnectBar,
+      setShowConnectBar,
+      quickSpawnNode,
       flashNodeId,
       notifications,
       markAllNotificationsRead,

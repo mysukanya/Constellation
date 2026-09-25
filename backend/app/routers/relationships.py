@@ -33,3 +33,16 @@ async def create_relationship(
         created_at=edge["created_at"],
         properties=edge.get("properties", {})
     )
+
+@router.delete("/{rel_id}")
+async def delete_relationship(
+    rel_id: str,
+    current_user: UserResponse = Depends(require_role(["admin", "investigator"]))
+):
+    """
+    Investigator action:
+    Deletes a relationship edge from the persistent graph and records an HMAC audit event.
+    """
+    deleted = await graph_service.delete_relationship(rel_id=rel_id, actor_id=current_user.id)
+    return {"status": "severed", "relationship_id": rel_id, "deleted": deleted}
+

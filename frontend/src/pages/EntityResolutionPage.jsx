@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
-  GitMerge, Check, X, RefreshCw, Users, ArrowRight, Loader
+  GitMerge, Check, X, RefreshCw, Users, ArrowRight, Loader, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import GlassCard from '../components/GlassCard';
 import Panel3D from '../components/Panel3D';
@@ -15,16 +15,30 @@ export default function EntityResolutionPage() {
   const [loading, setLoading] = useState(true);
   const [sweeping, setSweeping] = useState(false);
   const [resolving, setResolving] = useState({});
+  const [page, setPage] = useState(0);
+  const pageSize = 15;
+  const [hasMore, setHasMore] = useState(true);
 
-  useEffect(() => { loadMatches(); }, []);
+  useEffect(() => {
+    loadMatches(page);
+  }, [page]);
 
-  const loadMatches = async () => {
+  const loadMatches = async (targetPage = page) => {
     setLoading(true);
     try {
-      const data = await api.getPendingMatches();
-      setMatches(data);
-    } catch { /* empty */ }
-    finally { setLoading(false); }
+      const data = await api.getPendingMatches('pending', pageSize, targetPage * pageSize);
+      if (Array.isArray(data)) {
+        setMatches(data);
+        setHasMore(data.length === pageSize);
+      } else {
+        setMatches([]);
+        setHasMore(false);
+      }
+    } catch {
+      setMatches([]);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResolve = async (matchId, action) => {
@@ -47,7 +61,8 @@ export default function EntityResolutionPage() {
     setSweeping(true);
     try {
       await api.triggerErSweep();
-      await loadMatches();
+      setPage(0);
+      await loadMatches(0);
     } catch { /* empty */ }
     finally { setSweeping(false); }
   };
@@ -175,6 +190,35 @@ export default function EntityResolutionPage() {
               </Panel3D>
             </motion.div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination Footer */}
+      {!loading && (matches.length > 0 || page > 0) && (
+        <div className="er-pagination-bar font-mono" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginTop: '24px', paddingBottom: '32px' }}>
+          <button
+            className="btn btn-secondary"
+            onClick={() => setPage(p => Math.max(0, p - 1))}
+            disabled={page === 0 || loading}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <ChevronLeft size={16} />
+            <span>Previous</span>
+          </button>
+
+          <span style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+            PAGE {page + 1} {hasMore ? '' : '(FINAL)'}
+          </span>
+
+          <button
+            className="btn btn-secondary"
+            onClick={() => setPage(p => p + 1)}
+            disabled={!hasMore || loading}
+            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+          >
+            <span>Next</span>
+            <ChevronRight size={16} />
+          </button>
         </div>
       )}
     </div>

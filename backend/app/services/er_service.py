@@ -325,13 +325,13 @@ class EntityResolutionService:
         conn.close()
         return row is not None
 
-    async def get_pending_matches(self, case_id: Optional[str] = None) -> List[Dict[str, Any]]:
+    async def get_pending_matches(self, case_id: Optional[str] = None, limit: int = 50, offset: int = 0) -> List[Dict[str, Any]]:
         conn = get_db_connection()
         cursor = conn.cursor()
         if case_id:
-            cursor.execute("SELECT * FROM er_matches WHERE case_id = ? AND status = 'pending' ORDER BY confidence DESC", (case_id,))
+            cursor.execute("SELECT * FROM er_matches WHERE case_id = ? AND status = 'pending' ORDER BY confidence DESC LIMIT ? OFFSET ?", (case_id, limit, offset))
         else:
-            cursor.execute("SELECT * FROM er_matches WHERE status = 'pending' ORDER BY confidence DESC")
+            cursor.execute("SELECT * FROM er_matches WHERE status = 'pending' ORDER BY confidence DESC LIMIT ? OFFSET ?", (limit, offset))
         rows = cursor.fetchall()
         conn.close()
 

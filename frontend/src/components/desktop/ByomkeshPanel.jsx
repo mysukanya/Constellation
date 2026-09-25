@@ -28,10 +28,16 @@ export default function ByomkeshPanel({ onClose }) {
       confidence: 0.94,
       text: 'Tariq "The Anchor" Merchant holds beneficial ownership over Al-Barakah Logistics FZE with structured settlements routed through Hawala Node #88219.',
       citations: ['Tariq Merchant (p-1)', 'Al-Barakah Logistics FZE (org-1)', 'Hawala Account #88219 (fin-1)'],
-      actions: ['Focus on Board', 'Correlate with Case 117']
+      actions: ['Focus on Board', 'Correlate with Case 117'],
+      reasoning_trace: [
+        'Heuristic 1: Cypher query matched Tariq Merchant to Al-Barakah Logistics via BENEFICIAL_OWNER relation.',
+        'Heuristic 2: Financial edge connected Al-Barakah to Hawala Account #88219.',
+        'Heuristic 3: Verified SHA-256 hash match on seized ledger ledger-88219.'
+      ]
     }
   ]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [expandedTraceIdx, setExpandedTraceIdx] = useState(null);
 
   // Research Mode State (Autonomous Investigation)
   const [autoStatus, setAutoStatus] = useState('IDLE'); // 'ACTIVE' | 'PAUSED' | 'IDLE'
@@ -66,7 +72,8 @@ export default function ByomkeshPanel({ onClose }) {
             provenance: res.citations?.length ? 'INFERENCE' : 'CORRELATION',
             confidence: res.confidence || 0.95,
             text: res.answer,
-            citations: (res.citations || []).map(c => c.summary || c.target_id || c.label_or_type),
+            reasoning_trace: res.reasoning_trace || [],
+            citations: (res.citations || []).map(c => c.summary || c.target_id || c.label_or_type || c),
             rawCitations: res.citations || [],
             cypherQueries: res.cypher_queries_used || [],
             actions: ['Focus on Board']
@@ -235,6 +242,21 @@ export default function ByomkeshPanel({ onClose }) {
                       </div>
                     )}
 
+                    {/* Reasoning Trace Drawer */}
+                    {expandedTraceIdx === idx && msg.reasoning_trace && msg.reasoning_trace.length > 0 && (
+                      <div className="byomkesh-reasoning-drawer font-mono" style={{ background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '4px', padding: '8px 10px', marginTop: '8px', fontSize: '11px', color: '#bbb' }}>
+                        <div style={{ color: 'var(--text-secondary)', marginBottom: '4px', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                          ⚡ Autonomous Graph Reasoning Chain ({msg.reasoning_trace.length} Steps):
+                        </div>
+                        {msg.reasoning_trace.map((step, sIdx) => (
+                          <div key={sIdx} style={{ margin: '3px 0', display: 'flex', gap: '6px' }}>
+                            <span style={{ color: 'var(--accent-green, #4ade80)' }}>[{sIdx + 1}]</span>
+                            <span>{step}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
                     {/* Challenge & Action Row */}
                     <div className="response-actions-row">
                       <button
@@ -246,8 +268,11 @@ export default function ByomkeshPanel({ onClose }) {
                       >
                         [CHALLENGE]
                       </button>
-                      <button className="btn-show-trace" onClick={() => openTab({ id: 'research', title: 'Byomkesh Research Dossier', type: 'research' })}>
-                        [SHOW TRACE]
+                      <button
+                        className="btn-show-trace"
+                        onClick={() => setExpandedTraceIdx(prev => prev === idx ? null : idx)}
+                      >
+                        [{expandedTraceIdx === idx ? 'HIDE TRACE' : 'SHOW TRACE'}]
                       </button>
                     </div>
                   </div>

@@ -5,8 +5,8 @@
 .case-file-adder-sidebar {
   width: 290px;
   height: 100%;
-  background: #090909;
-  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  background: #070707;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
@@ -15,11 +15,12 @@
 }
 
 .adder-header {
-  padding: 12px 14px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  background: #050505;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .adder-title-group {
@@ -38,7 +39,7 @@
 }
 
 .adder-title {
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 700;
   letter-spacing: 0.06em;
   color: #ffffff;
@@ -46,7 +47,7 @@
 }
 
 .adder-case-name {
-  font-size: 9.5px;
+  font-size: 9px;
   color: #71717a;
 }
 
@@ -67,12 +68,12 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
   margin: 10px 12px 6px 12px;
   padding: 0 8px;
-  height: 32px;
+  height: 30px;
 }
 
 .adder-search-box:focus-within {
@@ -244,23 +245,23 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  background: #121212;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  background: #0b0b0b;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
   padding: 8px 10px;
   transition: all 0.15s ease;
   cursor: grab;
 }
 
 .adder-card-item:hover {
-  background: #181818;
-  border-color: rgba(255, 255, 255, 0.18);
+  background: #111111;
+  border-color: rgba(255, 255, 255, 0.16);
   transform: translateY(-1px);
 }
 
 .adder-card-item.is-on-canvas {
-  border-color: rgba(56, 189, 248, 0.3);
-  background: rgba(56, 189, 248, 0.04);
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.04);
 }
 
 .adder-drag-handle {

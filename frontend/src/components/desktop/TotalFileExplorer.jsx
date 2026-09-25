@@ -626,7 +626,7 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
       fileType: 'Text Document',
       size: '0 KB',
       date: new Date().toISOString().split('T')[0],
-      hash: '0x' + Array.from({length: 16}, () => Math.floor(Math.random()*16).toString(16)).join(''),
+      hash: '0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
       tier: 'RAW_DATA'
     };
 

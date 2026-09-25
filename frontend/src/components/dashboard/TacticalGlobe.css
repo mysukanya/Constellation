@@ -1,0 +1,250 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   TACTICAL GLOBE — High-End Matte Black 3D Rotating Operational Grid
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.tactical-globe-wrapper {
+  background: #080808;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.85);
+  margin-bottom: 24px;
+}
+
+/* ── 1. Top HUD ── */
+.globe-hud-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #050505;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hud-label-cluster {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-radar-beacon {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 50%;
+}
+
+.beacon-icon {
+  color: #10b981;
+}
+
+.beacon-ping {
+  position: absolute;
+  inset: -3px;
+  border: 1px solid #10b981;
+  border-radius: 50%;
+  animation: beacon-ping-anim 2s infinite;
+  opacity: 0.6;
+}
+
+@keyframes beacon-ping-anim {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+.hud-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  color: #ffffff;
+  display: block;
+}
+
+.hud-sub {
+  font-size: 9.5px;
+  color: #71717a;
+  display: block;
+}
+
+.globe-controls-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.globe-ctrl-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+  border-radius: 4px;
+  font-size: 9.5px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.globe-ctrl-btn:hover {
+  background: #181818;
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.globe-ctrl-btn.active {
+  background: rgba(16, 185, 129, 0.15);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+/* ── 2. Canvas Viewport ── */
+.globe-canvas-viewport {
+  position: relative;
+  width: 100%;
+  height: 380px;
+  background: radial-gradient(circle at center, #070e0a 0%, #030403 70%, #010202 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: grab;
+  user-select: none;
+}
+
+.globe-canvas-viewport:active {
+  cursor: grabbing;
+}
+
+.tactical-globe-canvas {
+  width: 100%;
+  max-width: 580px;
+  height: 380px;
+}
+
+.globe-coords-overlay {
+  position: absolute;
+  bottom: 12px;
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.drag-hint {
+  color: rgba(16, 185, 129, 0.7);
+  letter-spacing: 0.06em;
+}
+
+/* ── 3. Hub Telemetry Footer ── */
+.globe-hub-telemetry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #050505;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.hub-telemetry-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.telemetry-threat-badge {
+  font-size: 8.5px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  letter-spacing: 0.05em;
+}
+
+.telemetry-threat-badge.threat-critical {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #f87171;
+}
+
+.telemetry-threat-badge.threat-high {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+.telemetry-threat-badge.threat-medium {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.hub-telemetry-identity {
+  display: flex;
+  flex-direction: column;
+}
+
+.hub-telemetry-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.hub-telemetry-sector {
+  font-size: 9px;
+  color: #71717a;
+}
+
+.hub-telemetry-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.telemetry-coord {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 9.5px;
+  color: #38bdf8;
+}
+
+.telemetry-status {
+  font-size: 8.5px;
+  color: #a1a1aa;
+  letter-spacing: 0.04em;
+}
+
+.hub-launch-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.hub-launch-link:hover {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}

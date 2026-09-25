@@ -26,11 +26,14 @@ export default function InvestigationCanvas() {
     ropingSource,
     setRopingSource,
     flashNodeId,
-    openTab
+    openTab,
+    canvasFilterType,
+    setCanvasFilterType,
+    showConnectBar,
+    setShowConnectBar
   } = useWorkspace();
 
   const canvasRef = useRef(null);
-  const [filterType, setFilterType] = useState('ALL');
   const [isDragOver, setIsDragOver] = useState(false);
   const [draggingNode, setDraggingNode] = useState(null);
   const [toastMessage, setToastMessage] = useState(null);
@@ -41,8 +44,7 @@ export default function InvestigationCanvas() {
   const [quickNodeName, setQuickNodeName] = useState('');
   const lastTapRef = useRef(0);
 
-  // Manual connection bar state
-  const [showConnectBar, setShowConnectBar] = useState(false);
+  // Manual connection state
   const [connectFrom, setConnectFrom] = useState('');
   const [connectTo, setConnectTo] = useState('');
   const [connectRel, setConnectRel] = useState('COORDINATES_WITH');
@@ -53,7 +55,14 @@ export default function InvestigationCanvas() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  const draggingRef = useRef({ id: null, offsetX: 0, offsetY: 0 });
+  const dragStateRef = useRef({
+    id: null,
+    startX: 0,
+    startY: 0,
+    nodeStartX: 0,
+    nodeStartY: 0,
+    isDragging: false
+  });
 
   // Cancel roping on Escape key
   useEffect(() => {
@@ -63,16 +72,21 @@ export default function InvestigationCanvas() {
           setRopingSource(null);
           triggerToast('Roping cancelled');
         }
+        dragStateRef.current = { id: null, startX: 0, startY: 0, nodeStartX: 0, nodeStartY: 0, isDragging: false };
+        setDraggingNode(null);
         setDoubleClickMenu(null);
         setShowConnectBar(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [ropingSource]);
+  }, [ropingSource, setShowConnectBar]);
 
   // Complete roping connection between two nodes
   const completeRoping = (targetNodeId) => {
+    dragStateRef.current = { id: null, startX: 0, startY: 0, nodeStartX: 0, nodeStartY: 0, isDragging: false };
+    setDraggingNode(null);
+
     if (!ropingSource || ropingSource === targetNodeId) {
       setRopingSource(null);
       return;
@@ -84,28 +98,43 @@ export default function InvestigationCanvas() {
     setRopingSource(null);
   };
 
-  // Dragging node on canvas
+  // Dragging node on canvas with delta displacement & threshold
   const handleNodeMouseDown = (e, node) => {
-    if (e.target.closest('button') || e.target.closest('.card-rope-anchor')) return;
+    // If clicked on an interactive control (button, anchor, input, select), let that element handle it
+    if (
+      e.target.closest('button') ||
+      e.target.closest('.card-rope-anchor') ||
+      e.target.closest('input') ||
+      e.target.closest('select')
+    ) {
+      return;
+    }
     e.stopPropagation();
 
+    // Select this entity
     setSelectedEntity(node);
 
     // If currently roping and clicked a different node, establish connection immediately
     if (ropingSource) {
-      completeRoping(node.id);
+      if (ropingSource !== node.id) {
+        completeRoping(node.id);
+      } else {
+        setRopingSource(null);
+      }
       return;
     }
 
-    if (!canvasRef.current) return;
-    const rect = canvasRef.current.getBoundingClientRect();
-    const curX = Number.isFinite(node.x) ? node.x : 80;
-    const curY = Number.isFinite(node.y) ? node.y : 80;
-    const offsetX = e.clientX - rect.left - curX;
-    const offsetY = e.clientY - rect.top - curY;
+    const curX = Number.isFinite(node.x) && node.x >= 20 ? node.x : 100;
+    const curY = Number.isFinite(node.y) && node.y >= 20 ? node.y : 100;
 
-    draggingRef.current = { id: node.id, offsetX, offsetY };
-    setDraggingNode(node.id);
+    dragStateRef.current = {
+      id: node.id,
+      startX: e.clientX,
+      startY: e.clientY,
+      nodeStartX: curX,
+      nodeStartY: curY,
+      isDragging: false
+    };
   };
 
   useEffect(() => {
@@ -118,17 +147,28 @@ export default function InvestigationCanvas() {
         });
       }
 
-      const { id, offsetX, offsetY } = draggingRef.current;
-      if (!id || !canvasRef.current) return;
+      const drag = dragStateRef.current;
+      if (!drag || !drag.id || !canvasRef.current) return;
+
+      const dx = e.clientX - drag.startX;
+      const dy = e.clientY - drag.startY;
+
+      // Drag threshold: require at least 4px motion to initiate dragging (prevents static clicks from moving node)
+      if (!drag.isDragging) {
+        if (Math.hypot(dx, dy) < 4) return;
+        drag.isDragging = true;
+        setDraggingNode(drag.id);
+      }
+
       const rect = canvasRef.current.getBoundingClientRect();
-      const newX = Math.max(10, Math.min(rect.width - 230, e.clientX - rect.left - offsetX));
-      const newY = Math.max(10, Math.min(rect.height - 150, e.clientY - rect.top - offsetY));
-      updateNodePosition(id, Math.round(newX), Math.round(newY));
+      const newX = Math.max(25, Math.min(rect.width - 240, drag.nodeStartX + dx));
+      const newY = Math.max(25, Math.min(rect.height - 160, drag.nodeStartY + dy));
+      updateNodePosition(drag.id, Math.round(newX), Math.round(newY));
     };
 
     const handleMouseUp = () => {
-      if (draggingRef.current.id) {
-        draggingRef.current = { id: null, offsetX: 0, offsetY: 0 };
+      if (dragStateRef.current.id) {
+        dragStateRef.current = { id: null, startX: 0, startY: 0, nodeStartX: 0, nodeStartY: 0, isDragging: false };
         setDraggingNode(null);
       }
     };
@@ -185,6 +225,9 @@ export default function InvestigationCanvas() {
 
   const startRopingFrom = (e, nodeId) => {
     e.stopPropagation();
+    dragStateRef.current = { id: null, startX: 0, startY: 0, nodeStartX: 0, nodeStartY: 0, isDragging: false };
+    setDraggingNode(null);
+
     if (ropingSource) {
       if (ropingSource !== nodeId) {
         completeRoping(nodeId);
@@ -254,17 +297,17 @@ export default function InvestigationCanvas() {
   // Spawn node at double-tap position
   const handleSpawnAtPosition = (type, customTitle = null) => {
     if (!doubleClickMenu) return;
-    const seed = Math.floor(100 + Math.random() * 900);
-    const id = `node-${Date.now()}-${seed}`;
+    const nodeSeq = canvasNodes.length + 1;
+    const id = `node-${Date.now().toString(36)}-${nodeSeq}`;
     const name = customTitle && customTitle.trim() ? customTitle.trim() : null;
 
     let item;
     if (type === 'Person') {
       const names = ['Kareem Merchant', 'Imran Malik', 'Suresh Varma', 'Zoya Chen', 'Deepak Mehta'];
-      const pick = names[Math.floor(Math.random() * names.length)];
+      const pick = names[canvasNodes.length % names.length];
       item = {
         id,
-        name: name || `${pick} #${seed}`,
+        name: name || `${pick} (Op-${nodeSeq})`,
         role: 'Person of Interest / Operative',
         type: 'Person',
         threat: 'HIGH',
@@ -272,7 +315,7 @@ export default function InvestigationCanvas() {
       };
     } else if (type === 'Organization') {
       const orgs = ['Apex Horizon FZE', 'Caspian Freight Lines', 'Diamond Port Logistics', 'Gulf Stream Bullion LLC'];
-      const pick = orgs[Math.floor(Math.random() * orgs.length)];
+      const pick = orgs[canvasNodes.length % orgs.length];
       item = {
         id,
         name: name || `${pick}`,
@@ -283,7 +326,7 @@ export default function InvestigationCanvas() {
       };
     } else if (type === 'Vehicle') {
       const boats = ['MV Sagar Priya', 'Dhow Bahr-al-Noor', 'Speedcraft Falcon-9', 'Cargo Vessel Al-Rayyan'];
-      const pick = boats[Math.floor(Math.random() * boats.length)];
+      const pick = boats[canvasNodes.length % boats.length];
       item = {
         id,
         name: name || `${pick}`,
@@ -319,31 +362,31 @@ export default function InvestigationCanvas() {
 
   // Quick Spawn Handlers with guaranteed unique names
   const handleQuickAdd = (type) => {
-    const seed = Math.floor(100 + Math.random() * 900);
-    const id = `node-${Date.now()}-${seed}`;
+    const nodeSeq = canvasNodes.length + 1;
+    const id = `node-${Date.now().toString(36)}-${nodeSeq}`;
     let item;
     if (type === 'Person') {
       const names = ['Kareem Merchant', 'Imran Malik', 'Suresh Varma', 'Zoya Chen', 'Deepak Mehta'];
-      const pick = names[Math.floor(Math.random() * names.length)];
-      item = { id, name: `${pick} #${seed}`, role: 'Syndicate Operative / Proxy', type: 'Person', threat: 'HIGH', provenance: 'EXTRACTED_ENTITY' };
+      const pick = names[canvasNodes.length % names.length];
+      item = { id, name: `${pick} (Op-${nodeSeq})`, role: 'Syndicate Operative / Proxy', type: 'Person', threat: 'HIGH', provenance: 'EXTRACTED_ENTITY' };
     } else if (type === 'Organization') {
       const orgs = ['Apex Horizon FZE', 'Caspian Freight Lines', 'Diamond Port Logistics', 'Gulf Stream Bullion LLC'];
-      const pick = orgs[Math.floor(Math.random() * orgs.length)];
+      const pick = orgs[canvasNodes.length % orgs.length];
       item = { id, name: `${pick}`, role: 'Offshore Trading Shell', type: 'Organization', threat: 'CRITICAL', provenance: 'ANALYTICAL_INFERENCE' };
     } else if (type === 'Vehicle') {
       const boats = ['MV Sagar Priya', 'Dhow Bahr-al-Noor', 'Speedcraft Falcon-9', 'Cargo Vessel Al-Rayyan'];
-      const pick = boats[Math.floor(Math.random() * boats.length)];
+      const pick = boats[canvasNodes.length % boats.length];
       item = { id, name: `${pick}`, role: 'Lightering & Transshipment Vessel', type: 'Vehicle', threat: 'HIGH', provenance: 'RAW_DATA' };
     } else {
-      item = { id, name: `Hawala Ledger #${seed}`, role: 'Split Tranche Clearing Mirror', type: 'Financial', threat: 'CRITICAL', provenance: 'VERIFIED_RELATIONSHIP' };
+      item = { id, name: `Hawala Mirror Ledger #${nodeSeq}`, role: 'Split Tranche Clearing Mirror', type: 'Financial', threat: 'CRITICAL', provenance: 'VERIFIED_RELATIONSHIP' };
     }
     const added = addNodeToCanvas(item);
     triggerToast(`Created & Pinned ${type}: ${added.name}`);
   };
 
-  const filteredNodes = filterType === 'ALL'
+  const filteredNodes = (canvasFilterType || 'ALL') === 'ALL'
     ? canvasNodes
-    : canvasNodes.filter(n => (n.type || '').toUpperCase() === filterType);
+    : canvasNodes.filter(n => (n.type || '').toUpperCase() === canvasFilterType);
 
   const getEntityIcon = (type) => {
     switch ((type || '').toLowerCase()) {
@@ -358,55 +401,6 @@ export default function InvestigationCanvas() {
 
   return (
     <div className="canvas-workspace-container">
-      {/* ── Top Command Strip ────────────────────────────────────── */}
-      <div className="canvas-command-bar">
-        {/* Filters */}
-        <div className="canvas-filter-chips">
-          {['ALL', 'PERSON', 'ORGANIZATION', 'VEHICLE', 'FINANCIAL'].map(type => (
-            <button
-              key={type}
-              className={`filter-chip ${filterType === type ? 'active' : ''}`}
-              onClick={() => setFilterType(type)}
-            >
-              {type}
-            </button>
-          ))}
-        </div>
-
-        {/* Quick Add & Connect Controls */}
-        <div className="canvas-actions-cluster">
-          <div className="quick-spawn-btn-group">
-            <button className="spawn-btn" onClick={() => handleQuickAdd('Person')} title="Spawn a new Person node">
-              <Plus size={11} /> Person
-            </button>
-            <button className="spawn-btn" onClick={() => handleQuickAdd('Organization')} title="Spawn an Organization node">
-              <Plus size={11} /> Org
-            </button>
-            <button className="spawn-btn" onClick={() => handleQuickAdd('Vehicle')} title="Spawn a Vehicle node">
-              <Plus size={11} /> Vessel
-            </button>
-            <button className="spawn-btn" onClick={() => handleQuickAdd('Financial')} title="Spawn a Financial node">
-              <Plus size={11} /> Hawala
-            </button>
-          </div>
-
-          <button
-            className={`canvas-connect-tool-btn ${showConnectBar ? 'active' : ''}`}
-            onClick={() => setShowConnectBar(prev => !prev)}
-            title="Open connection builder to rope two nodes"
-          >
-            <Link2 size={12} />
-            <span>Connect Nodes</span>
-          </button>
-        </div>
-
-        {/* Status Counts & Double-Click Hint */}
-        <div className="canvas-meta-status">
-          <span className="canvas-double-click-hint font-mono">💡 Double-tap canvas to add node</span>
-          <span className="meta-badge-nodes">{canvasNodes.length} NODES</span>
-          <span className="meta-badge-ropes">{canvasEdges.length} ROPES</span>
-        </div>
-      </div>
 
       {/* ── INLINE CONNECTION BUILDER BAR ───────────────────────── */}
       {showConnectBar && (

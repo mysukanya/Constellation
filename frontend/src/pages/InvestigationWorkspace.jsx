@@ -8,7 +8,7 @@ import ByomkeshPanel from '../components/desktop/ByomkeshPanel';
 import Panel3D from '../components/Panel3D';
 import {
   Layers, ArrowLeft, Plus, Database, Sidebar,
-  Activity, CheckCircle2, Shield, RefreshCw, X, Brain, Sparkles
+  Activity, CheckCircle2, Shield, RefreshCw, X, Brain, Sparkles, Link2
 } from 'lucide-react';
 import api from '../services/api';
 import './InvestigationWorkspace.css';
@@ -19,6 +19,13 @@ export default function InvestigationWorkspace() {
     activeWorkspace,
     closeWorkspace,
     activeCase,
+    canvasNodes,
+    canvasEdges,
+    canvasFilterType,
+    setCanvasFilterType,
+    showConnectBar,
+    setShowConnectBar,
+    quickSpawnNode,
     byomkeshOpen,
     setByomkeshOpen,
     dataUploaderOpen,
@@ -47,11 +54,16 @@ export default function InvestigationWorkspace() {
     return <WorkspaceOverviewHub />;
   }
 
+  const caseIdDisplay = activeCase.id.toUpperCase();
+  const caseTitleDisplay = activeCase.name.includes('—') 
+    ? activeCase.name.split('—')[1].trim() 
+    : activeCase.name;
+
   return (
     <div className="investigation-workspace-root">
-      {/* ── Top Workspace Command Bar ─────────────────────────────── */}
+      {/* ── UNIFIED HIGH-END MATTE-BLACK COMMAND BAR ───────────────── */}
       <header className="workspace-top-bar">
-        {/* Left: Back to Hub & Workspace Title */}
+        {/* Left: Hub Navigation & Synchronized Case Breadcrumb */}
         <div className="topbar-left-cluster">
           <button
             className="topbar-back-btn"
@@ -59,44 +71,100 @@ export default function InvestigationWorkspace() {
             title="Return to Workspaces Overview"
           >
             <ArrowLeft size={13} />
-            <span>All Workspaces</span>
+            <span>Workspaces</span>
           </button>
 
-          <div className="topbar-divider" />
+          <span className="topbar-breadcrumb-slash">/</span>
 
           <div className="case-title-cluster">
-            <span className="case-name-text">{activeWorkspace?.name || activeCase.name}</span>
-            <span className="case-badge-pill font-mono">{activeWorkspace?.caseName || activeCase.name.split('—')[0].trim()}</span>
-            <span className={`case-priority-badge font-mono priority-${(activeWorkspace?.priority || activeCase.priority || 'HIGH').toLowerCase()}`}>
-              {activeWorkspace?.priority || activeCase.priority || 'ACTIVE'}
+            <span className="case-name-text" title={activeWorkspace?.name || activeCase.name}>
+              {activeWorkspace?.name || 'Active Investigation'}
+            </span>
+            <span className="case-badge-pill font-mono" title={`Linked to ${activeCase.name}`}>
+              {caseIdDisplay}: {caseTitleDisplay}
+            </span>
+            <span className={`case-priority-badge font-mono priority-${(activeCase.priority || 'ACTIVE').toLowerCase()}`}>
+              {activeCase.priority || 'ACTIVE'}
             </span>
           </div>
         </div>
 
-        {/* Center / Right: File Adder, Cross-Case, & Byomkesh Toggles */}
+        {/* Center: Canvas Filter Chips & Node Operations */}
+        <div className="topbar-center-cluster">
+          {/* Filter Pills */}
+          <div className="canvas-filter-pills">
+            {['ALL', 'PERSON', 'ORGANIZATION', 'VEHICLE', 'FINANCIAL'].map(type => (
+              <button
+                key={type}
+                className={`filter-pill ${canvasFilterType === type ? 'active' : ''}`}
+                onClick={() => setCanvasFilterType(type)}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          <div className="topbar-divider" />
+
+          {/* Quick Spawn Buttons */}
+          <div className="topbar-spawn-group">
+            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Person')} title="Add Person entity to canvas">
+              <Plus size={11} /> Person
+            </button>
+            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Organization')} title="Add Organization entity">
+              <Plus size={11} /> Org
+            </button>
+            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Vehicle')} title="Add Vessel/Vehicle entity">
+              <Plus size={11} /> Vessel
+            </button>
+            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Financial')} title="Add Hawala entity">
+              <Plus size={11} /> Hawala
+            </button>
+          </div>
+
+          <button
+            className={`topbar-connect-btn ${showConnectBar ? 'active' : ''}`}
+            onClick={() => setShowConnectBar(prev => !prev)}
+            title="Toggle Connection Rope Builder"
+          >
+            <Link2 size={12} />
+            <span>Connect</span>
+          </button>
+        </div>
+
+        {/* Right: Board Metrics, Side Docks & Live Indicator */}
         <div className="topbar-right-cluster">
+          {/* Counters */}
+          <div className="topbar-board-metrics font-mono">
+            <span className="metric-pill nodes-count">{canvasNodes.length} NODES</span>
+            <span className="metric-pill ropes-count">{canvasEdges.length} ROPES</span>
+          </div>
+
+          <div className="topbar-divider" />
+
+          {/* Side Drawer Toggles */}
           <button
             className={`topbar-toggle-btn ${dataUploaderOpen ? 'active' : ''}`}
             onClick={() => setDataUploaderOpen(prev => !prev)}
-            title="Toggle Case File & Entity Data Uploader"
+            title="Toggle Case File & Entity Data Drawer"
           >
             <Sidebar size={13} />
-            <span>Case Files &amp; Entities</span>
+            <span>Case Files</span>
           </button>
 
           <button
             className={`topbar-toggle-btn ${crossCaseOpen ? 'active' : ''}`}
             onClick={() => setCrossCaseOpen(prev => !prev)}
-            title="Toggle Cross-Case File Importer"
+            title="Toggle Cross-Case Nexus Importer"
           >
             <Database size={13} />
-            <span>Cross-Case Importer</span>
+            <span>Cross-Case</span>
           </button>
 
           <button
             className={`topbar-toggle-btn btn-byomkesh ${byomkeshOpen ? 'active' : ''}`}
             onClick={() => setByomkeshOpen(prev => !prev)}
-            title="Toggle Byomkesh AI Investigation Co-Pilot"
+            title="Toggle Byomkesh AI Co-Pilot"
           >
             <Brain size={13} />
             <span>Byomkesh AI</span>
@@ -109,7 +177,7 @@ export default function InvestigationWorkspace() {
           <div className="backend-status-pill">
             <span className={`backend-pulse-dot ${backendStatus === 'live' ? 'live' : 'offline'}`} />
             <span className="backend-status-text font-mono">
-              {backendStatus === 'live' ? 'FASTAPI LIVE' : 'BACKEND OFFLINE'}
+              {backendStatus === 'live' ? 'LIVE' : 'OFFLINE'}
             </span>
           </div>
         </div>

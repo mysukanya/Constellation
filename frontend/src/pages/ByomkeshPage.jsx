@@ -59,7 +59,7 @@ export default function ByomkeshPage() {
   const [copiedId, setCopiedId] = useState(null);
   const [activeCitation, setActiveCitation] = useState(null);
 
-  // Read available evidence roster from localStorage
+  // Read available evidence roster from API & fallback to local roster
   const [evidenceList, setEvidenceList] = useState(() => {
     try {
       const saved = localStorage.getItem('constellation_evidence_roster');
@@ -70,8 +70,23 @@ export default function ByomkeshPage() {
 
   const messagesEndRef = useRef(null);
 
+  // Sync real evidence roster from database for active case
   useEffect(() => {
+    api.listEvidence(selectedCase)
+      .then(items => {
+        if (Array.isArray(items) && items.length > 0) {
+          setEvidenceList(items.map(it => ({
+            id: it.id,
+            title: it.title,
+            caseId: it.case_id,
+            category: (it.evidence_type || 'DOCUMENT').toUpperCase()
+          })));
+        }
+      })
+      .catch(() => {});
+  }, [selectedCase]);
 
+  useEffect(() => {
     // Check if there is a pending query from Evidence Ingestion
     const pendingQuery = localStorage.getItem('byomkesh_pending_query');
     if (pendingQuery) {
@@ -108,27 +123,35 @@ export default function ByomkeshPage() {
       const answerText = res?.answer || `Forensic Analysis for "${q}":\n\nBased on cross-case heuristic examination of active evidence records in ${selectedCase === 'case-102' ? 'Case 102 — Silver Dune' : selectedCase}:\n\n1. Entities Correlated: Direct linkages established with seized customs documents and telecommunication intercepts.\n2. Timestamp Alignment: Observed events verify anomalous activities coinciding with maritime movements.\n3. Evidentiary Substantiation: Graph inferences have been cross-verified with zero contradictory records detected.`;
       
       const citations = (res?.citations && res.citations.length > 0)
-        ? res.citations.map(c => ({ id: c.id || c, label: c.id || c, name: c.title || c }))
+        ? res.citations.map(c => ({ id: c.id || c.target_id || c, label: c.id || c.label_or_type || c, name: c.title || c.summary || c }))
         : [
             { id: 'EVD-102-BOL', label: 'BOL-9921-A', name: 'Bill of Lading #BOL-9921-A' },
             { id: 'EVD-102-AIS', label: 'AIS-LOG', name: 'AIS Satellite Track & Radar Telemetry Log' }
           ];
+
+      const reasoningSteps = (res?.reasoning_trace && res.reasoning_trace.length > 0)
+        ? res.reasoning_trace
+        : [
+            `Heuristic 1: Scanned graph nodes linked to query: "${q}".`,
+            'Heuristic 2: Retrieved verified evidence records from Bureau Evidence Ledger.',
+            'Heuristic 3: Evaluated entity resolution scores and relationship weights.',
+            'Heuristic 4: Generated grounded answer with mandatory verifiable citations.'
+          ];
+
+      const confValue = typeof res?.confidence === 'number'
+        ? `${Math.round(res.confidence * 100)}%`
+        : (res?.confidence ? `${res.confidence}` : '95%');
 
       setMessages(prev => [
         ...prev,
         {
           id: aiMsgId,
           role: 'byomkesh',
-          reasoning: [
-            `Heuristic 1: Scanned graph nodes linked to query: "${q}".`,
-            'Heuristic 2: Retrieved verified evidence records from Bureau Evidence Ledger.',
-            'Heuristic 3: Evaluated entity resolution scores and relationship weights.',
-            'Heuristic 4: Generated grounded answer with mandatory verifiable citations.'
-          ],
+          reasoning: reasoningSteps,
           answer: answerText,
           citations,
-          confidence: `${Math.round(88 + Math.random() * 10)}%`,
-          provenance: 'GRAPH_INFERENCE_SEALED',
+          confidence: confValue,
+          provenance: res?.provenance || 'GRAPH_INFERENCE_SEALED',
           timestamp: 'Just now'
         }
       ]);
@@ -151,7 +174,7 @@ export default function ByomkeshPage() {
             { id: 'EVD-102-BOL', label: 'BOL-9921-A', name: 'Bill of Lading #BOL-9921-A' },
             { id: 'EVD-102-WIRE', label: 'WIRE-88219', name: 'Hawala Mirror Ledger Account #88219' }
           ],
-          confidence: '95.2%',
+          confidence: '95%',
           provenance: 'GRAPH_INFERENCE_SEALED',
           timestamp: 'Just now'
         }

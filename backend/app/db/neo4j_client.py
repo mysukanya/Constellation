@@ -414,6 +414,25 @@ class GraphClient:
 
         return edge_data
 
+    async def delete_relationship(self, rel_id: str) -> bool:
+        """Deletes a relationship edge from persistent SQLite and Neo4j."""
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM graph_edges WHERE id = ? OR (from_id = ? AND to_id = ?)", (rel_id, rel_id, rel_id))
+        deleted = cursor.rowcount > 0
+        conn.commit()
+        conn.close()
+
+        if self._is_neo4j_active and self._driver:
+            cypher = "MATCH ()-[r {id: $rel_id}]->() DELETE r"
+            try:
+                async with self._driver.session() as session:
+                    await session.run(cypher, rel_id=rel_id)
+            except Exception as e:
+                logger.error(f"Error deleting relationship {rel_id} from Neo4j: {e}")
+
+        return deleted
+
     async def get_subgraph(self, center_id: Optional[str] = None, case_id: Optional[str] = None, depth: int = 2) -> Dict[str, Any]:
         """Retrieves nodes and edges for graph visualization and Byomkesh reasoning."""
         if self._is_neo4j_active and self._driver:

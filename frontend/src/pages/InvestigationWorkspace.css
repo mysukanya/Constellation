@@ -27,57 +27,74 @@
 }
 
 .topbar-left-cluster,
+.topbar-center-cluster,
 .topbar-right-cluster {
   display: flex;
   align-items: center;
+  gap: 8px;
+}
+
+.topbar-center-cluster {
   gap: 10px;
+}
+
+.topbar-breadcrumb-slash {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 13px;
+  font-weight: 300;
+  user-select: none;
 }
 
 .topbar-back-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #ededed;
-  border-radius: 6px;
-  font-size: 11.5px;
+  gap: 5px;
+  padding: 4px 8px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  color: #a1a1aa;
+  border-radius: 4px;
+  font-size: 11px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .topbar-back-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .topbar-divider {
   width: 1px;
-  height: 18px;
-  background: rgba(255, 255, 255, 0.1);
+  height: 16px;
+  background: rgba(255, 255, 255, 0.08);
   margin: 0 2px;
 }
 
 .case-title-cluster {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 7px;
 }
 
 .case-name-text {
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 700;
   color: #ffffff;
   letter-spacing: -0.01em;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .case-badge-pill {
   font-size: 9.5px;
   color: #a1a1aa;
-  background: rgba(255, 255, 255, 0.06);
+  background: #111111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   padding: 2px 6px;
   border-radius: 3px;
 }
@@ -101,53 +118,195 @@
   border: 1px solid rgba(245, 158, 11, 0.35);
 }
 
-.case-priority-badge.priority-medium {
-  background: rgba(56, 189, 248, 0.15);
-  color: #38bdf8;
-  border: 1px solid rgba(56, 189, 248, 0.35);
+.case-priority-badge.priority-medium,
+.case-priority-badge.priority-active {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+/* ── Center Filter Pills ── */
+.canvas-filter-pills {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: #050505;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2px 3px;
+}
+
+.filter-pill {
+  padding: 2px 7px;
+  border-radius: 3px;
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  color: #888888;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.filter-pill:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.filter-pill.active {
+  background: #ffffff;
+  color: #000000;
+  font-weight: 700;
+  border-color: #ffffff;
+}
+
+/* ── Topbar Spawn Controls ── */
+.topbar-spawn-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #050505;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2px 3px;
+}
+
+.topbar-spawn-btn {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 6px;
+  background: transparent;
+  border: none;
+  font-size: 9.5px;
+  font-weight: 600;
+  color: #a1a1aa;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.12s ease;
+}
+
+.topbar-spawn-btn:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+.topbar-connect-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #ededed;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.topbar-connect-btn:hover {
+  background: #181818;
+  border-color: rgba(255, 255, 255, 0.25);
+  color: #ffffff;
+}
+
+.topbar-connect-btn.active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+  font-weight: 700;
+}
+
+/* ── Board Metrics ── */
+.topbar-board-metrics {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.metric-pill {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 2px 6px;
+  border-radius: 3px;
+}
+
+.metric-pill.nodes-count {
+  background: rgba(56, 189, 248, 0.12);
+  color: #7dd3fc;
+  border: 1px solid rgba(56, 189, 248, 0.25);
+}
+
+.metric-pill.ropes-count {
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  border: 1px solid rgba(34, 197, 94, 0.25);
 }
 
 /* Toggle Buttons */
 .topbar-toggle-btn {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 5px 10px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 5px;
+  padding: 4px 8px;
+  background: #0e0e0e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #a1a1aa;
-  border-radius: 6px;
-  font-size: 11px;
+  border-radius: 4px;
+  font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
 .topbar-toggle-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: #181818;
   color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
 .topbar-toggle-btn.active {
   background: #ffffff;
   color: #000000;
   border-color: #ffffff;
+  font-weight: 700;
+}
+
+.topbar-toggle-btn.btn-byomkesh {
+  border-color: rgba(34, 197, 94, 0.3);
+  color: #4ade80;
+}
+
+.topbar-toggle-btn.btn-byomkesh:hover {
+  background: rgba(34, 197, 94, 0.15);
+  color: #86efac;
+  border-color: rgba(34, 197, 94, 0.5);
+}
+
+.topbar-toggle-btn.btn-byomkesh.active {
+  background: #22c55e;
+  color: #000000;
+  border-color: #22c55e;
 }
 
 /* Backend Status Pill */
 .backend-status-pill {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.03);
+  gap: 5px;
+  padding: 3px 7px;
+  background: #050505;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 4px;
 }
 
 .backend-pulse-dot {
-  width: 6px;
-  height: 6px;
+  width: 5px;
+  height: 5px;
   border-radius: 50%;
 }
 
@@ -161,8 +320,8 @@
 }
 
 .backend-status-text {
-  font-size: 9px;
-  font-weight: 600;
+  font-size: 8.5px;
+  font-weight: 700;
   letter-spacing: 0.05em;
   color: #a1a1aa;
 }

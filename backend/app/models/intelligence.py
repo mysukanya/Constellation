@@ -45,3 +45,11 @@ class HomeBriefingResponse(BaseModel):
     live_intelligence: List[LiveIntelligenceItem] = Field(default_factory=list)
     sweep_status: SweepSummary
     unread_alerts_count: int
+    active_cases_count: int = 0
+    total_entities: int = 0
+    seized_artifacts: int = 0
+    active_sweeps_count: int = 0
+    chain_integrity: str = "100% SEALED"
+    status: str = "ONLINE"
+    active_cases: List[Dict[str, Any]] = Field(default_factory=list)
+

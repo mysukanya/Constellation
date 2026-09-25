@@ -60,12 +60,6 @@ async def login(credentials: UserLogin):
     if user:
         if verify_password(credentials.password, user["hashed_password"]):
             valid = True
-        elif uname == "admin" and credentials.password.lower() in ["password", "admin123"]:
-            valid = True
-        elif uname == "investigator" and credentials.password.lower() in ["password", "investigator123"]:
-            valid = True
-        elif uname == "analyst" and credentials.password.lower() in ["password", "analyst123"]:
-            valid = True
 
     if not valid or not user:
         raise HTTPException(

@@ -137,7 +137,7 @@ class ApiService {
         success: true,
         message: 'Evidence successfully ingested into tamper-evident vault.',
         evidence_id: `ev_${Date.now()}`,
-        hash: `0x${Math.random().toString(16).slice(2, 10)}...SEALED`,
+        hash: '0x7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
         entities_extracted: 3,
         status: 'SEALED'
       };
@@ -264,8 +264,18 @@ class ApiService {
   createRelationship(data) {
     return this.request('POST', '/relationships', data);
   }
+  deleteRelationship(relId) {
+    return this.request('DELETE', `/relationships/${relId}`);
+  }
 
   // ---- Ingestion ----
+  uploadFile(caseId, file, autoCommit = true) {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('case_id', caseId);
+    form.append('auto_commit', autoCommit);
+    return this.request('POST', '/ingestion/upload-file', form, true);
+  }
   uploadPdf(caseId, file, autoCommit = true) {
     const form = new FormData();
     form.append('file', file);
@@ -288,9 +298,9 @@ class ApiService {
   }
 
   // ---- Entity Resolution ----
-  getPendingMatches(caseId = null) {
-    let url = '/entity-resolution/matches';
-    if (caseId) url += `?case_id=${caseId}`;
+  getPendingMatches(caseId = null, limit = 50, offset = 0) {
+    let url = `/entity-resolution/matches?limit=${limit}&offset=${offset}`;
+    if (caseId) url += `&case_id=${caseId}`;
     return this.request('GET', url);
   }
   resolveMatch(matchId, action, notes = '') {
@@ -310,6 +320,14 @@ class ApiService {
   }
   getEvidence(evidenceId) {
     return this.request('GET', `/evidence/${evidenceId}`);
+  }
+  createEvidence(data) {
+    return this.request('POST', '/evidence', data);
+  }
+
+  // ---- Entities ----
+  getEntityTimeline(entityId) {
+    return this.request('GET', `/entities/${entityId}/timeline`);
   }
 
   // ---- Byomkesh ----

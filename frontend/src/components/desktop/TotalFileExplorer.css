@@ -27,10 +27,10 @@
   max-width: 1240px;
   height: 84vh;
   max-height: 820px;
-  background: #1c1c1c;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  border-radius: 10px;
-  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.85), 0 0 1px rgba(255, 255, 255, 0.3);
+  background: #090909;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 8px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.95), 0 0 1px rgba(255, 255, 255, 0.2);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -41,7 +41,7 @@
 /* ── 1. Windows Title Bar ─────────────────────────────────────────────────── */
 .win-titlebar {
   height: 36px;
-  background: #181818;
+  background: #050505;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   display: flex;
   align-items: center;
@@ -355,7 +355,7 @@
 /* Left Navigation Tree Sidebar */
 .win-tree-sidebar {
   width: 240px;
-  background: #171717;
+  background: #070707;
   border-right: 1px solid rgba(255, 255, 255, 0.07);
   padding: 12px 6px;
   overflow-y: auto;

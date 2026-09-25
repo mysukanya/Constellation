@@ -26,5 +26,6 @@ class ByomkeshQueryResponse(BaseModel):
         description="Strict audit citations referencing exact nodes, edges, or evidence items"
     )
     cypher_queries_used: List[str] = Field(default_factory=list)
+    reasoning_trace: List[str] = Field(default_factory=list)
     confidence: float = Field(1.0, ge=0.0, le=1.0)
     execution_time_ms: Optional[float] = None

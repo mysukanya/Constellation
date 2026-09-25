@@ -74,11 +74,60 @@ async def get_home_briefing(current_user: UserResponse = Depends(get_current_use
             relevant_case_ids=[p2.get("case_id") or "case-117"]
         ))
 
+    # Real counts from database
+    from app.db.sqlite_client import get_db_connection
+    from app.services.audit_service import audit_service
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM graph_nodes WHERE label = 'Case'")
+    cases_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM graph_nodes WHERE label != 'Case'")
+    entities_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM evidence_records")
+    evidence_count = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM sweep_runs")
+    sweeps_count = cursor.fetchone()[0]
+    conn.close()
+
+    # Real audit chain integrity check
+    audit_report = audit_service.verify_chain()
+    chain_status = "100% SEALED" if audit_report.get("valid") else "TAMPER DETECTED"
+
+    # Enriched active cases with real graph node and evidence counts
+    active_cases_list = []
+    sorted_cases = sorted(cases, key=lambda x: (0 if x["id"].startswith("case-10") or x["id"].startswith("case-11") or x["id"].startswith("case-14") else 1, x["id"]))
+    for c in sorted_cases[:6]:
+        props = c.get("properties", {})
+        c_id = c["id"]
+        subg = await graph_service.get_case_subgraph(case_id=c_id)
+        active_cases_list.append({
+            "id": c_id,
+            "name": props.get("title", f"Case {c_id}"),
+            "sector": props.get("sector") or ("Maritime Narcotics & Hawala" if "102" in c_id else "Financial Crimes & AML"),
+            "priority": props.get("priority", "HIGH"),
+            "status": props.get("status", "ACTIVE").upper(),
+            "lead": props.get("lead", "Special Agent in Charge"),
+            "legalBasis": props.get("legal_basis", "Authorized Investigation Order"),
+            "evidenceCount": len([n for n in subg.get("nodes", []) if n.get("label") == "Evidence"]),
+            "entitiesCount": len(subg.get("nodes", [])),
+            "lastUpdate": "Live synced",
+            "summary": props.get("description", "Cross-jurisdictional intelligence investigation.")
+        })
+
     return HomeBriefingResponse(
         greeting=f"Good evening, Special Agent {current_user.username.title()}.",
         hero_discovery=hero,
         continue_cases=continue_cases,
         live_intelligence=live_intel,
         sweep_status=latest_sweep,
-        unread_alerts_count=len(latest_sweep.findings) + len(live_intel)
+        unread_alerts_count=len(latest_sweep.findings) + len(live_intel),
+        active_cases_count=cases_count,
+        total_entities=entities_count,
+        seized_artifacts=evidence_count,
+        active_sweeps_count=sweeps_count,
+        chain_integrity=chain_status,
+        status="ONLINE",
+        active_cases=active_cases_list
     )
+

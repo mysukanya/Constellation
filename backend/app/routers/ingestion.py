@@ -61,3 +61,70 @@ async def upload_media(
         actor_id=current_user.id
     )
     return node
+
+@router.post("/upload-file")
+async def upload_file(
+    file: UploadFile = File(...),
+    case_id: str = Form(...),
+    auto_commit: bool = Form(True),
+    current_user: UserResponse = Depends(get_current_user)
+):
+    """
+    Universal evidence file ingestion:
+    Accepts PDF, CSV, Images, Audio, Spreadsheets, and text files.
+    Computes cryptographic SHA-256 digest, extracts entities, and seals into evidence vault.
+    """
+    content = await file.read()
+    filename_lower = file.filename.lower()
+
+    if filename_lower.endswith(".pdf"):
+        return await ingestion_service.parse_and_extract_pdf(
+            case_id=case_id,
+            filename=file.filename,
+            file_bytes=content,
+            actor_id=current_user.id,
+            auto_commit_entities=auto_commit
+        )
+    elif filename_lower.endswith(".csv"):
+        try:
+            csv_text = content.decode("utf-8", errors="ignore")
+            return await ingestion_service.ingest_csv_call_records(
+                case_id=case_id,
+                filename=file.filename,
+                csv_text=csv_text,
+                actor_id=current_user.id
+            )
+        except Exception:
+            pass  # Fall through to generic evidence ingestion
+
+    # Generic or binary evidence file
+    ext = file.filename.split(".")[-1].lower() if "." in file.filename else "dat"
+    ev_type = "document"
+    if ext in ["jpg", "jpeg", "png", "webp"]:
+        ev_type = "photo"
+    elif ext in ["mp4", "mov", "avi", "mkv"]:
+        ev_type = "video"
+    elif ext in ["mp3", "wav", "m4a", "aac"]:
+        ev_type = "audio"
+    elif ext in ["csv", "xlsx", "xls"]:
+        ev_type = "financial"
+
+    node = await ingestion_service.ingest_file_as_evidence(
+        case_id=case_id,
+        filename=file.filename,
+        file_bytes=content,
+        evidence_type=ev_type,
+        actor_id=current_user.id,
+        title=file.filename
+    )
+    return {
+        "status": "SEALED",
+        "evidence_id": node["id"],
+        "filename": file.filename,
+        "file_hash": node["properties"].get("file_hash"),
+        "file_size": node["properties"].get("file_size"),
+        "evidence_type": ev_type,
+        "collected_at": node["properties"].get("collected_at"),
+        "message": f"File '{file.filename}' cryptographically sealed into evidence vault."
+    }
+

@@ -68,19 +68,11 @@ export function AuthProvider({ children }) {
         localStorage.setItem('constellation_user', JSON.stringify(data.user));
         return data.user;
       }
-    } catch {
-      // Graceful offline/standalone fallback
-      const u = username || 'admin';
-      const fallbackUser = {
-        id: `usr_${u.toLowerCase()}`,
-        username: u,
-        full_name: u.toLowerCase() === 'admin' ? 'Chief Intelligence Director' : `${u} (Investigator)`,
-        role: u.toLowerCase() === 'admin' ? 'admin' : 'investigator'
-      };
-      setUser(fallbackUser);
-      localStorage.setItem('constellation_token', `demo_token_${fallbackUser.username}`);
-      localStorage.setItem('constellation_user', JSON.stringify(fallbackUser));
-      return fallbackUser;
+      throw new Error('Authentication response did not contain user profile.');
+    } catch (err) {
+      const msg = err.detail || err.message || 'Incorrect username or password';
+      setError(msg);
+      throw new Error(msg);
     }
   }, []);
 

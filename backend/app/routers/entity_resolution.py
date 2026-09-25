@@ -11,10 +11,12 @@ router = APIRouter(prefix="/entity-resolution", tags=["Entity Resolution"])
 @router.get("/matches", response_model=List[ERMatchResponse])
 async def get_pending_matches(
     case_id: Optional[str] = None,
+    limit: int = 50,
+    offset: int = 0,
     current_user: UserResponse = Depends(get_current_user)
 ):
-    """Fetches all pending entity resolution match candidates awaiting investigator review."""
-    return await er_service.get_pending_matches(case_id=case_id)
+    """Fetches all pending entity resolution match candidates awaiting investigator review (paginated)."""
+    return await er_service.get_pending_matches(case_id=case_id, limit=limit, offset=offset)
 
 @router.post("/matches/{match_id}/resolve")
 async def resolve_match(

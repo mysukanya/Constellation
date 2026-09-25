@@ -22,7 +22,8 @@ export default function LoginPage() {
   const [username, setUsername] = useState('Admin');
   const [password, setPassword] = useState('Password');
   const [welcomeStage, setWelcomeStage] = useState('enter'); // 'enter' | 'exit'
-  const [pendingMode, setPendingMode] = useState(null);
+  const [authError, setAuthError] = useState(null);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // 1. Splash Screen: Slow, even typing of 'Constellation' on pure black
   useEffect(() => {
@@ -64,20 +65,29 @@ export default function LoginPage() {
         // Pause to appreciate, then fade out and unlock dashboard
         setTimeout(() => {
           setWelcomeStage('exit');
-          setTimeout(() => {
-            // Completely faked on client side for Netlify - instant guaranteed entry
-            demoLogin('admin');
-          }, 450);
         }, 800);
       }
     }, 85); // slow, even, deliberate pace
 
     return () => clearInterval(typeInterval);
-  }, [phase, demoLogin]);
+  }, [phase]);
 
-  const handleStartAuth = (mode) => {
-    setPendingMode(mode);
-    setPhase('welcome');
+  const handleStartAuth = async (mode) => {
+    setAuthError(null);
+    if (mode === 'demo') {
+      demoLogin('admin');
+      return;
+    }
+
+    setIsLoggingIn(true);
+    try {
+      await login(username, password);
+      setPhase('welcome');
+    } catch (err) {
+      setAuthError(err.message || 'Authentication failed: Invalid credentials');
+    } finally {
+      setIsLoggingIn(false);
+    }
   };
 
   // ── PHASE 1: SPLASH SCREEN (slow even typed words on black) ──────
@@ -216,8 +226,14 @@ export default function LoginPage() {
               </div>
             </div>
 
-            <button type="submit" className="shard-submit-btn font-mono">
-              <span>Sign In</span>
+            {authError && (
+              <div className="shard-error-banner font-mono" style={{ color: '#ef4444', fontSize: '11px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 10px', borderRadius: '4px', marginBottom: '12px' }}>
+                ⚠ {authError}
+              </div>
+            )}
+
+            <button type="submit" className="shard-submit-btn font-mono" disabled={isLoggingIn}>
+              <span>{isLoggingIn ? 'Verifying...' : 'Sign In'}</span>
               <ArrowRight size={13} />
             </button>
           </form>

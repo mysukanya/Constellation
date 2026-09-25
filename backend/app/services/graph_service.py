@@ -90,6 +90,18 @@ class GraphService:
 
         return edge
 
+    async def delete_relationship(self, rel_id: str, actor_id: str = "system") -> bool:
+        """Deletes a relationship edge and records an audit log entry."""
+        deleted = await graph_client.delete_relationship(rel_id)
+        if deleted:
+            audit_service.log_event(
+                event_type="RELATIONSHIP_SEVERED",
+                actor_id=actor_id,
+                target_id=rel_id,
+                payload={"relationship_id": rel_id, "action": "sever_rope"}
+            )
+        return deleted
+
     async def merge_entities(self, keep_id: str, drop_id: str, actor_id: str, notes: Optional[str] = None) -> Dict[str, Any]:
         """
         Merges drop_id into keep_id:

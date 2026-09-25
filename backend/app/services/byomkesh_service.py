@@ -24,6 +24,7 @@ class ByomkeshState(TypedDict):
     retrieved_evidence: List[Dict[str, Any]]
     contradictions: List[Dict[str, Any]]
     citations: List[Dict[str, Any]]
+    reasoning_trace: List[str]
     answer: str
     confidence: float
     execution_time_ms: float
@@ -125,7 +126,11 @@ class ByomkeshAgent:
             "is_evidence_query": any(w in question for w in ["evidence", "proof", "source", "document", "hash", "bol", "transcript"]),
             "matched_nodes": matched_nodes
         }
-        return {"parsed_intent": intent}
+        trace = list(state.get("reasoning_trace", []))
+        ent_names = [n.get("properties", {}).get("full_name") or n.get("properties", {}).get("name") or n["id"] for n in matched_nodes]
+        ent_desc = f" ({', '.join(ent_names)})" if ent_names else ""
+        trace.append(f"Heuristic 1 (Entity & Intent Extraction): Parsed query '{state['question']}'. Extracted {len(matched_nodes)} target entity/entities{ent_desc}.")
+        return {"parsed_intent": intent, "reasoning_trace": trace}
 
     # Node 2: plan_graph_query
     async def _node_plan_graph_query(self, state: ByomkeshState) -> Dict[str, Any]:
@@ -149,7 +154,9 @@ class ByomkeshAgent:
         else:
             queries.append("MATCH (n)-[r]-(other) RETURN n, r, other LIMIT 50")
 
-        return {"planned_queries": queries}
+        trace = list(state.get("reasoning_trace", []))
+        trace.append(f"Heuristic 2 (Cypher Graph Planning): Formulated {len(queries)} Cypher retrieval pattern(s) across relationship predicates.")
+        return {"planned_queries": queries, "reasoning_trace": trace}
 
     # Node 3: execute_cypher
     async def _node_execute_cypher(self, state: ByomkeshState) -> Dict[str, Any]:
@@ -172,7 +179,9 @@ class ByomkeshAgent:
             except Exception as e:
                 logger.error(f"Error executing Cypher query '{q}': {e}")
 
-        return {"query_results": results}
+        trace = list(state.get("reasoning_trace", []))
+        trace.append(f"Heuristic 3 (Graph Query Execution): Executed Cypher across knowledge graph; retrieved {len(results)} verified relationship edge(s) and connected nodes.")
+        return {"query_results": results, "reasoning_trace": trace}
 
     # Node 4: retrieve_evidence
     async def _node_retrieve_evidence(self, state: ByomkeshState) -> Dict[str, Any]:
@@ -190,7 +199,9 @@ class ByomkeshAgent:
             if node:
                 retrieved_evidence.append(node)
 
-        return {"retrieved_evidence": retrieved_evidence}
+        trace = list(state.get("reasoning_trace", []))
+        trace.append(f"Heuristic 4 (Evidence Vault Extraction): Retained {len(retrieved_evidence)} supporting evidentiary artifact(s) anchored by cryptographic SHA-256 hashes.")
+        return {"retrieved_evidence": retrieved_evidence, "reasoning_trace": trace}
 
     # Node 5: analyze_contradictions
     async def _node_analyze_contradictions(self, state: ByomkeshState) -> Dict[str, Any]:
@@ -215,7 +226,12 @@ class ByomkeshAgent:
                             })
                         observed_identities[nid] = phone
 
-        return {"contradictions": contradictions}
+        trace = list(state.get("reasoning_trace", []))
+        if contradictions:
+            trace.append(f"Heuristic 5 (Anomaly & Contradiction Detection): Flagged {len(contradictions)} conflicting identifier/telemetry anomaly.")
+        else:
+            trace.append("Heuristic 5 (Anomaly & Contradiction Detection): Evaluated temporal & telecommunication continuity: zero factual contradictions detected.")
+        return {"contradictions": contradictions, "reasoning_trace": trace}
 
     # Node 6: construct_explanation
     async def _node_construct_explanation(self, state: ByomkeshState) -> Dict[str, Any]:
@@ -341,11 +357,14 @@ class ByomkeshAgent:
                 answer_text = "\n".join(lines)
 
         overall_conf = round(min(1.0, sum(c["confidence"] for c in citations) / len(citations)), 2) if citations else 0.0
+        trace = list(state.get("reasoning_trace", []))
+        trace.append(f"Heuristic 6 (Grounded Synthesis & Verification): Synthesized deduction with {len(citations)} strict audit citations (verifiable confidence: {int(overall_conf * 100)}%).")
 
         return {
             "citations": citations,
             "answer": answer_text,
-            "confidence": overall_conf
+            "confidence": overall_conf,
+            "reasoning_trace": trace
         }
 
     async def query(
@@ -385,6 +404,7 @@ class ByomkeshAgent:
             answer=final_state.get("answer", ""),
             citations=formatted_citations,
             cypher_queries_used=final_state.get("planned_queries", []),
+            reasoning_trace=final_state.get("reasoning_trace", []),
             confidence=final_state.get("confidence", 1.0),
             execution_time_ms=elapsed
         )
