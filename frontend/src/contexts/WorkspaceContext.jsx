@@ -43,9 +43,9 @@ export const CANONICAL_CASES = {
         { id: 'dig-1', name: 'Thuraya Satellite IMEI #SAT-992', status: 'Active Pings', provenance: 'RAW DATA' },
       ],
       evidence: [
-        { id: 'evd-1', title: 'Bill of Lading #BOL-9921-A', type: 'PDF Document', classification: 'SECRET', hash: '0x88f2...b19c', provenance: 'RAW DATA' },
-        { id: 'evd-2', title: 'CCTV Still: Port Gate 3 Offloading', type: 'Image File', classification: 'CONFIDENTIAL', hash: '0x32e1...c4a2', provenance: 'RAW DATA' },
-        { id: 'evd-3', title: 'Wire Transfer Ledger (Al-Barakah)', type: 'Encrypted CSV', classification: 'RESTRICTED', hash: '0x99a7...d31f', provenance: 'RAW DATA' },
+        { id: 'evd-1', title: 'Bill of Lading #BOL-9921-A', type: 'PDF Document', classification: 'SECRET', hash: '88f29cb1...b19c', provenance: 'RAW DATA' },
+        { id: 'evd-2', title: 'CCTV Still: Port Gate 3 Offloading', type: 'Image File', classification: 'CONFIDENTIAL', hash: '32e1c4a2...c4a2', provenance: 'RAW DATA' },
+        { id: 'evd-3', title: 'Wire Transfer Ledger (Al-Barakah)', type: 'Encrypted CSV', classification: 'RESTRICTED', hash: '99a7d31f...d31f', provenance: 'RAW DATA' },
       ]
     }
   },
@@ -72,7 +72,7 @@ export const CANONICAL_CASES = {
         { id: 'org-102', name: 'Blue Horizon Marine Exports LLP', jurisdiction: 'Surat SEZ', type: 'Company', provenance: 'EXTRACTED_ENTITY' },
       ],
       evidence: [
-        { id: 'evd-103', title: 'SWIFT Wire Transfer Log #FIU-99201', type: 'Financial Record', classification: 'SECRET', hash: '0x11b9...a87c', provenance: 'EVIDENCE' },
+        { id: 'evd-103', title: 'SWIFT Wire Transfer Log #FIU-99201', type: 'Financial Record', classification: 'SECRET', hash: '11b9a87c...a87c', provenance: 'EVIDENCE' },
       ]
     }
   },
@@ -84,7 +84,7 @@ export const CANONICAL_CASES = {
     status: 'ACTIVE',
     priority: 'MEDIUM',
     leadInvestigator: 'Special Agent D. Roy',
-    legalBasis: 'IPC Sec 370 / Passports Act',
+    legalBasis: 'BNS Sec 143 (Human Trafficking) & Passports Act',
     lastModified: '5 hours ago',
     progress: 45,
     entitiesCount: 24,
@@ -108,7 +108,7 @@ export const CANONICAL_CASES = {
     status: 'ACTIVE',
     priority: 'CRITICAL',
     leadInvestigator: 'Sr. Inspector R. Deshmukh',
-    legalBasis: 'BNS Sec 103 (IPC 302) & Arms Act',
+    legalBasis: 'BNS Sec 103 (Murder) & Arms Act',
     lastModified: '45 mins ago',
     progress: 84,
     entitiesCount: 19,
@@ -120,7 +120,7 @@ export const CANONICAL_CASES = {
         { id: 'p-301', name: 'Vikram "Blade" Jadhav', role: 'Contract Shooter', risk: 'Critical', provenance: 'OBSERVATION' },
       ],
       evidence: [
-        { id: 'evd-302', title: '9mm Glock Ballistics Striation Report', type: 'Forensic Report', classification: 'CRITICAL', hash: '0xaa19...c344', provenance: 'EVIDENCE' },
+        { id: 'evd-302', title: '9mm Glock Ballistics Striation Report', type: 'Forensic Report', classification: 'CRITICAL', hash: 'aa19c344...c344', provenance: 'EVIDENCE' },
       ]
     }
   },
@@ -132,7 +132,7 @@ export const CANONICAL_CASES = {
     status: 'ACTIVE',
     priority: 'HIGH',
     leadInvestigator: 'Deputy Commissioner V. Mehta',
-    legalBasis: 'BNS Sec 309 (IPC 392) & Cyber Fraud',
+    legalBasis: 'BNS Sec 309 (Robbery) & IT Act Sec 66D',
     lastModified: '3 hours ago',
     progress: 58,
     entitiesCount: 29,
@@ -144,7 +144,7 @@ export const CANONICAL_CASES = {
         { id: 'p-401', name: 'Arjun Singhania (Insider)', role: 'Access Controller', risk: 'High', provenance: 'INFERENCE' },
       ],
       evidence: [
-        { id: 'evd-402', title: 'CCTV Turnstile Footage #BK-882', type: 'Video File', classification: 'RESTRICTED', hash: '0xee42...d910', provenance: 'EVIDENCE' },
+        { id: 'evd-402', title: 'CCTV Turnstile Footage #BK-882', type: 'Video File', classification: 'RESTRICTED', hash: 'ee42d910...d910', provenance: 'EVIDENCE' },
       ]
     }
   },
@@ -156,7 +156,7 @@ export const CANONICAL_CASES = {
     status: 'ACTIVE',
     priority: 'HIGH',
     leadInvestigator: 'ACP S. Kulkarni',
-    legalBasis: 'IPC Sec 384 / IT Act Sec 66D',
+    legalBasis: 'BNS Sec 308 (Extortion) & IT Act Sec 66D',
     lastModified: '6 hours ago',
     progress: 51,
     entitiesCount: 16,
@@ -551,7 +551,7 @@ export function WorkspaceProvider({ children }) {
 
   // Tool panels open state
   const [byomkeshOpen, setByomkeshOpen] = useState(true);
-  const [dataUploaderOpen, setDataUploaderOpen] = useState(false);
+  const [dataUploaderOpen, setDataUploaderOpen] = useState(true);
   const [crossCaseOpen, setCrossCaseOpen] = useState(false);
   const [totalExplorerOpen, setTotalExplorerOpen] = useState(false);
 
@@ -666,8 +666,36 @@ export function WorkspaceProvider({ children }) {
     }
   ]);
 
+  // Load real notifications from backend and merge
+  useEffect(() => {
+    api.listNotifications()
+      .then(serverNotifs => {
+        if (serverNotifs && serverNotifs.length > 0) {
+          const backendNotifs = serverNotifs.map(n => ({
+            id: n.id,
+            title: n.title,
+            message: n.body || '',
+            time: n.created_at ? new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Recent',
+            urgency: (n.notification_type || 'info').toUpperCase() === 'CRITICAL' ? 'CRITICAL' : (n.notification_type || 'info').toUpperCase() === 'HIGH' ? 'HIGH' : 'MEDIUM',
+            read: !!n.is_read,
+            caseId: n.link || '',
+            targetId: ''
+          }));
+          // Merge: backend notifications first, then keep canonical ones that don't overlap
+          setNotifications(prev => {
+            const backendIds = new Set(backendNotifs.map(n => n.id));
+            const localOnly = prev.filter(n => !backendIds.has(n.id));
+            return [...backendNotifs, ...localOnly];
+          });
+        }
+      })
+      .catch(err => console.warn('Backend notifications sync:', err));
+  }, []);
+
   const markAllNotificationsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    // Sync to backend
+    api.markAllNotificationsRead().catch(() => {});
   };
 
   const dismissNotification = (id) => {

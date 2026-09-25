@@ -45,7 +45,7 @@ async def seed_canonical_intelligence():
                     "id": "case-143",
                     "title": "Case 143 — Red Sand Syndicate",
                     "description": "Smuggling & illicit financial settlement network operating via maritime brokers.",
-                    "legal_basis": "IPC Sec 370 / Passports Act",
+                    "legal_basis": "BNS Sec 143 (Human Trafficking) & Passports Act",
                     "status": "active"
                 }
             },
@@ -56,7 +56,7 @@ async def seed_canonical_intelligence():
                     "id": "case-108",
                     "title": "Case 108 — Waterfront Contract Hit",
                     "description": "Targeted execution of customs informant at Dock 4. 9mm Glock ballistics match to syndicate hitman.",
-                    "legal_basis": "BNS Sec 103 (IPC 302) & Arms Act",
+                    "legal_basis": "BNS Sec 103 (Murder) & Arms Act",
                     "status": "active"
                 }
             },
@@ -67,7 +67,7 @@ async def seed_canonical_intelligence():
                     "id": "case-121",
                     "title": "Case 121 — Diamond Bourse Vault Breach",
                     "description": "Inside-job biometric override and armed breach of Bharat Diamond Bourse subterranean vault.",
-                    "legal_basis": "BNS Sec 309 (IPC 392) & Cyber Fraud",
+                    "legal_basis": "BNS Sec 309 (Robbery) & IT Act Sec 66D",
                     "status": "active"
                 }
             },
@@ -78,7 +78,7 @@ async def seed_canonical_intelligence():
                     "id": "case-135",
                     "title": "Case 135 — Black Pearl Extortion",
                     "description": "Coercive extortion ring targeting Kandla shipping contractors with VoIP death threats and ransom calls.",
-                    "legal_basis": "IPC Sec 384 / IT Act Sec 66D",
+                    "legal_basis": "BNS Sec 308 (Extortion) & IT Act Sec 66D",
                     "status": "active"
                 }
             },

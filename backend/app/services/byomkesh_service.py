@@ -306,9 +306,13 @@ class ByomkeshAgent:
             )
             facts_context = json.dumps({"citations": citations, "question": question, "contradictions": contradictions})
 
-            # Try NVIDIA NIM first (fast 0.4s response)
+            # Try NVIDIA NIM first (fast nemotron-3.5-lightning response)
             if self.nvidia_client and getattr(settings, "NVIDIA_API_KEY", None):
                 try:
+                    extra_kwargs = {}
+                    if "nemotron" in (settings.NVIDIA_MODEL or "").lower():
+                        extra_kwargs["extra_body"] = {"chat_template_kwargs": {"enable_thinking": True}}
+
                     resp = self.nvidia_client.chat.completions.create(
                         model=settings.NVIDIA_MODEL,
                         messages=[
@@ -316,11 +320,13 @@ class ByomkeshAgent:
                             {"role": "user", "content": f"Context: {facts_context}\n\nQuestion: {question}"}
                         ],
                         temperature=0.2,
-                        max_tokens=600,
-                        timeout=8.0
+                        max_tokens=1000,
+                        timeout=12.0,
+                        **extra_kwargs
                     )
-                    if resp.choices and resp.choices[0].message.content:
-                        answer_text = resp.choices[0].message.content.strip()
+                    if resp.choices:
+                        msg = resp.choices[0].message
+                        answer_text = (getattr(msg, "content", None) or getattr(msg, "reasoning_content", "") or "").strip()
                 except Exception as e:
                     logger.warning(f"NVIDIA NIM query bypassed: {e}")
 

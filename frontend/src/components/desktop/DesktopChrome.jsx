@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useWorkspace } from '../../contexts/WorkspaceContext';
+import { useAuth } from '../../contexts/AuthContext';
 import Panel3D from '../Panel3D';
 import TotalFileExplorer from './TotalFileExplorer';
 import AdminUserManagementModal from './AdminUserManagementModal';
@@ -10,11 +11,13 @@ import {
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
   UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
   Briefcase, FileUp, UserSearch, Sun, Moon, Users, Layers, ShieldCheck,
-  PanelLeftClose, PanelLeftOpen, PanelLeft, ChevronLeft, Menu
+  PanelLeftClose, PanelLeftOpen, PanelLeft, ChevronLeft, Menu, LogOut,
+  HelpCircle, UserPlus
 } from 'lucide-react';
 import './DesktopChrome.css';
 
 export default function DesktopChrome({ children }) {
+  const { logout } = useAuth();
   const {
     activeNavSection,
     setActiveNavSection,
@@ -39,12 +42,12 @@ export default function DesktopChrome({ children }) {
     toggleTheme
   } = useWorkspace();
 
-  // 3-state sidebar: 'compact' (vertical rail), 'full' (expanded drawer), 'collapsed' (completely hidden)
-  const [sidebarMode, setSidebarMode] = useState('compact');
+  // Removed sidebarMode - always compact
   const [utcTime, setUtcTime] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showOfficerProfile, setShowOfficerProfile] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const [showAdminModal, setShowAdminModal] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -76,12 +79,13 @@ export default function DesktopChrome({ children }) {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
-        setSidebarMode(prev => prev === 'collapsed' ? 'compact' : (prev === 'compact' ? 'full' : 'collapsed'));
+        // Toggle action moved to inner sidebars if needed
       }
       if (e.key === 'Escape') {
         setShowSearchModal(false);
         setShowNotifications(false);
         setShowOfficerProfile(false);
+        setShowHelpModal(false);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -103,25 +107,27 @@ export default function DesktopChrome({ children }) {
     <div className="desktop-window-container">
       {/* ── TOP OPENAI-STYLE FLUSH TOPBAR (ULTRA-MINIMAL) ── */}
       <header className="openai-topbar">
-        {/* Left: Clean Sidebar Toggle + Wordmark */}
+        {/* Left: Brand Lockup + Neobrutal Search Box positioned normal left */}
         <div className="topbar-left-zone">
-          <button
-            className="sidebar-toggle-btn"
-            onClick={() => setSidebarMode(prev => prev === 'collapsed' ? 'compact' : (prev === 'compact' ? 'full' : 'collapsed'))}
-            title={`Sidebar (${sidebarMode === 'collapsed' ? 'Hidden - Click to Show' : sidebarMode === 'compact' ? 'Compact - Click to Expand' : 'Expanded - Click to Hide'})`}
-            aria-label="Toggle Sidebar"
-          >
-            <PanelLeft size={14} />
-          </button>
           <div className="openai-brand-lockup" onClick={() => setActiveNavSection('home')}>
             <span className="openai-brand-text">CONSTELLATION</span>
           </div>
+
+          <button
+            className="topbar-neobrutal-search"
+            onClick={() => setShowSearchModal(true)}
+            title="Global Search & Command Palette (Ctrl/Cmd+K)"
+          >
+            <Search size={13} className="topbar-search-icon" />
+            <span className="topbar-search-text">Search entities, cases, files...</span>
+            <kbd className="topbar-search-kbd">⌘K</kbd>
+          </button>
         </div>
 
-        {/* Center: Pure clean space */}
+        {/* Center: Flexible spacer */}
         <div className="openai-topbar-center" />
 
-        {/* Extreme Right: Notifications, Officer Profile, Theme */}
+        {/* Extreme Right: Notifications, Admin Users, Help, Profile, Theme, Logout */}
         <div className="openai-topbar-right">
           <button
             className={`openai-icon-btn ${showNotifications ? 'active' : ''}`}
@@ -130,6 +136,22 @@ export default function DesktopChrome({ children }) {
           >
             <Bell size={14} />
             {unreadCount > 0 && <span className="openai-badge-dot">{unreadCount}</span>}
+          </button>
+
+          <button
+            className="openai-icon-btn"
+            title="Add / Manage Bureau Users (Admin DB)"
+            onClick={() => setShowAdminModal(true)}
+          >
+            <UserPlus size={14} />
+          </button>
+
+          <button
+            className={`openai-icon-btn ${showHelpModal ? 'active' : ''}`}
+            title="Constellation Team & System Help"
+            onClick={() => setShowHelpModal(true)}
+          >
+            <HelpCircle size={14} />
           </button>
 
           <button
@@ -146,6 +168,14 @@ export default function DesktopChrome({ children }) {
             onClick={toggleTheme}
           >
             {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
+          </button>
+
+          <button
+            className="openai-icon-btn logout-topbar-btn"
+            title="Lock Terminal & Sign Out"
+            onClick={logout}
+          >
+            <LogOut size={14} />
           </button>
         </div>
       </header>
@@ -214,130 +244,91 @@ export default function DesktopChrome({ children }) {
 
       {/* ── DESKTOP MAIN VIEWPORT WITH 3-STATE SIDEBAR ─── */}
       <div className="desktop-main-split">
-        <aside className={`left-icon-rail-dock sidebar-${sidebarMode}`}>
-          {/* Header row in sidebar: Expand/Collapse controls */}
-          {sidebarMode === 'full' ? (
-            <div className="sidebar-full-top-bar">
-              <span className="sidebar-top-label font-mono">INTELLIGENCE</span>
-              <div className="sidebar-top-actions">
-                <button
-                  className="sidebar-subtle-toggle"
-                  onClick={() => setSidebarMode('compact')}
-                  title="Collapse to vertical rail"
-                >
-                  <ChevronLeft size={13} />
-                </button>
-                <button
-                  className="sidebar-subtle-toggle"
-                  onClick={() => setSidebarMode('collapsed')}
-                  title="Hide sidebar completely"
-                >
-                  <X size={13} />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              className="rail-expand-btn"
-              onClick={() => setSidebarMode('full')}
-              title="Expand Sidebar"
-            >
-              <ChevronRight size={13} />
-            </button>
-          )}
-
+        <aside className="left-icon-rail-dock sidebar-compact">
           {/* Main Navigation Group - Clean, no bureau cases */}
           <div className="rail-group-top">
             {/* 1. Global Intelligence Grid Dashboard */}
             <button
-              className={`rail-btn ${activeNavSection === 'home' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'home' ? 'active active-home' : ''}`}
               onClick={() => setActiveNavSection('home')}
               title="Global Intelligence Grid Dashboard"
             >
               <Globe size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Dashboard</span>}
             </button>
 
             {/* 2. Investigation Workspace & Canvas Hub */}
             <button
-              className={`rail-btn ${activeNavSection === 'workspace' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'workspace' ? 'active active-workspace' : ''}`}
               onClick={() => setActiveNavSection('workspace')}
               title="Investigation Workspace Hub & Canvas"
             >
               <Layers size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Workspace</span>}
             </button>
 
             {/* 3. Evidence Ingestion & Drag-and-Drop Organization */}
             <button
-              className={`rail-btn ${activeNavSection === 'ingestion' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'ingestion' ? 'active active-ingestion' : ''}`}
               onClick={() => setActiveNavSection('ingestion')}
               title="Evidence Ingestion (Folder Upload & Organization)"
             >
               <FileUp size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Evidence</span>}
             </button>
 
             {/* 4. Byomkesh AI Forensic Co-Pilot */}
             <button
-              className={`rail-btn ${activeNavSection === 'byomkesh' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'byomkesh' ? 'active active-byomkesh' : ''}`}
               onClick={() => setActiveNavSection('byomkesh')}
               title="Byomkesh AI Forensic Co-Pilot"
             >
               <Brain size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Byomkesh AI</span>}
             </button>
 
             {/* 5. Autonomous 12-Hour Sweeps */}
             <button
-              className={`rail-btn ${activeNavSection === 'sweeps' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'sweeps' ? 'active active-sweeps' : ''}`}
               onClick={() => setActiveNavSection('sweeps')}
               title="Autonomous 12H Sweeps & Cross-Case Corroboration"
             >
               <Sparkles size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Sweeps</span>}
             </button>
 
             {/* 6. Live Intel */}
             <button
-              className={`rail-btn ${activeNavSection === 'intel' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'intel' ? 'active active-intel' : ''}`}
               onClick={() => setActiveNavSection('intel')}
               title="Live Intelligence Signals & Intercepts"
             >
               <Radio size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Live Intel</span>}
             </button>
 
             {/* 7. Provenance & Sealed Ledger */}
             <button
-              className={`rail-btn ${activeNavSection === 'audit' ? 'active' : ''}`}
+              className={`rail-btn ${activeNavSection === 'audit' ? 'active active-audit' : ''}`}
               onClick={() => setActiveNavSection('audit')}
               title="Cryptographic Evidence Provenance Ledger"
             >
               <ShieldCheck size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Ledger</span>}
             </button>
-          </div>
 
-          {/* Bottom Group: Total Bureau File Explorer & Command Palette */}
-          <div className="rail-group-bottom">
             <button
-              className={`rail-btn ${totalExplorerOpen ? 'active' : ''}`}
-              onClick={() => setTotalExplorerOpen(true)}
+              className={`rail-btn ${activeNavSection === 'fileExplorer' ? 'active' : ''}`}
+              onClick={() => setActiveNavSection('fileExplorer')}
               title="Total File Explorer (Case Files & Archive)"
             >
               <Folder size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">File Explorer</span>}
             </button>
+          </div>
 
+          {/* Bottom Group: Constellation Team Help & Terminal Status */}
+          <div className="rail-group-bottom">
             <button
-              className="rail-btn rail-btn-settings"
-              onClick={() => setShowSearchModal(true)}
-              title="Global Search & Command Palette (⌘K)"
+              className={`rail-btn rail-help-btn ${showHelpModal ? 'active' : ''}`}
+              onClick={() => setShowHelpModal(true)}
+              title="Constellation Team & System Help"
             >
-              <Search size={16} />
-              {sidebarMode === 'full' && <span className="rail-item-text">Command (⌘K)</span>}
+              <HelpCircle size={16} />
             </button>
+            <div className="rail-status-pip" title="Bureau Node Active · Cryptographically Synchronized" />
           </div>
         </aside>
 
@@ -384,7 +375,7 @@ export default function DesktopChrome({ children }) {
               </div>
               <div
                 className="palette-result-item"
-                onClick={() => { setTotalExplorerOpen(true); setShowSearchModal(false); }}
+                onClick={() => { setActiveNavSection('fileExplorer'); setShowSearchModal(false); }}
               >
                 <span>Open Total Bureau File Explorer</span>
                 <span className="palette-shortcut">↵</span>
@@ -451,11 +442,7 @@ export default function DesktopChrome({ children }) {
         </div>
       )}
 
-      {/* ── TOTAL BUREAU FILE EXPLORER MODAL ────────────────────── */}
-      <TotalFileExplorer
-        isOpen={totalExplorerOpen}
-        onClose={() => setTotalExplorerOpen(false)}
-      />
+
 
       {/* ── OFFICER PROFILE & CLEARANCE MODAL ───────────────────── */}
       {showOfficerProfile && (
@@ -490,7 +477,7 @@ export default function DesktopChrome({ children }) {
                 </div>
                 <div className="profile-meta-item">
                   <span className="profile-meta-label">CRYPTOGRAPHIC IDENTITY</span>
-                  <span className="profile-meta-val text-green">0x71f8...442a (SEALED)</span>
+                  <span className="profile-meta-val text-green">SHA256: 71f8e819...442a (SEALED)</span>
                 </div>
               </div>
 
@@ -505,10 +492,96 @@ export default function DesktopChrome({ children }) {
 
               <div className="profile-modal-footer">
                 <span className="profile-session-clock font-mono">SESSION ACTIVE · {utcTime}</span>
-                <button className="profile-action-btn font-mono" onClick={() => setShowOfficerProfile(false)}>
-                  Dismiss Dossier
-                </button>
+                <div className="flex items-center gap-sm">
+                  <button
+                    className="profile-action-btn font-mono"
+                    style={{ background: 'var(--nb-yellow, #ffe600)', color: '#000000', fontWeight: 800, border: '2px solid #000' }}
+                    onClick={() => {
+                      setShowOfficerProfile(false);
+                      setShowAdminModal(true);
+                    }}
+                  >
+                    <UserPlus size={13} style={{ display: 'inline', marginRight: '4px', verticalAlign: '-1px' }} />
+                    Manage / Add Users
+                  </button>
+                  <button className="profile-action-btn font-mono" onClick={() => setShowOfficerProfile(false)}>
+                    Dismiss Dossier
+                  </button>
+                  <button
+                    className="profile-action-btn font-mono"
+                    style={{ background: '#ff2a85', color: '#ffffff' }}
+                    onClick={() => {
+                      setShowOfficerProfile(false);
+                      logout();
+                    }}
+                  >
+                    Lock Terminal &amp; Sign Out
+                  </button>
+                </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── HELP & TEAM DOSSIER MODAL ────────────────────────── */}
+      {showHelpModal && (
+        <div className="command-palette-backdrop" onClick={() => setShowHelpModal(false)}>
+          <div className="help-modal-panel" onClick={e => e.stopPropagation()}>
+            <div className="help-modal-header">
+              <div className="flex items-center gap-sm">
+                <HelpCircle size={18} className="text-yellow" />
+                <h3 className="help-modal-title">BUREAU TEAM &amp; SYSTEM SUPPORT</h3>
+              </div>
+              <button className="palette-close-btn" onClick={() => setShowHelpModal(false)}>
+                <X size={15} />
+              </button>
+            </div>
+
+            <div className="help-modal-body">
+              <div className="help-team-card">
+                <div className="help-badge">PRIMARY DEVELOPER &amp; ARCHITECT</div>
+                <div className="help-name">Adithya Srivatsa</div>
+                <div className="help-role font-mono">Lead Platform Architect &amp; Core Systems Developer</div>
+                <div className="help-contact font-mono">
+                  <span className="help-label">OFFICIAL DIRECT COMMS:</span>
+                  <a href="mailto:hello@adithyasrivatsa.in" className="help-email-link">
+                    hello@adithyasrivatsa.in
+                  </a>
+                </div>
+              </div>
+
+              <div className="help-system-info font-mono">
+                <div className="help-subheading">ABOUT CONSTELLATION INTELLIGENCE PLATFORM</div>
+                <p className="help-text">
+                  Constellation is an autonomous intelligence investigative graph operating under BNS Sec 111 &amp; Customs Act Sec 108.
+                  Featuring 12-hour background sweeps, Byomkesh forensic co-pilot reasoning, canonical entity resolution, and SHA-256 sealed chain of custody.
+                </p>
+                <div className="help-specs-grid">
+                  <div className="help-spec-item">
+                    <span className="spec-label">CORE ENGINE:</span>
+                    <span className="spec-val">Constellation V14.2 Production</span>
+                  </div>
+                  <div className="help-spec-item">
+                    <span className="spec-label">INVESTIGATOR:</span>
+                    <span className="spec-val">Special Agent Adithya Srivatsa</span>
+                  </div>
+                  <div className="help-spec-item">
+                    <span className="spec-label">SECURITY PROTOCOL:</span>
+                    <span className="spec-val">SHA-256 Ledger Sealed</span>
+                  </div>
+                  <div className="help-spec-item">
+                    <span className="spec-label">CONTACT / INQUIRIES:</span>
+                    <span className="spec-val">hello@adithyasrivatsa.in</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="help-modal-footer">
+              <button className="profile-action-btn font-mono" onClick={() => setShowHelpModal(false)}>
+                Close Terminal Dossier
+              </button>
             </div>
           </div>
         </div>

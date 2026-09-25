@@ -225,26 +225,56 @@ export default function WorkspaceOverviewHub() {
         </div>
       </div>
 
-      {/* ── Workspaces Grid ──────────────────────────────────────── */}
+      {/* ── Workspaces Grid (Neobrutal Folder Cards) ─────────────── */}
       <div className="hub-workspaces-grid">
-        {/* Create Workspace Quick Tile - AT THE TOP */}
+        {/* Create Workspace Quick Tile - High Energy Neobrutal Action Card */}
         <div className="hub-create-tile" onClick={() => setShowCreateModal(true)}>
           <div className="create-tile-inner">
             <div className="create-tile-icon-box">
-              <Plus size={24} />
+              <Plus size={28} strokeWidth={3} />
             </div>
             <h3 className="create-tile-title">Create Workspace</h3>
             <p className="create-tile-caption">Start a clean investigation board or label a custom case</p>
+            <span className="create-tile-badge font-mono">+ NEW DOCKET</span>
           </div>
         </div>
 
-        {filteredWorkspaces.map(ws => (
-          <Panel3D key={ws.id} className="hub-card-panel3d" glow="white" maxAngle={4}>
-            <div
-              className={`hub-workspace-card priority-border-${(ws.priority || 'high').toLowerCase()}`}
-              onClick={() => openWorkspace(ws.id)}
-            >
-              {/* Card Top Meta */}
+        {filteredWorkspaces.map((ws, idx) => (
+          <div
+            key={ws.id}
+            className={`hub-nb-folder-card nb-card-theme-${idx % 4}`}
+            onClick={() => openWorkspace(ws.id)}
+          >
+            {/* Top Colored Folder Container */}
+            <div className="hub-folder-top">
+              <button
+                className="hub-folder-plus-btn"
+                title="Open workspace"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openWorkspace(ws.id);
+                }}
+              >
+                <Plus size={13} strokeWidth={3} />
+              </button>
+
+              {/* Clean Neobrutal Folder Illustration */}
+              <div className="hub-folder-icon-wrap">
+                <svg className="hub-folder-svg" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 20C10 15.58 13.58 12 18 12H38L48 24H82C86.42 24 90 27.58 90 32V68C90 72.42 86.42 76 82 76H18C13.58 76 10 72.42 10 68V20Z" fill="#000000" />
+                  <path d="M14 28H86C88.2 28 90 29.8 90 32V68C90 72.42 86.42 76 82 76H18C13.58 76 10 72.42 10 68V32C10 29.8 11.8 28 14 28Z" fill="#ffffff" stroke="#000000" strokeWidth="4" />
+                  <line x1="24" y1="44" x2="62" y2="44" stroke="#000000" strokeWidth="4" strokeLinecap="round" />
+                  <line x1="24" y1="56" x2="74" y2="56" stroke="#000000" strokeWidth="4" strokeLinecap="round" />
+                </svg>
+              </div>
+
+              <span className="hub-folder-sector-tag font-mono">
+                {(ws.genre || 'INVESTIGATION').toUpperCase()}
+              </span>
+            </div>
+
+            {/* Bottom Crisp White Card Body */}
+            <div className="hub-folder-bottom">
               <div className="ws-card-top-row">
                 <span className="ws-case-tag font-mono">{ws.caseName || 'Case Workspace'}</span>
                 <span className={`ws-priority-pill priority-${(ws.priority || 'high').toLowerCase()}`}>
@@ -252,7 +282,6 @@ export default function WorkspaceOverviewHub() {
                 </span>
               </div>
 
-              {/* Title & Description */}
               <h2 className="ws-card-title">{ws.name}</h2>
               <p className="ws-card-desc">{ws.description}</p>
 
@@ -297,7 +326,7 @@ export default function WorkspaceOverviewHub() {
                 </button>
               </div>
             </div>
-          </Panel3D>
+          </div>
         ))}
       </div>
 

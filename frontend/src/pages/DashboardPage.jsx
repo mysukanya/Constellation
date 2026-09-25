@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react';
-import { useWorkspace } from '../contexts/WorkspaceContext';
+import { useWorkspace, CANONICAL_CASES } from '../contexts/WorkspaceContext';
 import {
   ArrowRight, ExternalLink, RefreshCw, Box,
   Users, ShieldAlert, Activity, CheckCircle2,
   TrendingUp, FileText, Sparkles, ArrowUpRight,
   ShieldCheck, UploadCloud, Brain, Search, Clock, MapPin, Database,
-  Play, Layers
+  Play, Layers, Plus
 } from 'lucide-react';
 import api from '../services/api';
 import TacticalGlobe from '../components/dashboard/TacticalGlobe';
@@ -58,7 +58,7 @@ const ACTIVE_CASES = [
     priority: 'HIGH',
     status: 'ACTIVE',
     lead: 'ACP S. Kulkarni',
-    legalBasis: 'IPC Sec 384 / IT Act Sec 66D',
+    legalBasis: 'BNS Sec 308 (Extortion) & IT Act Sec 66D',
     evidenceCount: 11,
     entitiesCount: 16,
     lastUpdate: '6 hours ago',
@@ -124,7 +124,7 @@ const AUTONOMOUS_SWEEPS = [
     badge: 'BALLISTICS STRIATION MATCH',
     targetCase: 'CASE 108 ↔ CASE 135',
     title: '9mm Glock Weapon Linkage to Syndicate Enforcer',
-    desc: 'Forensic ballistics hash 0xaa19...c344 matches recovered shell casings from Dock 4 execution to extortion threats issued against Kandla port contractor.',
+    desc: 'Forensic ballistics hash aa19c344...c344 matches recovered shell casings from Dock 4 execution to extortion threats issued against Kandla port contractor.',
     confidence: '98.9%',
     caseId: 'case-135'
   },
@@ -183,20 +183,27 @@ export default function DashboardPage() {
         }
       }
 
-      if (casesData && casesData.length > 0) {
-        setCasesList(casesData.map(c => ({
-          id: c.id,
-          name: c.title,
-          sector: c.description || 'Maritime & Financial Investigation',
-          priority: 'ACTIVE',
-          status: (c.status || 'ACTIVE').toUpperCase(),
-          lead: c.created_by === 'usr_system_seed' ? 'Directorate Lead' : c.created_by,
-          legalBasis: c.legal_basis || 'Authorized Order',
-          evidenceCount: c.entity_count || 14,
-          entitiesCount: c.relationship_count || 22,
-          lastUpdate: c.created_at ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live',
-          summary: c.description || 'Authorized active case file.'
-        })));
+      if (briefingData && briefingData.active_cases && briefingData.active_cases.length > 0) {
+        // Use live enriched cases from backend with exact counts
+        setCasesList(briefingData.active_cases);
+      } else if (casesData && casesData.length > 0) {
+        // Merge backend data with canonical case metadata for richer display
+        setCasesList(casesData.map(c => {
+          const canonical = CANONICAL_CASES[c.id];
+          return {
+            id: c.id,
+            name: canonical?.name || c.title,
+            sector: canonical?.genreLabel || c.description || 'Active Investigation',
+            priority: canonical?.priority || (c.status === 'active' ? 'HIGH' : (c.status || 'HIGH').toUpperCase()),
+            status: (c.status || 'ACTIVE').toUpperCase(),
+            lead: canonical?.leadInvestigator || (c.created_by?.startsWith('usr_') ? 'Assigned Investigator' : c.created_by || 'Directorate Lead'),
+            legalBasis: canonical?.legalBasis || c.legal_basis || 'Authorized Order',
+            evidenceCount: c.relationship_count || canonical?.evidenceCount || 0,
+            entitiesCount: c.entity_count || canonical?.entitiesCount || 0,
+            lastUpdate: canonical?.lastModified || (c.created_at ? new Date(c.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live'),
+            summary: canonical?.description || c.description || 'Authorized active case file.'
+          };
+        }));
       }
 
       if (sweepData && sweepData.findings && sweepData.findings.length > 0) {
@@ -302,6 +309,77 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* ── NEOBRUTALISM HERO BANNER (NN/g Style) ─────────────── */}
+      <section className="nb-hero-banner">
+        <div className="nb-hero-content">
+          <div className="nb-hero-badge font-mono">
+            <span className="nb-badge-dot" />
+            <span>FORENSIC KNOWLEDGE MATRIX 2026</span>
+          </div>
+          <h1 className="nb-hero-title">
+            Emerging Forensic<br />Intelligence
+          </h1>
+          <p className="nb-hero-subtitle">
+            Autonomous multi-vector correlation across hawala ledgers, AIS maritime transponders, encrypted telecom bursts, and corporate shells.
+          </p>
+          <div className="nb-hero-actions">
+            <button
+              className="nb-explore-pill-btn"
+              onClick={() => setActiveNavSection('workspace')}
+            >
+              <span>EXPLORE</span>
+              <ArrowRight size={15} />
+            </button>
+            <button
+              className="nb-hero-secondary-btn"
+              onClick={() => setActiveNavSection('byomkesh')}
+            >
+              <Brain size={14} />
+              <span>Byomkesh NIM</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Retro Window Illustration from NN/g Reference */}
+        <div className="nb-hero-visual">
+          <div className="nb-retro-window">
+            <div className="nb-window-titlebar">
+              <span className="nb-win-dot" />
+              <span className="nb-win-dot" />
+              <span className="nb-win-dot" />
+            </div>
+            <div className="nb-window-body">
+              <div className="nb-retro-search-capsule">
+                <Search size={15} className="nb-search-ico" />
+                <span className="nb-search-placeholder">MV Sagar Ratna · FIU-9921 · Tariq Merchant</span>
+                <span className="nb-search-cursor">|</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="nb-retro-mini-window">
+            <div className="nb-mini-titlebar">
+              <span>SHA-256 HASH</span>
+              <span className="nb-mini-close">×</span>
+            </div>
+            <div className="nb-mini-body font-mono">
+              * * * SHA256: 88f29cb1 * * *
+            </div>
+          </div>
+
+          {/* Retro Geometric Accents */}
+          <div className="nb-geo-dots-matrix" />
+          <svg className="nb-geo-polygon" viewBox="0 0 80 60" fill="none">
+            <polygon points="10,10 70,15 55,50 20,45" stroke="#000000" strokeWidth="2.5" fill="none" />
+            <circle cx="10" cy="10" r="3" fill="#ff2a85" stroke="#000000" strokeWidth="1.5" />
+            <circle cx="70" cy="15" r="3" fill="#ff2a85" stroke="#000000" strokeWidth="1.5" />
+            <circle cx="55" cy="50" r="3" fill="#ff2a85" stroke="#000000" strokeWidth="1.5" />
+            <circle cx="20" cy="45" r="3" fill="#ff2a85" stroke="#000000" strokeWidth="1.5" />
+          </svg>
+          <div className="nb-geo-cursor-pointer" />
+        </div>
+      </section>
+
       {/* ── METRICS STRIP (Live Database-Backed Metrics) ──────────── */}
       <div className="minimal-metrics-strip">
         <div className="metric-box">
@@ -347,7 +425,7 @@ export default function DashboardPage() {
         {/* LEFT COLUMN: ACTIVE CASES + 12H SWEEPS ───────────── */}
         <div className="dash-col-primary">
           
-          {/* Active Workspace Command Boards Section - Clean & Lightweight */}
+          {/* Active Workspace Command Boards Section - 3 Neobrutalist Folder Cards */}
           <section className="dash-card-section workspaces-overview-section">
             <div className="section-header-row">
               <div className="section-title-wrap">
@@ -364,44 +442,76 @@ export default function DashboardPage() {
               </button>
             </div>
 
-            <div className="dash-workspaces-stack">
-              {workspaces.slice(0, 3).map(ws => (
+            {/* 3-Folder Cards Layout Directly Matching the NN/g Reference Image */}
+            <div className="nb-folder-grid">
+              {workspaces.slice(0, 3).map((ws, idx) => (
                 <div
                   key={ws.id}
-                  className="dash-ws-card-row"
+                  className={`nb-folder-card nb-card-theme-${idx % 3}`}
                   onClick={() => {
                     openWorkspace(ws.id);
                     setActiveNavSection('workspace');
                   }}
                 >
-                  <div className="dash-ws-left">
-                    <div className="dash-ws-badge-line">
-                      <span className="dash-ws-genre font-mono">{(ws.genre || 'INVESTIGATION').toUpperCase()}</span>
-                      <span className="dash-ws-tag font-mono">{ws.caseName || 'Workspace'}</span>
-                    </div>
-                    <h3 className="dash-ws-title">{ws.name}</h3>
-                    <p className="dash-ws-desc">{ws.description}</p>
-                    <div className="dash-ws-meta font-mono">
-                      <span>{ws.nodesCount || ws.nodes?.length || 0} Entities</span>
-                      <span className="meta-dot">·</span>
-                      <span>{ws.edgesCount || ws.edges?.length || 0} Ropes</span>
-                      <span className="meta-dot">·</span>
-                      <span>{ws.lastModified || 'Recent'}</span>
-                    </div>
-                  </div>
-
-                  <div className="dash-ws-right">
+                  {/* Top Colored Folder Container */}
+                  <div className="nb-folder-card-top">
                     <button
-                      className="case-launch-btn font-mono"
+                      className="nb-folder-plus-btn"
+                      title="Add entity / quick launch"
                       onClick={(e) => {
                         e.stopPropagation();
                         openWorkspace(ws.id);
                         setActiveNavSection('workspace');
                       }}
                     >
-                      <Play size={11} fill="currentColor" />
-                      <span>Launch Board</span>
+                      <Plus size={13} />
                     </button>
+
+                    {/* Clean Neobrutal Folder Illustration */}
+                    <div className="nb-folder-icon-wrap">
+                      <svg className="nb-folder-svg" viewBox="0 0 100 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 20C10 15.58 13.58 12 18 12H38L48 24H82C86.42 24 90 27.58 90 32V68C90 72.42 86.42 76 82 76H18C13.58 76 10 72.42 10 68V20Z" fill="#000000" />
+                        <path d="M14 28H86C88.2 28 90 29.8 90 32V68C90 72.42 86.42 76 82 76H18C13.58 76 10 72.42 10 68V32C10 29.8 11.8 28 14 28Z" fill="#ffffff" stroke="#000000" strokeWidth="4" />
+                        <line x1="24" y1="44" x2="62" y2="44" stroke="#000000" strokeWidth="4" strokeLinecap="round" />
+                        <line x1="24" y1="56" x2="74" y2="56" stroke="#000000" strokeWidth="4" strokeLinecap="round" />
+                      </svg>
+                    </div>
+
+                    <span className="nb-folder-sector-tag font-mono">
+                      {(ws.genre || 'INVESTIGATION').toUpperCase()}
+                    </span>
+                  </div>
+
+                  {/* Bottom Crisp White Card Body */}
+                  <div className="nb-folder-card-bottom">
+                    <div className="nb-folder-card-title-row">
+                      <h3 className="nb-folder-card-title">{ws.name}</h3>
+                      <span className="nb-case-pill font-mono">{ws.caseName || 'Workspace'}</span>
+                    </div>
+
+                    <p className="nb-folder-card-desc">{ws.description}</p>
+
+                    <div className="nb-folder-card-meta font-mono">
+                      <span>{ws.nodesCount || ws.nodes?.length || 0} Entities</span>
+                      <span className="nb-meta-dot">·</span>
+                      <span>{ws.edgesCount || ws.edges?.length || 0} Ropes</span>
+                      <span className="nb-meta-dot">·</span>
+                      <span>{ws.lastModified || 'Recent'}</span>
+                    </div>
+
+                    <div className="nb-folder-card-footer">
+                      <button
+                        className="nb-folder-launch-btn font-mono"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          openWorkspace(ws.id);
+                          setActiveNavSection('workspace');
+                        }}
+                      >
+                        <Play size={11} fill="currentColor" />
+                        <span>Launch Board</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

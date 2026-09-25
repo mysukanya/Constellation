@@ -57,6 +57,14 @@ async def list_cases(current_user: UserResponse = Depends(get_current_user)):
     cases = []
     for n in nodes:
         props = n.get("properties", {})
+        # Get real entity and relationship counts from subgraph
+        try:
+            subgraph = await graph_service.get_case_subgraph(case_id=n["id"])
+            entity_count = len(subgraph.get("nodes", []))
+            relationship_count = len(subgraph.get("edges", []))
+        except Exception:
+            entity_count = 0
+            relationship_count = 0
         cases.append(CaseResponse(
             id=n["id"],
             title=props.get("title", "Untitled Case"),
@@ -65,8 +73,8 @@ async def list_cases(current_user: UserResponse = Depends(get_current_user)):
             status=props.get("status", "active"),
             created_at=props.get("created_at", ""),
             created_by=props.get("created_by", "system"),
-            entity_count=0,
-            relationship_count=0
+            entity_count=entity_count,
+            relationship_count=relationship_count
         ))
     return cases
 

@@ -115,6 +115,39 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
+  const getDemoUser = useCallback((role = 'admin') => {
+    const defaultUsers = {
+      admin: { id: 'usr_admin', username: 'admin', full_name: 'Chief Intelligence Director', role: 'admin' },
+      investigator: { id: 'usr_investigator', username: 'investigator', full_name: 'Lead Intelligence Officer', role: 'investigator' },
+      analyst: { id: 'usr_analyst', username: 'analyst', full_name: 'Senior Intelligence Analyst', role: 'read_only' }
+    };
+    return defaultUsers[role] || defaultUsers.admin;
+  }, []);
+
+  const verifyCredentials = useCallback(async (username, password) => {
+    setError(null);
+    try {
+      const data = await api.login(username, password);
+      if (data?.user) {
+        return data.user;
+      }
+      throw new Error('Authentication response did not contain user profile.');
+    } catch (err) {
+      const msg = err.detail || err.message || 'Incorrect username or password';
+      setError(msg);
+      throw new Error(msg);
+    }
+  }, []);
+
+  const commitUser = useCallback((userObj) => {
+    localStorage.removeItem('constellation_logged_out');
+    setUser(userObj);
+    if (!localStorage.getItem('constellation_token')) {
+      localStorage.setItem('constellation_token', `demo_token_${userObj.username}`);
+    }
+    localStorage.setItem('constellation_user', JSON.stringify(userObj));
+  }, []);
+
   const logout = useCallback(() => {
     api.logout();
     setUser(null);
@@ -122,10 +155,11 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('constellation_user');
     localStorage.removeItem('constellation_token');
     localStorage.setItem('constellation_logged_out', 'true');
+    sessionStorage.removeItem('constellation_splash_played');
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, demoLogin, loading, error, isAuthenticated }}>
+    <AuthContext.Provider value={{ user, login, register, logout, demoLogin, getDemoUser, verifyCredentials, commitUser, loading, error, isAuthenticated }}>
       {children}
     </AuthContext.Provider>
   );

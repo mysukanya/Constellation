@@ -12,6 +12,7 @@ import CaseDetailPage from '../pages/CaseDetailPage';
 import EntityResolutionPage from '../pages/EntityResolutionPage';
 import IngestionPage from '../pages/IngestionPage';
 import ByomkeshPage from '../pages/ByomkeshPage';
+import TotalFileExplorer from './desktop/TotalFileExplorer';
 
 export default function Layout() {
   const { isAuthenticated, loading, user } = useAuth();
@@ -36,7 +37,10 @@ export default function Layout() {
     );
   }
 
-  if (!isAuthenticated) {
+  const params = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const forceScreen = params?.get('screen');
+
+  if (!isAuthenticated || forceScreen === 'splash' || forceScreen === 'login' || forceScreen === 'welcome') {
     return <LoginPage />;
   }
 
@@ -52,6 +56,7 @@ export default function Layout() {
       {activeNavSection === 'er' && <EntityResolutionPage />}
       {activeNavSection === 'ingestion' && <IngestionPage />}
       {activeNavSection === 'byomkesh' && <ByomkeshPage />}
+      {activeNavSection === 'fileExplorer' && <TotalFileExplorer />}
     </DesktopChrome>
   );
 }

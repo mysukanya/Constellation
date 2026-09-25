@@ -376,7 +376,7 @@ const INITIAL_DIRECTORY_TREE = {
   ]
 };
 
-export default function TotalFileExplorer({ isOpen, onClose }) {
+export default function TotalFileExplorer({ onClose } = {}) {
   const { setActiveCaseId, setActiveNavSection, addNodeToCanvas, openWorkspace, workspaces } = useWorkspace();
   
   // File system state
@@ -539,7 +539,7 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
           setPreviewFile(null);
         } else if (propertiesItem) {
           setPropertiesItem(null);
-        } else {
+        } else if (onClose) {
           onClose();
         }
       }
@@ -777,8 +777,6 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
     return currentItems.find(i => i.id === selectedItemId);
   }, [currentItems, selectedItemId]);
 
-  if (!isOpen) return null;
-
   // Render Tree Node in left sidebar
   const renderTreeNode = (node) => {
     if (node.type === 'file') return null;
@@ -827,11 +825,10 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
   };
 
   return (
-    <div className="win-explorer-backdrop" onClick={onClose}>
-      <div className="win-explorer-window" onClick={e => e.stopPropagation()}>
-        
-        {/* ── 1. WINDOWS TITLE BAR ────────────────────────────────────── */}
-        <div className="win-titlebar">
+    <div className="win-explorer-window" onClick={e => e.stopPropagation()}>
+      
+      {/* ── 1. WINDOWS TITLE BAR ────────────────────────────────────── */}
+      <div className="win-titlebar">
           <div className="win-titlebar-left">
             <Folder size={14} className="win-titlebar-icon yellow-folder-icon" />
             <span className="win-titlebar-text">
@@ -846,7 +843,7 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
             <button className="win-control-btn" title="Maximize">
               <span className="btn-square">▢</span>
             </button>
-            <button className="win-control-btn win-btn-close" onClick={onClose} title="Close (ESC)">
+            <button className="win-control-btn win-btn-close" onClick={() => onClose && onClose()} title="Close (ESC)">
               <X size={14} />
             </button>
           </div>
@@ -1574,8 +1571,6 @@ export default function TotalFileExplorer({ isOpen, onClose }) {
             </div>
           </div>
         )}
-
-      </div>
     </div>
   );
 }

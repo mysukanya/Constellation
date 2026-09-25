@@ -1,15 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowRight, Lock, User, Shield, Check } from 'lucide-react';
+import { ArrowRight, Shield, Lock, User, Terminal, Sparkles, KeyRound, AlertCircle } from 'lucide-react';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const { login, demoLogin } = useAuth();
+  const { verifyCredentials, getDemoUser, commitUser } = useAuth();
 
   // Stages: 'splash' -> 'login' -> 'welcome'
   const [phase, setPhase] = useState(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
+      if (params.get('screen') === 'splash') return 'splash';
       if (params.get('screen') === 'welcome') return 'welcome';
       if (params.get('screen') === 'login') return 'login';
       if (sessionStorage.getItem('constellation_splash_played') === 'true') return 'login';
@@ -17,15 +18,17 @@ export default function LoginPage() {
     return 'splash';
   });
 
-  const [typedSplash, setTypedSplash] = useState('');
-  const [welcomeTypedText, setWelcomeTypedText] = useState('');
-  const [username, setUsername] = useState('Admin');
-  const [password, setPassword] = useState('Password');
-  const [welcomeStage, setWelcomeStage] = useState('enter'); // 'enter' | 'exit'
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('password');
   const [authError, setAuthError] = useState(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [pendingUser, setPendingUser] = useState(null);
 
-  // 1. Splash Screen: Slow, even typing of 'Constellation' on pure black
+  const [typedSplash, setTypedSplash] = useState('');
+  const [welcomeTypedText, setWelcomeTypedText] = useState('');
+  const [welcomeStage, setWelcomeStage] = useState('enter'); // 'enter' | 'exit'
+
+  // ── 1. SPLASH SCREEN: Plain Neobrutal Background with Black Typing ──
   useEffect(() => {
     if (phase !== 'splash') return;
 
@@ -41,47 +44,80 @@ export default function LoginPage() {
         setTimeout(() => {
           sessionStorage.setItem('constellation_splash_played', 'true');
           setPhase('login');
-        }, 700);
+        }, 900);
       }
-    }, 110); // slow and even
+    }, 110);
 
     return () => clearInterval(interval);
   }, [phase]);
 
-  // 2. Welcome Interstitial: Slow, even typing of 'Welcome back! Investigator!'
+  const handleSkipSplash = () => {
+    sessionStorage.setItem('constellation_splash_played', 'true');
+    setPhase('login');
+  };
+
+  // ── 2. POST-LOGIN WELCOME INTERSTITIAL: Plain Background & Slow Typing ──
   useEffect(() => {
     if (phase !== 'welcome') return;
 
-    const target = 'Welcome back! Investigator!';
-    let idx = 0;
+    const targetText = 'Welcome Back Investigator';
+    let charIdx = 0;
     setWelcomeTypedText('');
     setWelcomeStage('enter');
 
-    const typeInterval = setInterval(() => {
-      idx++;
-      setWelcomeTypedText(target.slice(0, idx));
-      if (idx >= target.length) {
-        clearInterval(typeInterval);
-        // Pause to appreciate, then fade out and unlock dashboard
-        setTimeout(() => {
+    // Deliberate, cinematic slow typing: ~80ms per character
+    const typingInterval = setInterval(() => {
+      charIdx++;
+      setWelcomeTypedText(targetText.slice(0, charIdx));
+
+      if (charIdx >= targetText.length) {
+        clearInterval(typingInterval);
+        // Pause to let the user read, then trigger smooth fade-out
+        const holdTimeout = setTimeout(() => {
           setWelcomeStage('exit');
-        }, 800);
+          // Complete transition to desktop workspace once fade-out completes
+          const commitTimeout = setTimeout(() => {
+            if (pendingUser) {
+              commitUser(pendingUser);
+            } else {
+              commitUser(getDemoUser('admin'));
+            }
+          }, 700);
+          return () => clearTimeout(commitTimeout);
+        }, 1200);
+        return () => clearTimeout(holdTimeout);
       }
-    }, 85); // slow, even, deliberate pace
+    }, 80);
 
-    return () => clearInterval(typeInterval);
-  }, [phase]);
+    return () => clearInterval(typingInterval);
+  }, [phase, pendingUser, commitUser, getDemoUser]);
 
+  const handleSkipWelcome = () => {
+    setWelcomeStage('exit');
+    setTimeout(() => {
+      if (pendingUser) {
+        commitUser(pendingUser);
+      } else {
+        commitUser(getDemoUser('admin'));
+      }
+    }, 150);
+  };
+
+  // ── Handle Authentication ──────────────────────────────────────
   const handleStartAuth = async (mode) => {
     setAuthError(null);
+
     if (mode === 'demo') {
-      demoLogin('admin');
+      const demoUsr = getDemoUser('admin');
+      setPendingUser(demoUsr);
+      setPhase('welcome');
       return;
     }
 
     setIsLoggingIn(true);
     try {
-      await login(username, password);
+      const user = await verifyCredentials(username, password);
+      setPendingUser(user);
       setPhase('welcome');
     } catch (err) {
       setAuthError(err.message || 'Authentication failed: Invalid credentials');
@@ -90,156 +126,195 @@ export default function LoginPage() {
     }
   };
 
-  // ── PHASE 1: SPLASH SCREEN (slow even typed words on black) ──────
+  // ═══════════════════════════════════════════════════════════════
+  // PHASE 1: PLAIN TYPING SPLASH SCREEN (Neobrutal Cream / Black Text)
+  // ═══════════════════════════════════════════════════════════════
   if (phase === 'splash') {
     return (
       <div
-        className="minimal-splash-screen"
-        onClick={() => {
-          sessionStorage.setItem('constellation_splash_played', 'true');
-          setPhase('login');
-        }}
-        role="button"
-        tabIndex={0}
-        title="Click to skip"
-      >
-        <div className="minimal-splash-content font-mono">
-          <span className="minimal-typed-word">{typedSplash}</span>
-          <span className="minimal-blinking-cursor">|</span>
-        </div>
-      </div>
-    );
-  }
-
-  // ── PHASE 3: WELCOME INTERSTITIAL (slow even typing on black) ──
-  if (phase === 'welcome') {
-    return (
-      <div
-        className={`minimal-welcome-screen ${welcomeStage === 'exit' ? 'is-fading-out' : 'is-fading-in'}`}
-        onClick={() => {
-          setWelcomeStage('exit');
-          setTimeout(() => demoLogin('admin'), 200);
-        }}
+        className="nb-plain-splash-screen"
+        onClick={handleSkipSplash}
         role="button"
         tabIndex={0}
         title="Click to proceed"
-        style={{ cursor: 'pointer' }}
       >
-        <div className="minimal-welcome-content font-mono">
-          <span className="minimal-welcome-title">{welcomeTypedText}</span>
-          <span className="minimal-blinking-cursor">|</span>
+        <div className="nb-plain-splash-content font-mono">
+          <span className="nb-plain-typed-word">{typedSplash}</span>
+          <span className="nb-plain-cursor">█</span>
         </div>
       </div>
     );
   }
 
-  // ── PHASE 2: MINIMAL GLASSMORPHIC LOGIN (Linear Dual-Shard Panel) ──
+  // ═══════════════════════════════════════════════════════════════
+  // PHASE 3: PLAIN TYPING WELCOME ("Welcome Back Investigator")
+  // ═══════════════════════════════════════════════════════════════
+  if (phase === 'welcome') {
+    return (
+      <div
+        className={`nb-plain-welcome-screen ${welcomeStage === 'exit' ? 'is-fading-out' : 'is-fading-in'}`}
+        onClick={handleSkipWelcome}
+        role="button"
+        tabIndex={0}
+        title="Click to proceed into dashboard"
+      >
+        <div className="nb-plain-welcome-content font-mono">
+          <span className="nb-plain-welcome-text">{welcomeTypedText}</span>
+          <span className="nb-plain-cursor">█</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // PHASE 2: NEOBRUTALIST LOGIN SCREEN
+  // ═══════════════════════════════════════════════════════════════
   return (
-    <div className="glass-login-viewport">
-      {/* Background Image Layer */}
-      <div className="glass-login-bg-layer" />
-      <div className="glass-login-vignette" />
+    <div className="nb-login-container">
+      <div className="nb-login-grid-bg" />
 
-      {/* Centered Dual-Shard Glassmorphic Panel */}
-      <div className="glass-login-card">
-        {/* Left Shard: Clean, Linear Constellation Overview */}
-        <div className="glass-shard-left">
-          <div className="shard-brand-block">
-            <h2 className="shard-brand-title font-mono">CONSTELLATION</h2>
-            <p className="shard-brand-kicker font-mono">AUTONOMOUS CRIME INTELLIGENCE SYSTEM</p>
-          </div>
-
-          <div className="shard-linear-capabilities">
-            <div className="shard-linear-item font-mono">
-              <span className="shard-item-dot" />
-              <span className="shard-item-text">Autonomous 12-Hour Cross-Jurisdiction Sweeps</span>
+      {/* Main Neobrutalist Window Card */}
+      <div className="nb-login-window">
+        {/* Window Top Titlebar */}
+        <div className="nb-window-header">
+          <div className="nb-window-header-left">
+            <div className="nb-header-dots">
+              <span className="nb-dot dot-yellow" />
+              <span className="nb-dot dot-teal" />
+              <span className="nb-dot dot-pink" />
             </div>
-            <div className="shard-linear-item font-mono">
-              <span className="shard-item-dot" />
-              <span className="shard-item-text">Heuristic Cross-Case Entity &amp; Hawala Resolution</span>
-            </div>
-            <div className="shard-linear-item font-mono">
-              <span className="shard-item-dot" />
-              <span className="shard-item-text">Cryptographic Tamper-Proof Audit Provenance</span>
-            </div>
-            <div className="shard-linear-item font-mono">
-              <span className="shard-item-dot" />
-              <span className="shard-item-text">Real-Time Maritime Contraband Correlation</span>
-            </div>
-          </div>
-
-          <div className="shard-bottom-meta font-mono">
-            <span className="shard-authority-badge">
-              STATUTORY AUTHORITY: BNS SEC 111 &middot; PMLA SEC 5
+            <span className="nb-window-title font-mono">
+              CONSTELLATION OS // INVESTIGATOR ACCESS GATEWAY
             </span>
+          </div>
+          <div className="nb-window-header-right font-mono">
+            SECURE TERMINAL : PORT 5173
           </div>
         </div>
 
-        {/* Right Shard: Minimal Authentication Form */}
-        <div className="glass-shard-right">
-          <div className="shard-form-header">
-            <span className="shard-form-title">Investigator Access</span>
-            <button
-              type="button"
-              className="shard-demo-btn font-mono"
-              onClick={() => handleStartAuth('demo')}
-              title="Instant Demo Access"
-            >
-              Demo Mode
-            </button>
+        {/* Window Dual-Column Split */}
+        <div className="nb-window-split">
+          {/* Left Column: Brand & Capabilities */}
+          <div className="nb-login-left">
+            <div className="nb-left-brand">
+              <div className="nb-brand-tag font-mono">RESTRICTED ACCESS</div>
+              <h2 className="nb-brand-name">CONSTELLATION</h2>
+              <p className="nb-brand-desc">
+                High-confidence crime intelligence, cross-jurisdictional syndicate correlation, and autonomous forensic sweep engine.
+              </p>
+            </div>
+
+            <div className="nb-features-list">
+              <div className="nb-feature-item">
+                <span className="nb-feature-badge badge-teal font-mono">01 // SWEEPS</span>
+                <div className="nb-feature-content">
+                  <div className="nb-feature-title">Autonomous 12-Hour Sweeps</div>
+                  <div className="nb-feature-sub">Heuristic cross-case link detection &amp; Hawala transaction alerts.</div>
+                </div>
+              </div>
+
+              <div className="nb-feature-item">
+                <span className="nb-feature-badge badge-yellow font-mono">02 // BYOMKESH</span>
+                <div className="nb-feature-content">
+                  <div className="nb-feature-title">Byomkesh AI Co-Pilot</div>
+                  <div className="nb-feature-sub">Multi-hop graph interrogation backed by strict evidentiary chain.</div>
+                </div>
+              </div>
+
+              <div className="nb-feature-item">
+                <span className="nb-feature-badge badge-pink font-mono">03 // PROVENANCE</span>
+                <div className="nb-feature-content">
+                  <div className="nb-feature-title">HMAC Audit Ledger</div>
+                  <div className="nb-feature-sub">Cryptographically tamper-evident case file &amp; artifact preservation.</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="nb-left-footer font-mono">
+              <Shield size={14} className="nb-footer-icon" />
+              <span>STATUTORY COMPLIANCE: BNS SEC 111 &middot; PMLA SEC 5</span>
+            </div>
           </div>
 
-          <form
-            className="shard-login-form"
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleStartAuth('submit');
-            }}
-          >
-            <div className="shard-field-group">
-              <label className="shard-label font-mono">USERNAME</label>
-              <div className="shard-input-wrap">
+          {/* Right Column: Authentication Form */}
+          <div className="nb-login-right">
+            <div className="nb-form-header">
+              <div>
+                <h3 className="nb-form-title">Investigator Sign In</h3>
+                <p className="nb-form-subtitle font-mono">AUTHENTICATE WITH OFFICIAL CREDENTIALS</p>
+              </div>
+              <button
+                type="button"
+                className="nb-demo-btn font-mono"
+                onClick={() => handleStartAuth('demo')}
+                title="Instant One-Click Demo Mode"
+              >
+                <Sparkles size={13} style={{ marginRight: 5, verticalAlign: -1 }} />
+                DEMO ACCESS
+              </button>
+            </div>
+
+            <form
+              className="nb-login-form"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleStartAuth('submit');
+              }}
+            >
+              <div className="nb-field-group">
+                <label className="nb-field-label font-mono">
+                  <User size={13} style={{ marginRight: 6, verticalAlign: -1 }} />
+                  USERNAME / BADGE ID
+                </label>
                 <input
                   type="text"
-                  className="shard-input"
+                  className="nb-input font-mono"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Admin"
+                  placeholder="admin"
                   autoComplete="username"
                   required
                 />
               </div>
-            </div>
 
-            <div className="shard-field-group">
-              <label className="shard-label font-mono">PASSWORD</label>
-              <div className="shard-input-wrap">
+              <div className="nb-field-group">
+                <label className="nb-field-label font-mono">
+                  <KeyRound size={13} style={{ marginRight: 6, verticalAlign: -1 }} />
+                  SECURITY PASSWORD
+                </label>
                 <input
                   type="password"
-                  className="shard-input"
+                  className="nb-input font-mono"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Password"
+                  placeholder="password"
                   autoComplete="current-password"
                   required
                 />
               </div>
-            </div>
 
-            {authError && (
-              <div className="shard-error-banner font-mono" style={{ color: '#ef4444', fontSize: '11px', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', padding: '6px 10px', borderRadius: '4px', marginBottom: '12px' }}>
-                ⚠ {authError}
+              {authError && (
+                <div className="nb-error-banner font-mono">
+                  <AlertCircle size={15} style={{ marginRight: 6, verticalAlign: -2 }} />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                className="nb-submit-btn font-mono"
+                disabled={isLoggingIn}
+              >
+                <span>{isLoggingIn ? 'AUTHENTICATING...' : 'ENTER INVESTIGATION DESKTOP'}</span>
+                <ArrowRight size={16} style={{ marginLeft: 8 }} />
+              </button>
+            </form>
+
+            <div className="nb-credentials-hint font-mono">
+              <div className="hint-pill">
+                DEFAULT BADGE: <strong>admin</strong> / <strong>password</strong>
               </div>
-            )}
-
-            <button type="submit" className="shard-submit-btn font-mono" disabled={isLoggingIn}>
-              <span>{isLoggingIn ? 'Verifying...' : 'Sign In'}</span>
-              <ArrowRight size={13} />
-            </button>
-          </form>
-
-          <div className="shard-footer-credentials font-mono">
-            <span>DEFAULT: ADMIN / PASSWORD</span>
+            </div>
           </div>
         </div>
       </div>

@@ -1,63 +1,86 @@
 /* ═══════════════════════════════════════════════════════════════
-   CONSTELLATION — Professional Investigation & Intelligence OS
-   Aesthetic: Apple macOS + Netflix + VS Code + Linear
-   Calm, mature, dense, cinematic, intellectual.
+   CONSTELLATION — Neobrutalist Investigation & Intelligence OS
+   Bold Outlines, Hard Offset Shadows, Saturated Accents & Clean Cards
    ═══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 :root {
-  /* Foundations — Pure OLED Black (#000000) */
-  --bg-desktop: #000000;
-  --bg-window: #000000;
-  --bg-sidebar: #050505;
-  --bg-surface: #0a0a0a;
-  --bg-elevated: #111111;
-  --bg-hover: #171717;
-  --bg-active: #222222;
-  --bg-input: #0a0a0a;
+  /* ── NEOBRUTALISM SIGNATURE PALETTE ────────────────────────── */
+  --nb-black: #000000;
+  --nb-white: #ffffff;
+  --nb-teal: #4ecdc4;      /* Mint Teal (Hero & Folder Header) */
+  --nb-pink: #ff2a85;      /* Hot Magenta / Neon Pink */
+  --nb-yellow: #ffd166;    /* Cyber / Warm Sunshine Yellow */
+  --nb-blue: #38bdf8;      /* Electric Sky Cyan */
+  --nb-purple: #c084fc;    /* Vibrant Lilac */
+  --nb-green: #34d399;     /* Signal Green */
+  --nb-orange: #fb923c;    /* Vivid Tangerine */
+  --nb-cream: #fffdf5;     /* Warm Paper Background */
 
-  /* Hair-thin borders */
-  --border-subtle: rgba(255, 255, 255, 0.08);
-  --border-default: rgba(255, 255, 255, 0.12);
-  --border-hover: rgba(255, 255, 255, 0.20);
-  --border-active: #3b82f6;
+  /* ── NEOBRUTALISM GEOMETRY & SHADOWS ───────────────────────── */
+  --nb-border-sm: 2px solid #000000;
+  --nb-border: 2.5px solid #000000;
+  --nb-border-lg: 3px solid #000000;
+  --nb-shadow-xs: 2px 2px 0px #000000;
+  --nb-shadow-sm: 3px 3px 0px #000000;
+  --nb-shadow: 4px 4px 0px #000000;
+  --nb-shadow-lg: 6px 6px 0px #000000;
+  --nb-shadow-xl: 8px 8px 0px #000000;
+  --nb-shadow-hover: 6px 6px 0px #000000;
+  --nb-shadow-active: 1px 1px 0px #000000;
+  --nb-radius-sm: 6px;
+  --nb-radius: 10px;
+  --nb-radius-lg: 14px;
+  --nb-radius-pill: 9999px;
 
-  /* Typography — Crisp Apple / OpenAI Tone */
+  /* Foundations (Dark Cyber-Neobrutalism Default) */
+  --bg-desktop: #0c0d10;
+  --bg-primary: #0c0d10;
+  --bg-window: #131418;
+  --bg-sidebar: #08090b;
+  --bg-surface: #18191e;
+  --bg-card: #1a1b22;
+  --bg-elevated: #212228;
+  --bg-hover: #2a2b33;
+  --bg-active: #343540;
+  --bg-input: #121316;
+  --bg-panel: #131418;
+  --bg-panel-header: var(--nb-teal);
+
+  /* Borders & Shadows */
+  --border-subtle: #27272a;
+  --border-default: #000000;
+  --border-hover: #52525b;
+  --border-active: var(--nb-teal);
+  --border-panel: #27272a;
+  --border-panel-hover: #52525b;
+
+  /* Typography */
   --text-primary: #ffffff;
   --text-secondary: #a1a1aa;
   --text-muted: #71717a;
   --text-inverse: #000000;
 
-  /* Netflix Rich Red (Reserved for Critical / High Alerts) */
-  --accent-red: #e50914;
-  --accent-red-hover: #f40612;
-  --accent-red-subtle: rgba(229, 9, 20, 0.12);
-  --accent-red-border: rgba(229, 9, 20, 0.35);
-
-  /* Semantic Precision Tints */
-  --accent-blue: #3b82f6;
-  --accent-blue-subtle: rgba(59, 130, 246, 0.12);
-  --accent-violet: #8b5cf6;
-  --accent-violet-subtle: rgba(139, 92, 246, 0.12);
-  --accent-amber: #f59e0b;
-  --accent-amber-subtle: rgba(245, 158, 11, 0.12);
-  --accent-green: #10b981;
-  --accent-green-subtle: rgba(16, 185, 129, 0.12);
+  /* Saturated Semantic Tints */
+  --accent-red: var(--nb-pink);
+  --accent-red-hover: #e11d48;
+  --accent-blue: var(--nb-blue);
+  --accent-amber: var(--nb-yellow);
+  --accent-green: var(--nb-teal);
 
   /* Provenance Hierarchy Colors */
-  --prov-raw: #64748b;
-  --prov-observation: #3b82f6;
-  --prov-correlation: #8b5cf6;
-  --prov-inference: #f59e0b;
-  --prov-hypothesis: #e50914;
+  --prov-raw: #94a3b8;
+  --prov-observation: var(--nb-blue);
+  --prov-correlation: var(--nb-purple);
+  --prov-inference: var(--nb-yellow);
+  --prov-hypothesis: var(--nb-pink);
 
   /* Desktop Geometry */
-  --titlebar-height: 44px;
+  --titlebar-height: 48px;
   --statusbar-height: 28px;
-  --panel-radius: 8px;
-  --card-radius: 6px;
-  --dock-height: 220px;
+  --panel-radius: 10px;
+  --card-radius: 10px;
 }
 
 /* ── Reset & Baseline ────────────────────────────────────────── */
@@ -72,7 +95,7 @@ html, body {
   height: 100%;
   background-color: var(--bg-desktop);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'SF Pro Text', 'Segoe UI', Roboto, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
   font-size: 13px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
@@ -92,14 +115,14 @@ html, body {
 /* ── Typography Scale ────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
-  font-weight: 600;
-  letter-spacing: -0.015em;
+  font-weight: 800;
+  letter-spacing: -0.02em;
 }
 
-h1 { font-size: 20px; }
-h2 { font-size: 16px; }
-h3 { font-size: 14px; }
-h4 { font-size: 13px; }
+h1 { font-size: 24px; }
+h2 { font-size: 18px; }
+h3 { font-size: 15px; }
+h4 { font-size: 13.5px; }
 
 p {
   color: var(--text-secondary);
@@ -107,7 +130,7 @@ p {
 
 button {
   font-family: inherit;
-  font-size: 12.5px;
+  font-size: 12px;
   cursor: pointer;
   border: none;
   background: none;
@@ -125,68 +148,102 @@ code, kbd, .font-mono {
   font-family: 'JetBrains Mono', SFMono-Regular, Consolas, monospace;
 }
 
-/* ── Standard Button Tokens ──────────────────────────────────── */
+/* ── NEOBRUTALIST BUTTON TOKENS ──────────────────────────────── */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 5px 12px;
-  border-radius: 5px;
-  font-weight: 500;
-  transition: all 0.15s ease;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: var(--nb-border-sm);
+  box-shadow: var(--nb-shadow-xs);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
   line-height: 1;
+  user-select: none;
+}
+
+.btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--nb-shadow-sm);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px #000000;
 }
 
 .btn-primary {
-  background: var(--accent-red);
-  color: #ffffff;
-  border: 1px solid var(--accent-red-border);
+  background: var(--nb-teal);
+  color: #000000;
 }
 
 .btn-primary:hover {
-  background: var(--accent-red-hover);
+  background: #42b8af;
 }
 
 .btn-secondary {
-  background: var(--bg-surface);
-  color: var(--text-primary);
-  border: 1px solid var(--border-default);
+  background: #ffffff;
+  color: #000000;
 }
 
 .btn-secondary:hover {
-  background: var(--bg-elevated);
-  border-color: var(--border-hover);
+  background: #f4f4f5;
+}
+
+.btn-danger {
+  background: var(--nb-pink);
+  color: #ffffff;
+}
+
+.btn-yellow {
+  background: var(--nb-yellow);
+  color: #000000;
 }
 
 .btn-ghost {
-  color: var(--text-secondary);
+  color: var(--text-primary);
   background: transparent;
+  border: var(--nb-border-sm);
+  box-shadow: none;
 }
 
 .btn-ghost:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--nb-shadow-xs);
 }
 
 .btn-icon {
-  width: 28px;
-  height: 28px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border-radius: 4px;
+  border-radius: 6px;
+  border: var(--nb-border-sm);
+  box-shadow: var(--nb-shadow-xs);
+}
+
+.btn-pill {
+  border-radius: var(--nb-radius-pill);
 }
 
 /* ── Standard Form Fields ────────────────────────────────────── */
 .input-standard {
-  background: var(--bg-input);
-  border: 1px solid var(--border-default);
-  border-radius: 5px;
-  color: var(--text-primary);
-  padding: 6px 10px;
-  transition: border-color 0.15s ease;
+  background: #ffffff;
+  border: var(--nb-border-sm);
+  border-radius: 8px;
+  box-shadow: var(--nb-shadow-xs);
+  color: #000000;
+  padding: 8px 12px;
+  font-weight: 500;
+  transition: all 0.12s ease;
 }
 
 .input-standard:focus {
+  box-shadow: var(--nb-shadow-sm);
   border-color: var(--border-active);
 }
 
@@ -210,82 +267,81 @@ code, kbd, .font-mono {
 }
 
 /* ═══════════════════════════════════════════════════════════════
-   LIGHT MINIMALIST THEME DESIGN SYSTEM (Clean, Responsive, Fast)
+   LIGHT THEME NEOBRUTALISM (Direct Match with Reference Artwork)
+   Warm Cream Paper, Thick Black Lines, Hard Saturated Drop Shadows
    ═══════════════════════════════════════════════════════════════ */
 [data-theme="light"], .theme-light {
-  /* Foundations — Crisp Porcelain, Ice Slate & Pure White */
-  --bg-desktop: #f8fafc;
+  --bg-desktop: #fffdf5;
+  --bg-primary: #fffdf5;
   --bg-window: #ffffff;
-  --bg-sidebar: #f1f5f9;
+  --bg-sidebar: #ffffff;
   --bg-surface: #ffffff;
+  --bg-card: #ffffff;
   --bg-elevated: #ffffff;
-  --bg-hover: #f1f5f9;
-  --bg-active: #e2e8f0;
+  --bg-hover: #fef08a;
+  --bg-active: #fed7aa;
   --bg-input: #ffffff;
   --bg-panel: #ffffff;
-  --bg-panel-header: #f8fafc;
+  --bg-panel-header: #4ecdc4;
 
-  /* Crisp Subtle Borders */
-  --border-subtle: #e2e8f0;
-  --border-default: #cbd5e1;
-  --border-hover: #94a3b8;
-  --border-active: #2563eb;
-  --border-panel: #e2e8f0;
-  --border-panel-hover: #cbd5e1;
+  /* Neobrutalist Solid Black Borders & Hard Shadows */
+  --border-subtle: #000000;
+  --border-default: #000000;
+  --border-hover: #000000;
+  --border-active: #000000;
+  --border-panel: #000000;
+  --border-panel-hover: #000000;
 
-  /* Typography — Deep Charcoal & Neutral Slate */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --nb-border-sm: 2px solid #000000;
+  --nb-border: 2.5px solid #000000;
+  --nb-border-lg: 3px solid #000000;
+  --nb-shadow-xs: 2px 2px 0px #000000;
+  --nb-shadow-sm: 3px 3px 0px #000000;
+  --nb-shadow: 4px 4px 0px #000000;
+  --nb-shadow-lg: 6px 6px 0px #000000;
+
+  /* Typography — Saturated Pure Ink */
+  --text-primary: #000000;
+  --text-secondary: #1e293b;
+  --text-muted: #475569;
   --text-inverse: #ffffff;
 
-  /* Minimal Clean Shadows */
-  --shadow-panel: 0 1px 3px rgba(0, 0, 0, 0.05), 0 1px 2px rgba(0, 0, 0, 0.03);
-  --shadow-panel-hover: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -1px rgba(0, 0, 0, 0.04);
-
-  /* Accents — Refined for High Contrast */
-  --accent-red: #dc2626;
-  --accent-red-hover: #b91c1c;
-  --accent-red-subtle: rgba(220, 38, 38, 0.08);
-  --accent-red-border: rgba(220, 38, 38, 0.25);
-  --accent-blue: #2563eb;
-  --accent-blue-subtle: rgba(37, 99, 235, 0.08);
-  --accent-green: #059669;
-  --accent-green-subtle: rgba(5, 150, 105, 0.08);
-  --accent-amber: #d97706;
-  --accent-amber-subtle: rgba(217, 119, 6, 0.08);
-  --accent-violet: #7c3aed;
-  --accent-violet-subtle: rgba(124, 58, 237, 0.08);
-
-  /* Provenance Hierarchy Colors */
-  --prov-raw: #64748b;
-  --prov-observation: #2563eb;
-  --prov-correlation: #7c3aed;
-  --prov-inference: #d97706;
-  --prov-hypothesis: #dc2626;
+  /* Saturated Color Blocks */
+  --accent-red: var(--nb-pink);
+  --accent-red-hover: #e11d48;
+  --accent-blue: var(--nb-blue);
+  --accent-green: var(--nb-teal);
+  --accent-amber: var(--nb-yellow);
 }
 
-/* ── Light Mode Scrollbars ────────────────────────────────────── */
+/* ── Light Mode Scrollbars (Neobrutalist thick bar) ──────────── */
 [data-theme="light"] ::-webkit-scrollbar-thumb,
 .theme-light ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15) !important;
+  background: #000000;
+  border-radius: 0px;
 }
 
 [data-theme="light"] ::-webkit-scrollbar-thumb:hover,
 .theme-light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(0, 0, 0, 0.28) !important;
+  background: var(--nb-pink);
 }
 
-/* ── Minimalist Suppression of Unnecessary Animations ───────── */
+/* ── Light Mode Panel3D — Keep Hard Neobrutalist Shadow ─────── */
 [data-theme="light"] .panel-3d-wrapper,
 [data-theme="light"] .panel-3d-wrapper.is-bending,
 .theme-light .panel-3d-wrapper,
 .theme-light .panel-3d-wrapper.is-bending {
   transform: none !important;
   perspective: none !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05), 0 0 0 1px #e2e8f0 !important;
-  border-color: #e2e8f0 !important;
-  transition: border-color 0.1s ease, background-color 0.1s ease !important;
+  box-shadow: var(--nb-shadow) !important;
+  border: var(--nb-border) !important;
+  transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+}
+
+[data-theme="light"] .panel-3d-wrapper:hover,
+.theme-light .panel-3d-wrapper:hover {
+  transform: translate(-2px, -2px) !important;
+  box-shadow: var(--nb-shadow-lg) !important;
 }
 
 [data-theme="light"] .panel-glare,
@@ -293,7 +349,7 @@ code, kbd, .font-mono {
   display: none !important;
 }
 
-/* Disable distracting background canvas and pulsing animations */
+/* Hide distracting starfield canvas in light mode */
 [data-theme="light"] canvas.constellation-bg-canvas,
 [data-theme="light"] .constellation-bg-canvas,
 .theme-light canvas.constellation-bg-canvas,
@@ -301,6 +357,7 @@ code, kbd, .font-mono {
   display: none !important;
 }
 
+/* Reduce pulse animations in light mode (keep subtle pulse, remove glow) */
 [data-theme="light"] .pulse-red,
 [data-theme="light"] .pulse-sparkle,
 [data-theme="light"] .pulse-border,
@@ -317,111 +374,122 @@ code, kbd, .font-mono {
 .theme-light .sweep-dot,
 .theme-light .brand-dot-emerald,
 .theme-light .rail-profile-dot {
-  animation: none !important;
   box-shadow: none !important;
 }
 
-/* ── Light Mode Desktop Chrome Overrides (Floating Panels Aesthetic) ── */
+/* ── Light Mode Desktop Chrome — Neobrutalist Overrides ──────── */
 [data-theme="light"] .desktop-window-container,
 .theme-light .desktop-window-container {
-  background-color: #f1f3f6 !important;
-  color: #0f172a !important;
+  background-color: var(--nb-cream) !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .openai-topbar,
 .theme-light .openai-topbar {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 12px !important;
+  background: #ffffff !important;
+  border: var(--nb-border) !important;
+  box-shadow: var(--nb-shadow-sm) !important;
+  border-radius: var(--nb-radius) !important;
   margin: 10px 14px 0 14px !important;
   width: calc(100% - 28px) !important;
 }
 
 [data-theme="light"] .openai-brand-text,
 .theme-light .openai-brand-text {
-  color: #0f172a !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .openai-nav-link,
 .theme-light .openai-nav-link {
-  color: #64748b !important;
+  color: #475569 !important;
+  border: 1.5px solid transparent !important;
+  border-radius: 6px !important;
 }
 
 [data-theme="light"] .openai-nav-link:hover,
 .theme-light .openai-nav-link:hover {
-  color: #0f172a !important;
-  background: #f1f5f9 !important;
+  color: #000000 !important;
+  background: var(--nb-yellow) !important;
+  border-color: #000000 !important;
+  box-shadow: var(--nb-shadow-xs) !important;
 }
 
 [data-theme="light"] .openai-nav-link.active,
 .theme-light .openai-nav-link.active {
-  color: #0f172a !important;
-  background: #e2e8f0 !important;
-  font-weight: 600 !important;
+  color: #000000 !important;
+  background: var(--nb-teal) !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: var(--nb-shadow-xs) !important;
+  font-weight: 700 !important;
 }
 
 [data-theme="light"] .openai-case-pill,
 .theme-light .openai-case-pill {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #334155 !important;
+  background: #ffffff !important;
+  border: 1.5px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 1px 1px 0 #000000 !important;
 }
 
 [data-theme="light"] .openai-case-pill:hover,
 .theme-light .openai-case-pill:hover {
-  background: #e2e8f0 !important;
-  color: #0f172a !important;
+  background: var(--nb-yellow) !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .openai-search-box,
 .theme-light .openai-search-box {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #475569 !important;
+  background: #ffffff !important;
+  border: var(--nb-border-sm) !important;
+  box-shadow: var(--nb-shadow-xs) !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .openai-search-placeholder,
 .theme-light .openai-search-placeholder {
-  color: #64748b !important;
+  color: #71717a !important;
 }
 
 [data-theme="light"] .openai-search-kbd,
 .theme-light .openai-search-kbd {
-  background: #ffffff !important;
-  border: 1px solid #cbd5e1 !important;
-  color: #475569 !important;
+  background: var(--nb-cream) !important;
+  border: 1.5px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 1px 1px 0 #000000 !important;
 }
 
 [data-theme="light"] .openai-sweep-status,
 .theme-light .openai-sweep-status {
-  background: #f1f5f9 !important;
-  border-color: #cbd5e1 !important;
-  color: #475569 !important;
+  background: var(--nb-green) !important;
+  border: 1.5px solid #000000 !important;
+  color: #000000 !important;
+  box-shadow: 1px 1px 0 #000000 !important;
 }
 
 [data-theme="light"] .openai-admin-btn,
 .theme-light .openai-admin-btn {
-  background: rgba(16, 185, 129, 0.12) !important;
-  color: #059669 !important;
-  border-color: rgba(16, 185, 129, 0.28) !important;
+  background: var(--nb-green) !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: var(--nb-shadow-xs) !important;
 }
 
 [data-theme="light"] .openai-admin-btn:hover,
 .theme-light .openai-admin-btn:hover {
-  background: rgba(16, 185, 129, 0.2) !important;
-  color: #047857 !important;
+  background: #2cc5a0 !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: var(--nb-shadow-sm) !important;
 }
 
 [data-theme="light"] .openai-icon-btn,
 .theme-light .openai-icon-btn {
-  color: #64748b !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .openai-icon-btn:hover,
 .theme-light .openai-icon-btn:hover {
-  color: #0f172a !important;
-  background: #f1f5f9 !important;
+  color: #000000 !important;
+  background: var(--nb-yellow) !important;
 }
 
 [data-theme="light"] .desktop-main-split,
@@ -433,98 +501,102 @@ code, kbd, .font-mono {
 
 [data-theme="light"] .left-icon-rail-dock,
 .theme-light .left-icon-rail-dock {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 12px !important;
+  background: #ffffff !important;
+  border: var(--nb-border) !important;
+  box-shadow: var(--nb-shadow-sm) !important;
+  border-radius: var(--nb-radius) !important;
 }
 
 [data-theme="light"] .rail-btn,
 .theme-light .rail-btn {
-  color: #64748b !important;
+  color: #475569 !important;
 }
 
 [data-theme="light"] .rail-btn:hover,
 .theme-light .rail-btn:hover {
-  background: #f1f5f9 !important;
-  color: #0f172a !important;
+  background: var(--nb-yellow) !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .rail-btn.active,
 .theme-light .rail-btn.active {
-  background: #ecfdf5 !important;
-  color: #059669 !important;
-  border-color: #a7f3d0 !important;
+  background: var(--nb-teal) !important;
+  color: #000000 !important;
+  border: 1.5px solid #000000 !important;
+  box-shadow: var(--nb-shadow-xs) !important;
 }
 
 [data-theme="light"] .desktop-workspace-canvas,
 .theme-light .desktop-workspace-canvas {
   background: #ffffff !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04) !important;
-  border-radius: 12px !important;
+  border: var(--nb-border) !important;
+  box-shadow: var(--nb-shadow) !important;
+  border-radius: var(--nb-radius) !important;
 }
 
 [data-theme="light"] .desktop-statusbar,
 .theme-light .desktop-statusbar {
-  background: rgba(255, 255, 255, 0.96) !important;
-  border: 1px solid rgba(0, 0, 0, 0.08) !important;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03) !important;
-  border-radius: 10px !important;
+  background: #ffffff !important;
+  border: var(--nb-border-sm) !important;
+  box-shadow: var(--nb-shadow-xs) !important;
+  border-radius: 8px !important;
   margin: 0 14px 10px 14px !important;
   width: calc(100% - 28px) !important;
-  color: #64748b !important;
+  color: #000000 !important;
 }
 
-/* ── Light Mode Glass Card & Modals ────────────────────────────── */
+/* ── Light Mode Cards & Modals — Neobrutalist ─────────────────── */
 [data-theme="light"] .glass-card,
 .theme-light .glass-card {
   background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+  border: var(--nb-border) !important;
+  box-shadow: var(--nb-shadow) !important;
 }
 
 [data-theme="light"] .modal-panel,
 .theme-light .modal-panel {
   background: #ffffff !important;
-  color: #0f172a !important;
-  border: 1px solid #cbd5e1 !important;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04) !important;
+  color: #000000 !important;
+  border: var(--nb-border-lg) !important;
+  box-shadow: var(--nb-shadow-xl) !important;
 }
 
 [data-theme="light"] .modal-header,
 .theme-light .modal-header {
-  border-bottom: 1px solid #e2e8f0 !important;
+  border-bottom: var(--nb-border) !important;
 }
 
 [data-theme="light"] .modal-footer,
 .theme-light .modal-footer {
-  border-top: 1px solid #e2e8f0 !important;
+  border-top: var(--nb-border) !important;
 }
 
-/* ── Light Mode Input & Buttons ────────────────────────────────── */
+/* ── Light Mode Input & Buttons — Neobrutalist ────────────────── */
 [data-theme="light"] .input-standard,
 .theme-light .input-standard {
   background: #ffffff !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+  border: var(--nb-border-sm) !important;
+  box-shadow: var(--nb-shadow-xs) !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .input-standard:focus,
 .theme-light .input-standard:focus {
-  border-color: #2563eb !important;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15) !important;
+  border-color: var(--nb-teal) !important;
+  box-shadow: var(--nb-shadow-sm) !important;
 }
 
 [data-theme="light"] .btn-secondary,
 .theme-light .btn-secondary {
-  background: #f8fafc !important;
-  border-color: #cbd5e1 !important;
-  color: #0f172a !important;
+  background: #ffffff !important;
+  border: var(--nb-border-sm) !important;
+  box-shadow: var(--nb-shadow-xs) !important;
+  color: #000000 !important;
 }
 
 [data-theme="light"] .btn-secondary:hover,
 .theme-light .btn-secondary:hover {
-  background: #f1f5f9 !important;
-  border-color: #94a3b8 !important;
+  background: var(--nb-yellow) !important;
+  transform: translate(-1px, -1px) !important;
+  box-shadow: var(--nb-shadow-sm) !important;
 }

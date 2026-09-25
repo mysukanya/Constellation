@@ -80,20 +80,21 @@
 }
 
 .signal-intel-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-left: 3px solid var(--accent-red);
-  border-radius: var(--card-radius);
-  padding: 14px 16px;
+  background: var(--bg-card);
+  border: var(--nb-border);
+  border-left: 6px solid var(--nb-pink);
+  border-radius: var(--nb-radius-sm);
+  box-shadow: var(--nb-shadow);
+  padding: 16px 18px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  transition: all 0.15s ease;
+  gap: 8px;
+  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
 }
 
 .signal-intel-card:hover {
-  background: var(--bg-elevated);
-  border-color: var(--border-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
 }
 
 .sig-header-row {
@@ -109,36 +110,40 @@
 }
 
 .unverified-badge {
-  font-size: 9px;
+  font-size: 9.5px;
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  color: #ff6b72;
-  background: var(--accent-red-subtle);
-  border: 1px solid var(--accent-red-border);
-  padding: 2px 6px;
-  border-radius: 3px;
+  font-weight: 800;
+  color: #ffffff;
+  background: var(--nb-pink);
+  border: 1px solid var(--nb-black);
+  padding: 2px 7px;
+  border-radius: 4px;
 }
 
 .sig-source {
   font-size: 10px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .sig-timestamp {
   font-size: 10.5px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .sig-headline {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 800;
   color: var(--text-primary);
+  margin: 0;
 }
 
 .sig-summary-text {
   font-size: 12px;
   line-height: 1.45;
   color: var(--text-secondary);
+  margin: 0;
 }
 
 .sig-footer-row {
@@ -146,38 +151,46 @@
   align-items: center;
   justify-content: space-between;
   margin-top: 6px;
-  padding-top: 8px;
-  border-top: 1px solid var(--border-subtle);
+  padding-top: 10px;
+  border-top: 1px solid var(--border-default);
 }
 
 .sig-related-case {
   font-size: 11px;
-  font-weight: 500;
+  font-weight: 700;
+  color: var(--text-muted);
 }
 
 .sig-actions-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
 }
 
 /* ── Watchlists Grid ─────────────────────────────────────────── */
 .watchlists-grid-view {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 12px;
+  gap: 16px;
   max-width: 960px;
   margin: 0 auto;
 }
 
 .watchlist-item-card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-default);
-  border-radius: var(--card-radius);
-  padding: 14px;
+  background: var(--bg-card);
+  border: var(--nb-border);
+  border-radius: var(--nb-radius-sm);
+  box-shadow: var(--nb-shadow);
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  transition: all 0.15s cubic-bezier(0.2, 0, 0, 1);
+}
+
+.watchlist-item-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--nb-shadow-lg);
 }
 
 .w-card-top {
@@ -187,37 +200,41 @@
 }
 
 .w-type {
-  font-size: 9.5px;
+  font-size: 10px;
+  font-weight: 700;
   color: var(--text-muted);
 }
 
 .w-threat-pill {
   font-size: 9px;
   font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 3px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  border: 1px solid var(--nb-black);
 }
 
-.threat-critical { background: var(--accent-red-subtle); color: var(--accent-red); }
-.threat-high { background: var(--accent-amber-subtle); color: var(--accent-amber); }
-.threat-medium { background: var(--accent-blue-subtle); color: var(--accent-blue); }
-.threat-low { background: var(--accent-green-subtle); color: var(--accent-green); }
+.threat-critical { background: var(--nb-pink); color: #ffffff; }
+.threat-high { background: var(--nb-yellow); color: #000000; }
+.threat-medium { background: var(--nb-blue); color: #000000; }
+.threat-low { background: #06d6a0; color: #000000; }
 
 .w-target-name {
-  font-size: 13.5px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 800;
   color: var(--text-primary);
+  margin: 0;
 }
 
 .w-card-footer {
   display: flex;
   justify-content: space-between;
   font-size: 10.5px;
+  font-weight: 700;
   color: var(--text-muted);
   margin-top: 6px;
-  padding-top: 6px;
-  border-top: 1px solid var(--border-subtle);
+  padding-top: 8px;
+  border-top: 1px solid var(--border-default);
 }
 
 .live-intel-toolbar-panel3d {

@@ -451,6 +451,8 @@ export default function InvestigationCanvas() {
       case 'vehicle': return <Car size={12} className="type-icon" />;
       case 'financial': return <DollarSign size={12} className="type-icon" />;
       case 'location': return <MapPin size={12} className="type-icon" />;
+      case 'note': return <FileText size={12} className="type-icon" />;
+      case 'transcript': return <FileText size={12} className="type-icon" />;
       default: return <ShieldAlert size={12} className="type-icon" />;
     }
   };
@@ -782,6 +784,7 @@ export default function InvestigationCanvas() {
           const isRopingTarget = ropingSource && ropingSource !== node.id;
           const isRopingSelf = ropingSource === node.id;
           const isFlashed = flashNodeId === node.id;
+          const isNoteOrTranscript = node.type === 'Note' || node.type === 'Transcript' || node.isNote;
 
           const renderX = Number.isFinite(node.x) ? node.x : 80;
           const renderY = Number.isFinite(node.y) ? node.y : 80;
@@ -789,9 +792,10 @@ export default function InvestigationCanvas() {
           return (
             <div
               key={node.id}
-              className={`canvas-entity-card ${isSelected ? 'selected' : ''} ${isRopingSelf ? 'roping-source-node' : ''} ${isRopingTarget ? 'roping-target-candidate' : ''} ${isFlashed ? 'flash-highlight' : ''}`}
+              className={`canvas-entity-card ${isSelected ? 'selected' : ''} ${isRopingSelf ? 'roping-source-node' : ''} ${isRopingTarget ? 'roping-target-candidate' : ''} ${isFlashed ? 'flash-highlight' : ''} ${node.type === 'Note' ? 'card-type-note' : ''} ${node.type === 'Transcript' ? 'card-type-transcript' : ''}`}
               style={{
-                transform: `translate3d(${renderX}px, ${renderY}px, 0)`
+                left: `${renderX}px`,
+                top: `${renderY}px`
               }}
               onMouseDown={(e) => handleNodeMouseDown(e, node)}
               onClick={() => {
@@ -840,15 +844,29 @@ export default function InvestigationCanvas() {
                 </div>
               </div>
 
-              {/* Entity Title */}
-              <div className="card-node-title">
-                {node.name}
-              </div>
+              {/* Note / Transcript or Entity Body */}
+              {isNoteOrTranscript ? (
+                <div className="card-note-body">
+                  <div className="card-node-title font-mono" style={{ fontSize: '12px', fontWeight: 800 }}>
+                    {node.name}
+                  </div>
+                  <div className="card-note-text font-mono" style={{ fontSize: '11px', color: '#1e293b', marginTop: '4px', lineHeight: 1.45, maxHeight: '80px', overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+                    {node.text || node.notes || node.details || node.role}
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Entity Title */}
+                  <div className="card-node-title">
+                    {node.name}
+                  </div>
 
-              {/* Role / Subtitle */}
-              <div className="card-node-role">
-                {node.role}
-              </div>
+                  {/* Role / Subtitle */}
+                  <div className="card-node-role">
+                    {node.role}
+                  </div>
+                </>
+              )}
 
               {/* Threat & Link Indicators */}
               <div className="card-node-footer">
@@ -862,104 +880,79 @@ export default function InvestigationCanvas() {
             </div>
           );
         })}
-        {/* ── Dialog 1: Define New Forensic Relationship Modal ── */}
+        {/* ── Dialog 1: Define Forensic Connection (Minimal & Direct) ── */}
         {pendingLink && (
           <div className="canvas-modal-overlay" onClick={() => setPendingLink(null)}>
-            <div className="canvas-modal-dialog" onClick={e => e.stopPropagation()}>
-              <div className="canvas-modal-header">
-                <div className="modal-title-row">
-                  <Link2 size={15} className="modal-title-icon" />
-                  <span className="modal-title-text font-mono">DEFINE FORENSIC RELATIONSHIP</span>
+            <div className="canvas-minimal-relation-dialog" onClick={e => e.stopPropagation()}>
+              <div className="minimal-rel-header font-mono">
+                <div className="flex items-center gap-xs">
+                  <Link2 size={15} />
+                  <span className="minimal-rel-title">LABEL CONNECTION</span>
                 </div>
                 <button className="canvas-modal-close" onClick={() => setPendingLink(null)}>
                   <X size={14} />
                 </button>
               </div>
 
-              <div className="modal-entity-preview">
-                <div className="entity-preview-box">
-                  <span className="preview-label font-mono">SOURCE</span>
-                  <span className="preview-name">{pendingLink.sourceName}</span>
-                </div>
-                <span className="preview-arrow font-mono">➔</span>
-                <div className="entity-preview-box">
-                  <span className="preview-label font-mono">TARGET</span>
-                  <span className="preview-name">{pendingLink.targetName}</span>
-                </div>
+              <div className="minimal-rel-entities font-mono">
+                <span className="rel-entity-badge">{pendingLink.sourceName}</span>
+                <span className="rel-arrow">➔</span>
+                <span className="rel-entity-badge">{pendingLink.targetName}</span>
               </div>
 
-              <form onSubmit={handleConfirmPendingLink} className="canvas-modal-form">
-                <div className="modal-form-section">
-                  <label className="modal-field-label font-mono">RELATIONSHIP TYPE / CLASSIFICATION</label>
-                  <div className="rel-type-chips">
-                    {[
-                      'COORDINATES_WITH',
-                      'FINANCES',
-                      'OWNS_VESSEL',
-                      'CONTROLS',
-                      'SMURF_WIRE_TO',
-                      'COMMUNICATES_WITH',
-                      'TRANSFERS_FUNDS_TO',
-                      'SUPPLIES_CONTRABAND',
-                      'CUSTOM'
-                    ].map(type => (
-                      <button
-                        key={type}
-                        type="button"
-                        className={`rel-chip ${pendingLink.relType === type ? 'active' : ''}`}
-                        onClick={() => setPendingLink(prev => ({ ...prev, relType: type }))}
-                      >
-                        {type}
-                      </button>
-                    ))}
-                  </div>
-
-                  {pendingLink.relType === 'CUSTOM' && (
-                    <input
-                      type="text"
-                      className="modal-custom-rel-input"
-                      placeholder="Type custom relationship (e.g. SATELLITE_UPLINK_TO)..."
-                      value={pendingLink.customType}
-                      onChange={e => setPendingLink(prev => ({ ...prev, customType: e.target.value.toUpperCase().replace(/\s+/g, '_') }))}
-                      autoFocus
-                      required
-                    />
-                  )}
-                </div>
-
-                <div className="modal-form-section">
-                  <div className="slider-label-row font-mono">
-                    <span>EVIDENTIARY CONFIDENCE:</span>
-                    <span className="confidence-number">{Math.round(pendingLink.confidence * 100)}%</span>
-                  </div>
-                  <input
-                    type="range"
-                    min="0.5"
-                    max="1.0"
-                    step="0.01"
-                    value={pendingLink.confidence}
-                    onChange={e => setPendingLink(prev => ({ ...prev, confidence: parseFloat(e.target.value) }))}
-                    className="modal-range-slider"
-                  />
-                </div>
-
-                <div className="modal-form-section">
-                  <label className="modal-field-label font-mono">INVESTIGATIVE NOTES / EVIDENCE CORROBORATION (OPTIONAL)</label>
+              <form onSubmit={handleConfirmPendingLink} className="minimal-rel-form font-mono">
+                <div className="minimal-input-wrap">
+                  <label className="minimal-rel-label">CONNECTION LABEL / RELATIONSHIP:</label>
                   <input
                     type="text"
-                    className="modal-notes-input"
-                    placeholder="e.g. Inferred from Hawala mirror ledger entry #88219"
-                    value={pendingLink.notes}
-                    onChange={e => setPendingLink(prev => ({ ...prev, notes: e.target.value }))}
+                    className="minimal-rel-input font-mono"
+                    placeholder="e.g. Hawala Mirror / Met at Port / Owns Vessel / Financed Cargo..."
+                    value={pendingLink.customType || (pendingLink.relType !== 'COORDINATES_WITH' ? pendingLink.relType : '')}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setPendingLink(prev => ({
+                        ...prev,
+                        customType: val,
+                        relType: val ? 'CUSTOM' : 'COORDINATES_WITH'
+                      }));
+                    }}
+                    autoFocus
                   />
                 </div>
 
-                <div className="modal-actions-bar">
-                  <button type="button" className="btn-cancel" onClick={() => setPendingLink(null)}>
+                <div className="minimal-quick-tags font-mono">
+                  <span style={{ fontSize: '10px', color: '#64748b' }}>Quick picks:</span>
+                  {[
+                    'Coordinates With',
+                    'Financed By',
+                    'Beneficial Owner',
+                    'Wire Transfer',
+                    'Vessel Carrier',
+                    'Met At Location',
+                    'Supplied Precursors'
+                  ].map(quick => (
+                    <button
+                      key={quick}
+                      type="button"
+                      className="minimal-quick-tag-btn font-mono"
+                      onClick={() => setPendingLink(prev => ({
+                        ...prev,
+                        customType: quick,
+                        relType: 'CUSTOM'
+                      }))}
+                    >
+                      {quick}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="minimal-rel-actions">
+                  <button type="button" className="btn-cancel font-mono" onClick={() => setPendingLink(null)}>
                     Cancel
                   </button>
-                  <button type="submit" className="btn-confirm-link">
-                    <Check size={13} /> Establish Relationship
+                  <button type="submit" className="btn-confirm-link font-mono">
+                    <Check size={14} />
+                    <span>Save Connection</span>
                   </button>
                 </div>
               </form>
