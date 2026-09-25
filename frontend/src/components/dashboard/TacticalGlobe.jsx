@@ -339,17 +339,16 @@ export default function TacticalGlobe({ onSelectHub }) {
   };
 
   return (
-    <div className="tactical-globe-wrapper" ref={containerRef}>
-      {/* Globe Top HUD */}
+    <div className="tactical-globe-wrapper compact-aesthetic-globe" ref={containerRef}>
+      {/* Globe Top Mini HUD */}
       <div className="globe-hud-top">
         <div className="hud-label-cluster">
           <div className="hud-radar-beacon">
             <span className="beacon-ping" />
-            <Radio size={12} className="beacon-icon" />
+            <Radio size={11} className="beacon-icon" />
           </div>
           <div>
-            <span className="hud-title font-mono">GLOBAL TACTICAL RADAR</span>
-            <span className="hud-sub font-mono">3D Maritime &amp; Hawala Intercept Grid</span>
+            <span className="hud-title font-mono">GLOBAL CORRIDORS // 3D</span>
           </div>
         </div>
 
@@ -359,17 +358,7 @@ export default function TacticalGlobe({ onSelectHub }) {
             onClick={() => setIsRotating(prev => !prev)}
             title={isRotating ? 'Pause rotation' : 'Resume rotation'}
           >
-            {isRotating ? <Pause size={11} /> : <Play size={11} />}
-            <span>{isRotating ? 'ORBITING' : 'PAUSED'}</span>
-          </button>
-
-          <button
-            className="globe-ctrl-btn"
-            onClick={() => setSpeed(s => (s === 1 ? 2 : 1))}
-            title="Toggle rotation speed"
-          >
-            <RotateCw size={11} />
-            <span>{speed}x</span>
+            {isRotating ? <Pause size={10} /> : <Play size={10} />}
           </button>
         </div>
       </div>
@@ -385,48 +374,17 @@ export default function TacticalGlobe({ onSelectHub }) {
       >
         <canvas
           ref={canvasRef}
-          width={580}
-          height={380}
+          width={360}
+          height={200}
           className="tactical-globe-canvas"
         />
 
-        {/* Tactical Coordinates Overlay */}
+        {/* Minimal Coordinates Overlay */}
         <div className="globe-coords-overlay font-mono">
-          <span>LAT: {(rotationRef.current.lat * 57.3).toFixed(1)}°</span>
-          <span>LON: {(((rotationRef.current.lon * 57.3) % 360 + 360) % 360).toFixed(1)}°</span>
-          <span className="drag-hint">⇄ DRAG TO ROTATE 3D</span>
+          <span>{hoveredHub ? hoveredHub.name : (activeHub ? activeHub.name : 'ARABIAN SEA')}</span>
+          <span className="drag-hint">DRAG TO ROTATE</span>
         </div>
       </div>
-
-      {/* Hub Detail Station Footer */}
-      {activeHub && (
-        <div className="globe-hub-telemetry">
-          <div className="hub-telemetry-left">
-            <div className={`telemetry-threat-badge threat-${activeHub.threat.toLowerCase()} font-mono`}>
-              {activeHub.threat} THREAT
-            </div>
-            <div className="hub-telemetry-identity">
-              <span className="hub-telemetry-name">{activeHub.name}</span>
-              <span className="hub-telemetry-sector font-mono">{activeHub.sector}</span>
-            </div>
-          </div>
-
-          <div className="hub-telemetry-center font-mono">
-            <span className="telemetry-coord"><MapPin size={10} /> {activeHub.lat.toFixed(2)}°N, {activeHub.lon.toFixed(2)}°E</span>
-            <span className="telemetry-status">{activeHub.status}</span>
-          </div>
-
-          <div className="hub-telemetry-right">
-            <button
-              className="hub-launch-link font-mono"
-              onClick={() => onSelectHub && onSelectHub(activeHub)}
-            >
-              <span>FILTER ACTIVE CASE</span>
-              <Navigation size={10} />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

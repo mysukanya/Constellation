@@ -334,9 +334,6 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* ── 3D ROTATING TACTICAL GLOBE: GLOBAL MARITIME & HAWALA CORRIDORS ── */}
-      <TacticalGlobe onSelectHub={(hub) => handleLaunchCase(hub.caseId)} />
-
       {/* ── MAIN TWO-COLUMN CONTENT AREA ──────────────────────── */}
       <div className="minimal-dash-grid">
         
@@ -448,6 +445,8 @@ export default function DashboardPage() {
 
         {/* RIGHT COLUMN: LIVE FORENSIC SIGNALS ──────────────── */}
         <div className="dash-col-secondary">
+          {/* Aesthetic 3D Rotating Tactical Globe Widget */}
+          <TacticalGlobe onSelectHub={(hub) => handleLaunchCase(hub.caseId)} />
           
           <section className="dash-card-section signals-feed-section">
             <div className="section-header-row">

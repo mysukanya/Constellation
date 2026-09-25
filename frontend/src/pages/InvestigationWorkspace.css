@@ -13,17 +13,18 @@
   position: relative;
 }
 
-/* ── Top Workspace Command Bar ──────────────────────────────────────────────── */
+/* ── Top Workspace Command Bar (Minimal Matte-Black) ────────────────────────── */
 .workspace-top-bar {
-  height: 44px;
-  background-color: #0b0b0b;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  height: 38px;
+  background-color: #070707;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 12px;
   flex-shrink: 0;
   z-index: 50;
+  white-space: nowrap;
 }
 
 .topbar-left-cluster,
@@ -32,15 +33,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.topbar-center-cluster {
-  gap: 10px;
+  white-space: nowrap;
 }
 
 .topbar-breadcrumb-slash {
   color: rgba(255, 255, 255, 0.2);
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 300;
   user-select: none;
 }
@@ -48,14 +46,14 @@
 .topbar-back-btn {
   display: flex;
   align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
+  gap: 4px;
+  padding: 3px 7px;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   color: #a1a1aa;
   border-radius: 4px;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -68,81 +66,40 @@
 
 .topbar-divider {
   width: 1px;
-  height: 16px;
+  height: 14px;
   background: rgba(255, 255, 255, 0.08);
   margin: 0 2px;
 }
 
-.case-title-cluster {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
 .case-name-text {
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 600;
   color: #ffffff;
   letter-spacing: -0.01em;
-  max-width: 200px;
+  max-width: 220px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.case-badge-pill {
-  font-size: 9.5px;
-  color: #a1a1aa;
-  background: #111111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-.case-priority-badge {
-  font-size: 9px;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-.case-priority-badge.priority-critical {
-  background: rgba(229, 9, 20, 0.15);
-  color: #ff6b72;
-  border: 1px solid rgba(229, 9, 20, 0.35);
-}
-
-.case-priority-badge.priority-high {
-  background: rgba(245, 158, 11, 0.15);
-  color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.35);
-}
-
-.case-priority-badge.priority-medium,
-.case-priority-badge.priority-active {
-  background: rgba(34, 197, 94, 0.15);
-  color: #4ade80;
-  border: 1px solid rgba(34, 197, 94, 0.35);
 }
 
 /* ── Center Filter Pills ── */
 .canvas-filter-pills {
   display: flex;
   align-items: center;
-  gap: 3px;
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 2px;
+  background: #030303;
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 4px;
-  padding: 2px 3px;
+  padding: 1px 2px;
 }
 
 .filter-pill {
   padding: 2px 7px;
   border-radius: 3px;
-  font-size: 9.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  color: #888888;
+  font-size: 10px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: #71717a;
   background: transparent;
   border: 1px solid transparent;
   cursor: pointer;
@@ -157,157 +114,85 @@
 .filter-pill.active {
   background: #ffffff;
   color: #000000;
-  font-weight: 700;
+  font-weight: 600;
   border-color: #ffffff;
 }
 
-/* ── Topbar Spawn Controls ── */
-.topbar-spawn-group {
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-  padding: 2px 3px;
-}
-
-.topbar-spawn-btn {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  padding: 2px 6px;
-  background: transparent;
-  border: none;
-  font-size: 9.5px;
-  font-weight: 600;
-  color: #a1a1aa;
-  cursor: pointer;
-  border-radius: 3px;
-  transition: all 0.12s ease;
-}
-
-.topbar-spawn-btn:hover {
-  background: #ffffff;
-  color: #000000;
-}
-
-.topbar-connect-btn {
+/* ── Action Buttons ── */
+.topbar-action-btn {
   display: flex;
   align-items: center;
   gap: 4px;
   padding: 3px 8px;
-  background: #0e0e0e;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: #ededed;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #d4d4d8;
   border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 10.5px;
+  font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.topbar-connect-btn:hover {
+.topbar-action-btn:hover {
   background: #181818;
-  border-color: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.22);
   color: #ffffff;
 }
 
-.topbar-connect-btn.active {
+.topbar-action-btn.active {
   background: #ffffff;
   color: #000000;
   border-color: #ffffff;
-  font-weight: 700;
+  font-weight: 600;
 }
 
 /* ── Board Metrics ── */
-.topbar-board-metrics {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.metric-pill {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-
-.metric-pill.nodes-count {
-  background: rgba(56, 189, 248, 0.12);
-  color: #7dd3fc;
-  border: 1px solid rgba(56, 189, 248, 0.25);
-}
-
-.metric-pill.ropes-count {
-  background: rgba(34, 197, 94, 0.12);
-  color: #86efac;
-  border: 1px solid rgba(34, 197, 94, 0.25);
-}
-
-/* Toggle Buttons */
-.topbar-toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 8px;
-  background: #0e0e0e;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  color: #a1a1aa;
-  border-radius: 4px;
+.topbar-counts {
   font-size: 10.5px;
-  font-weight: 600;
+  color: #71717a;
+  letter-spacing: 0.02em;
+}
+
+/* ── Right Dock Icons ── */
+.topbar-icon-dock {
+  width: 26px;
+  height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  color: #8e8e93;
   cursor: pointer;
   transition: all 0.15s ease;
 }
 
-.topbar-toggle-btn:hover {
-  background: #181818;
+.topbar-icon-dock:hover {
+  background: rgba(255, 255, 255, 0.07);
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
-.topbar-toggle-btn.active {
-  background: #ffffff;
-  color: #000000;
-  border-color: #ffffff;
-  font-weight: 700;
+.topbar-icon-dock.active {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-.topbar-toggle-btn.btn-byomkesh {
-  border-color: rgba(34, 197, 94, 0.3);
-  color: #4ade80;
-}
-
-.topbar-toggle-btn.btn-byomkesh:hover {
+.topbar-icon-dock.btn-dock-byomkesh.active {
   background: rgba(34, 197, 94, 0.15);
-  color: #86efac;
-  border-color: rgba(34, 197, 94, 0.5);
+  color: #4ade80;
+  border-color: rgba(34, 197, 94, 0.35);
 }
 
-.topbar-toggle-btn.btn-byomkesh.active {
-  background: #22c55e;
-  color: #000000;
-  border-color: #22c55e;
-}
-
-/* Backend Status Pill */
-.backend-status-pill {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 7px;
-  background: #050505;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
-}
-
+/* Pulse Dot */
 .backend-pulse-dot {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  margin-left: 2px;
 }
 
 .backend-pulse-dot.live {
@@ -317,13 +202,6 @@
 
 .backend-pulse-dot.offline {
   background: #ef4444;
-}
-
-.backend-status-text {
-  font-size: 8.5px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: #a1a1aa;
 }
 
 /* ── Main Workspace Body Stage ──────────────────────────────────────────────── */

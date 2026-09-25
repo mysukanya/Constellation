@@ -54,16 +54,11 @@ export default function InvestigationWorkspace() {
     return <WorkspaceOverviewHub />;
   }
 
-  const caseIdDisplay = activeCase.id.toUpperCase();
-  const caseTitleDisplay = activeCase.name.includes('—') 
-    ? activeCase.name.split('—')[1].trim() 
-    : activeCase.name;
-
   return (
     <div className="investigation-workspace-root">
-      {/* ── UNIFIED HIGH-END MATTE-BLACK COMMAND BAR ───────────────── */}
+      {/* ── MINIMAL MATTE-BLACK WORKSPACE COMMAND BAR ───────────────── */}
       <header className="workspace-top-bar">
-        {/* Left: Hub Navigation & Synchronized Case Breadcrumb */}
+        {/* Left: Hub Navigation & Active Case Title */}
         <div className="topbar-left-cluster">
           <button
             className="topbar-back-btn"
@@ -71,115 +66,92 @@ export default function InvestigationWorkspace() {
             title="Return to Workspaces Overview"
           >
             <ArrowLeft size={13} />
-            <span>Workspaces</span>
+            <span>Hub</span>
           </button>
 
           <span className="topbar-breadcrumb-slash">/</span>
 
-          <div className="case-title-cluster">
-            <span className="case-name-text" title={activeWorkspace?.name || activeCase.name}>
-              {activeWorkspace?.name || 'Active Investigation'}
-            </span>
-            <span className="case-badge-pill font-mono" title={`Linked to ${activeCase.name}`}>
-              {caseIdDisplay}: {caseTitleDisplay}
-            </span>
-            <span className={`case-priority-badge font-mono priority-${(activeCase.priority || 'ACTIVE').toLowerCase()}`}>
-              {activeCase.priority || 'ACTIVE'}
-            </span>
-          </div>
+          <span className="case-name-text" title={activeWorkspace?.name || activeCase.name}>
+            {activeWorkspace?.name || activeCase.name}
+          </span>
         </div>
 
-        {/* Center: Canvas Filter Chips & Node Operations */}
+        {/* Center: Minimal Filter Segment & Node Tools */}
         <div className="topbar-center-cluster">
-          {/* Filter Pills */}
           <div className="canvas-filter-pills">
-            {['ALL', 'PERSON', 'ORGANIZATION', 'VEHICLE', 'FINANCIAL'].map(type => (
+            {[
+              { id: 'ALL', label: 'All' },
+              { id: 'PERSON', label: 'People' },
+              { id: 'ORGANIZATION', label: 'Orgs' },
+              { id: 'FINANCIAL', label: 'Financial' }
+            ].map(f => (
               <button
-                key={type}
-                className={`filter-pill ${canvasFilterType === type ? 'active' : ''}`}
-                onClick={() => setCanvasFilterType(type)}
+                key={f.id}
+                className={`filter-pill ${canvasFilterType === f.id ? 'active' : ''}`}
+                onClick={() => setCanvasFilterType(f.id)}
               >
-                {type}
+                {f.label}
               </button>
             ))}
           </div>
 
           <div className="topbar-divider" />
 
-          {/* Quick Spawn Buttons */}
-          <div className="topbar-spawn-group">
-            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Person')} title="Add Person entity to canvas">
-              <Plus size={11} /> Person
-            </button>
-            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Organization')} title="Add Organization entity">
-              <Plus size={11} /> Org
-            </button>
-            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Vehicle')} title="Add Vessel/Vehicle entity">
-              <Plus size={11} /> Vessel
-            </button>
-            <button className="topbar-spawn-btn" onClick={() => quickSpawnNode('Financial')} title="Add Hawala entity">
-              <Plus size={11} /> Hawala
-            </button>
-          </div>
+          <button
+            className="topbar-action-btn"
+            onClick={() => quickSpawnNode('Person')}
+            title="Add Person or Node to Canvas"
+          >
+            <Plus size={12} />
+            <span>Entity</span>
+          </button>
 
           <button
-            className={`topbar-connect-btn ${showConnectBar ? 'active' : ''}`}
+            className={`topbar-action-btn ${showConnectBar ? 'active' : ''}`}
             onClick={() => setShowConnectBar(prev => !prev)}
             title="Toggle Connection Rope Builder"
           >
             <Link2 size={12} />
-            <span>Connect</span>
+            <span>Link</span>
           </button>
         </div>
 
-        {/* Right: Board Metrics, Side Docks & Live Indicator */}
+        {/* Right: Board Counts, Side Dock Toggles & Health Dot */}
         <div className="topbar-right-cluster">
-          {/* Counters */}
-          <div className="topbar-board-metrics font-mono">
-            <span className="metric-pill nodes-count">{canvasNodes.length} NODES</span>
-            <span className="metric-pill ropes-count">{canvasEdges.length} ROPES</span>
-          </div>
+          <span className="topbar-counts font-mono">
+            {canvasNodes.length} nodes · {canvasEdges.length} links
+          </span>
 
           <div className="topbar-divider" />
 
-          {/* Side Drawer Toggles */}
           <button
-            className={`topbar-toggle-btn ${dataUploaderOpen ? 'active' : ''}`}
+            className={`topbar-icon-dock ${dataUploaderOpen ? 'active' : ''}`}
             onClick={() => setDataUploaderOpen(prev => !prev)}
-            title="Toggle Case File & Entity Data Drawer"
+            title="Case Files & Entity Data Drawer"
           >
-            <Sidebar size={13} />
-            <span>Case Files</span>
+            <Sidebar size={14} />
           </button>
 
           <button
-            className={`topbar-toggle-btn ${crossCaseOpen ? 'active' : ''}`}
+            className={`topbar-icon-dock ${crossCaseOpen ? 'active' : ''}`}
             onClick={() => setCrossCaseOpen(prev => !prev)}
-            title="Toggle Cross-Case Nexus Importer"
+            title="Cross-Case Nexus Importer"
           >
-            <Database size={13} />
-            <span>Cross-Case</span>
+            <Database size={14} />
           </button>
 
           <button
-            className={`topbar-toggle-btn btn-byomkesh ${byomkeshOpen ? 'active' : ''}`}
+            className={`topbar-icon-dock btn-dock-byomkesh ${byomkeshOpen ? 'active' : ''}`}
             onClick={() => setByomkeshOpen(prev => !prev)}
-            title="Toggle Byomkesh AI Co-Pilot"
+            title="Byomkesh AI Forensic Co-Pilot"
           >
-            <Brain size={13} />
-            <span>Byomkesh AI</span>
-            <span className="byomkesh-pulse-sparkle">✦</span>
+            <Brain size={14} />
           </button>
 
-          <div className="topbar-divider" />
-
-          {/* Backend Connection Indicator */}
-          <div className="backend-status-pill">
-            <span className={`backend-pulse-dot ${backendStatus === 'live' ? 'live' : 'offline'}`} />
-            <span className="backend-status-text font-mono">
-              {backendStatus === 'live' ? 'LIVE' : 'OFFLINE'}
-            </span>
-          </div>
+          <span
+            className={`backend-pulse-dot ${backendStatus === 'live' ? 'live' : 'offline'}`}
+            title={`Backend: ${backendStatus.toUpperCase()}`}
+          />
         </div>
       </header>
 

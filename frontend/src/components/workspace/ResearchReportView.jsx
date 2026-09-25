@@ -131,12 +131,12 @@ export default function ResearchReportView() {
           {/* Signoff Block */}
           <div className="dossier-signoff-block">
             <div className="signoff-seal font-mono">
-              <span>DIGITAL EVIDENCE SEAL: 0x8f3b2a91c4d7e6f5...VERIFIED</span>
-              <span>PROVENANCE MERKLE ROOT: 0x1a2b3c4d5e6f7a8b...LOCKED</span>
+              <span>EVIDENCE VERIFICATION: SHA-256 SECURED</span>
+              <span>LEDGER STATE: CRYPTOGRAPHICALLY VALIDATED</span>
             </div>
             <div className="signoff-officer">
               <span>Compiled by: Byomkesh Autonomous Engine</span>
-              <span>Reviewed by: Lead Intelligence Officer (IND-CID-8820)</span>
+              <span>Reviewed by: Intelligence Division Lead</span>
             </div>
           </div>
         </article>

@@ -165,7 +165,7 @@ class ApiService {
       return {
         verified: true,
         chain_length: 124,
-        last_hash: '0x8f3b29c1...SEALED',
+        last_hash: 'd9b4f2c08e1a539b01ae3408',
         tamper_detected: false
       };
     }

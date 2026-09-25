@@ -5,13 +5,17 @@
 .tactical-globe-wrapper {
   background: #080808;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
+  border-radius: 6px;
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
-  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.85);
-  margin-bottom: 24px;
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.9);
+  margin-bottom: 16px;
+}
+
+.compact-aesthetic-globe {
+  max-width: 100%;
 }
 
 /* ── 1. Top HUD ── */
@@ -19,15 +23,15 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 8px 12px;
   background: #050505;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .hud-label-cluster {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .hud-radar-beacon {
@@ -35,8 +39,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
   background: rgba(16, 185, 129, 0.12);
   border: 1px solid rgba(16, 185, 129, 0.3);
   border-radius: 50%;
@@ -48,7 +52,7 @@
 
 .beacon-ping {
   position: absolute;
-  inset: -3px;
+  inset: -2px;
   border: 1px solid #10b981;
   border-radius: 50%;
   animation: beacon-ping-anim 2s infinite;
@@ -61,37 +65,30 @@
 }
 
 .hud-title {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
   color: #ffffff;
-  display: block;
-}
-
-.hud-sub {
-  font-size: 9.5px;
-  color: #71717a;
   display: block;
 }
 
 .globe-controls-group {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
 
 .globe-ctrl-btn {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 3px 8px;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
   background: #0e0e0e;
   border: 1px solid rgba(255, 255, 255, 0.1);
   color: #a1a1aa;
   border-radius: 4px;
-  font-size: 9.5px;
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -99,7 +96,6 @@
 .globe-ctrl-btn:hover {
   background: #181818;
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.25);
 }
 
 .globe-ctrl-btn.active {
@@ -112,8 +108,8 @@
 .globe-canvas-viewport {
   position: relative;
   width: 100%;
-  height: 380px;
-  background: radial-gradient(circle at center, #070e0a 0%, #030403 70%, #010202 100%);
+  height: 200px;
+  background: radial-gradient(circle at center, #060c09 0%, #030403 70%, #010202 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -127,19 +123,19 @@
 
 .tactical-globe-canvas {
   width: 100%;
-  max-width: 580px;
-  height: 380px;
+  max-width: 360px;
+  height: 200px;
 }
 
 .globe-coords-overlay {
   position: absolute;
-  bottom: 12px;
-  left: 16px;
-  right: 16px;
+  bottom: 8px;
+  left: 12px;
+  right: 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 9px;
+  font-size: 8.5px;
   color: rgba(255, 255, 255, 0.4);
   pointer-events: none;
 }

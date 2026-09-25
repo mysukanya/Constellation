@@ -9,7 +9,8 @@ import {
   Radio, Check, Trash2, ArrowUpRight, Database,
   Home, Network, Folder, Globe, Cpu, Scale, Settings,
   UploadCloud, Brain, GitCompare, UserCheck, Sparkles, Key, ExternalLink,
-  Briefcase, FileUp, UserSearch, Sun, Moon, Users, Layers, ShieldCheck
+  Briefcase, FileUp, UserSearch, Sun, Moon, Users, Layers, ShieldCheck,
+  PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
 import './DesktopChrome.css';
 
@@ -38,6 +39,7 @@ export default function DesktopChrome({ children }) {
     toggleTheme
   } = useWorkspace();
 
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [utcTime, setUtcTime] = useState('');
   const [showSearchModal, setShowSearchModal] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -73,7 +75,7 @@ export default function DesktopChrome({ children }) {
       }
       if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
         e.preventDefault();
-        setByomkeshOpen(prev => !prev);
+        setSidebarCollapsed(prev => !prev);
       }
       if (e.key === 'Escape') {
         setShowSearchModal(false);
@@ -83,7 +85,7 @@ export default function DesktopChrome({ children }) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [setByomkeshOpen]);
+  }, []);
 
   const unreadCount = (notifications || []).filter(n => !n.read).length;
 
@@ -100,14 +102,22 @@ export default function DesktopChrome({ children }) {
     <div className="desktop-window-container">
       {/* ── TOP OPENAI-STYLE FLUSH TOPBAR ── */}
       <header className="openai-topbar">
-        {/* Left: OpenAI style clean typographic wordmark */}
+        {/* Left: Sidebar toggle + Wordmark */}
         <div className="topbar-left-zone">
+          <button
+            className="sidebar-toggle-btn"
+            onClick={() => setSidebarCollapsed(prev => !prev)}
+            title={sidebarCollapsed ? "Expand Sidebar (Ctrl+B)" : "Collapse Sidebar (Ctrl+B)"}
+            aria-label="Toggle Sidebar"
+          >
+            {sidebarCollapsed ? <PanelLeftOpen size={14} /> : <PanelLeftClose size={14} />}
+          </button>
           <div className="openai-brand-lockup" onClick={() => setActiveNavSection('home')}>
             <span className="openai-brand-text">CONSTELLATION</span>
           </div>
         </div>
 
-        {/* Center: Clean Horizontal Navigation Links */}
+        {/* Center: Clean Minimal Navigation Links (No wrapping, single line) */}
         <nav className="openai-nav-links">
           <button
             className={`openai-nav-link ${activeNavSection === 'home' ? 'active' : ''}`}
@@ -131,7 +141,7 @@ export default function DesktopChrome({ children }) {
             className={`openai-nav-link ${activeNavSection === 'byomkesh' ? 'active' : ''}`}
             onClick={() => setActiveNavSection('byomkesh')}
           >
-            Byomkesh AI
+            Byomkesh
           </button>
           <button
             className={`openai-nav-link ${activeNavSection === 'cases' || activeNavSection === 'case-detail' ? 'active' : ''}`}
@@ -143,60 +153,44 @@ export default function DesktopChrome({ children }) {
             className={`openai-nav-link ${activeNavSection === 'sweeps' ? 'active' : ''}`}
             onClick={() => setActiveNavSection('sweeps')}
           >
-            12h Sweeps
+            Sweeps
           </button>
           <button
             className={`openai-nav-link ${activeNavSection === 'intel' ? 'active' : ''}`}
             onClick={() => setActiveNavSection('intel')}
           >
-            Live Intel
+            Intel
           </button>
           <button
             className={`openai-nav-link ${activeNavSection === 'audit' ? 'active' : ''}`}
             onClick={() => setActiveNavSection('audit')}
           >
-            Provenance
+            Ledger
           </button>
         </nav>
 
-        {/* Right: Demo Badge, Ledger Seal, Admin User Button, Notification Bell, Theme Switcher */}
+        {/* Right: Clean, Fresh Controls - No Mock Jargon */}
         <div className="openai-topbar-right">
-          <div className="topbar-sealed-tag font-mono" title="Cryptographic Ledger Integrity: 0x8f3b...SEALED">
-            <CheckCircle2 size={11} className="text-emerald" />
-            <span>0x8f3b...SEALED</span>
-          </div>
-
-          {localStorage.getItem('constellation_token')?.startsWith('demo_token') && (
-            <div className="openai-demo-badge font-mono" title="Running with offline demonstration data">
-              <span className="openai-demo-dot" />
-              <span>DEMO</span>
-            </div>
-          )}
-
-          {/* Admin User Management Button */}
           <button
-            className={`openai-admin-btn font-mono ${showAdminModal ? 'active' : ''}`}
+            className={`openai-icon-btn ${showAdminModal ? 'active' : ''}`}
             onClick={() => setShowAdminModal(true)}
-            title="Admin User Management: Add Users to Database"
+            title="Admin User Management"
           >
-            <Users size={12} />
-            <span>Admin</span>
+            <Users size={14} />
           </button>
 
-          {/* Fully Functional Notification Bell */}
           <button
             className={`openai-icon-btn ${showNotifications ? 'active' : ''}`}
-            title="Intelligence Alerts & Notifications"
+            title="Intelligence Alerts"
             onClick={() => setShowNotifications(prev => !prev)}
           >
             <Bell size={14} />
             {unreadCount > 0 && <span className="openai-badge-dot">{unreadCount}</span>}
           </button>
 
-          {/* Minimal Clean Light / Dark Mode Switcher */}
           <button
             className="openai-icon-btn theme-toggle-btn"
-            title={theme === 'light' ? 'Switch to Pure Black Dark Mode' : 'Switch to Minimal Light Mode'}
+            title={theme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode'}
             onClick={toggleTheme}
           >
             {theme === 'light' ? <Moon size={14} /> : <Sun size={14} />}
@@ -268,7 +262,7 @@ export default function DesktopChrome({ children }) {
 
       {/* ── DESKTOP MAIN VIEWPORT WITH FLUSH LEFT TOOL RAIL ─── */}
       <div className="desktop-main-split">
-        <aside className="left-icon-rail-dock">
+        <aside className={`left-icon-rail-dock ${sidebarCollapsed ? 'is-collapsed' : ''}`}>
           {/* Main Navigation Group - Mutually exclusive, no duplicates */}
           <div className="rail-group-top">
             {/* 1. Global Intelligence Grid Dashboard */}
